@@ -1,0 +1,27 @@
+services:
+  api:
+    build: ./backend
+    working_dir: /app
+    env_file:
+      - .env
+    environment:
+      ARTIFACT_DIR: /app/artifacts
+    # ホスト8000番の既存コンテナとの競合を避け、18000番を既定にする。
+    # Vite -> api:8000 はDocker内通信なので変更不要。
+    ports:
+      - "127.0.0.1:${API_PORT:-18000}:8000"
+    volumes:
+      - ./backend/app:/app/app:ro
+      - ./artifacts:/app/artifacts
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    init: true
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:${WEB_PORT:-5173}:5173"
+    depends_on:
+      - api
+    command: npm run dev -- --host 0.0.0.0
+    restart: unless-stopped

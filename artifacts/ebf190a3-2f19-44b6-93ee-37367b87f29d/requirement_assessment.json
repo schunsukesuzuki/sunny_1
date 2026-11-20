@@ -1,0 +1,56 @@
+{
+  "implementation_validity": "PASS",
+  "requirement_validity": "UNVERIFIED",
+  "findings": [
+    {
+      "requirement_id": "AC-01",
+      "criterion": "週次学習計画が指定された制約条件を満たすこと",
+      "status": "UNVERIFIED",
+      "admissible_evidence_ids": [],
+      "excluded_evidence_ids": [],
+      "rationale": "実顧客由来・出典明示・人間の確認済みの証拠がないため未検証。"
+    },
+    {
+      "requirement_id": "AC-02",
+      "criterion": "手動作成時間の30%以上削減できること",
+      "status": "UNVERIFIED",
+      "admissible_evidence_ids": [],
+      "excluded_evidence_ids": [],
+      "rationale": "実顧客由来・出典明示・人間の確認済みの証拠がないため未検証。"
+    },
+    {
+      "requirement_id": "AC-03",
+      "criterion": "講師による計画の確認・修正が容易であること",
+      "status": "UNVERIFIED",
+      "admissible_evidence_ids": [],
+      "excluded_evidence_ids": [],
+      "rationale": "実顧客由来・出典明示・人間の確認済みの証拠がないため未検証。"
+    },
+    {
+      "requirement_id": "AC-04",
+      "criterion": "プロトタイプでの精度評価が80%以上であること",
+      "status": "UNVERIFIED",
+      "admissible_evidence_ids": [],
+      "excluded_evidence_ids": [],
+      "rationale": "実顧客由来・出典明示・人間の確認済みの証拠がないため未検証。"
+    },
+    {
+      "requirement_id": "AC-05",
+      "criterion": "料金モデルの仮説検証が完了すること",
+      "status": "UNVERIFIED",
+      "admissible_evidence_ids": [],
+      "excluded_evidence_ids": [],
+      "rationale": "実顧客由来・出典明示・人間の確認済みの証拠がないため未検証。"
+    }
+  ],
+  "evidence_count": 0,
+  "next_customer_validation": [
+    "学習塾講師へのインタビューで時間削減効果の確認",
+    "ルールベースと最適化アルゴリズムのプロトタイプ比較検証",
+    "初期料金モデルの市場反応調査",
+    "LMSシステムとの統合技術的検証",
+    "生徒理解度データ収集方法の検討"
+  ],
+  "decision": "HUMAN_REVIEW_REQUIRED",
+  "note": "合成データのスコアは要件妥当性の証拠に算入しない。顧客証拠は自己申告であり独立検証ではない。"
+}

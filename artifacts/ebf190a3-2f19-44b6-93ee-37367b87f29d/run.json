@@ -1,0 +1,2701 @@
+{
+  "run_id": "ebf190a3-2f19-44b6-93ee-37367b87f29d",
+  "created_at": "2026-11-20T20:42:43+00:00",
+  "model": "qwen3-coder:30b",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "holdout_seeds": [
+    10042,
+    10043
+  ],
+  "dataset_hashes": {
+    "42": "a6d0739d62bbe7785f597953c3ad008358def5864ac92d09d99b0e8afe94a6fe",
+    "43": "53a7721089c6c37fb68c7880cbc76fe9fb8d860e11f3830f557ba161c34fed10",
+    "44": "cfe0ed295f65f6f01eb5e63c59a6329516ecc049d303709a7081fb4af206b2f1",
+    "10042": "73ac76801ef64379f4191777430086f4543d7d666d1fb3e9f76a6a8b03a07a16",
+    "10043": "ba839059ed2744bbb39dd2ec9b32f4743efd4a6e25af8a2fc8852bd10ae31241"
+  },
+  "development_baseline": {
+    "name": "baseline",
+    "algorithm": "Static Greedy",
+    "status": "completed",
+    "hard_constraint_pass": true,
+    "score": 0.6428245,
+    "score_std": 0.0348063,
+    "min_score": 0.5940207,
+    "coverage_ratio": 1.0,
+    "elapsed_seconds": 0.42,
+    "violations": [],
+    "stdout": "",
+    "stderr": "",
+    "source_sha256": "7b6da326b3cfea3d362f6f670a74b9bfa529cf7f4e9507d40f356b4d03d55428",
+    "sample_plans": [
+      {
+        "student_id": "S001",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 0
+          },
+          {
+            "subject": "英語",
+            "hours": 3
+          },
+          {
+            "subject": "国語",
+            "hours": 4
+          },
+          {
+            "subject": "理科",
+            "hours": 0
+          }
+        ]
+      },
+      {
+        "student_id": "S002",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 0
+          },
+          {
+            "subject": "英語",
+            "hours": 7
+          },
+          {
+            "subject": "国語",
+            "hours": 5
+          },
+          {
+            "subject": "理科",
+            "hours": 0
+          }
+        ]
+      },
+      {
+        "student_id": "S003",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 5
+          },
+          {
+            "subject": "英語",
+            "hours": 2
+          },
+          {
+            "subject": "国語",
+            "hours": 0
+          },
+          {
+            "subject": "理科",
+            "hours": 6
+          }
+        ]
+      }
+    ],
+    "passed_seeds": 3,
+    "total_seeds": 3,
+    "relative_to_optimal": null,
+    "relative_to_baseline": null,
+    "same_plans_as_baseline": null,
+    "same_plans_as_optimal": null,
+    "per_seed": [
+      {
+        "seed": 42,
+        "dataset_sha256": "a6d0739d62bbe7785f597953c3ad008358def5864ac92d09d99b0e8afe94a6fe",
+        "sandbox_id": "ixtmlae7qt789febs0h5v",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.6727819,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.586,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "7a12c7bb7b8ca48211198a6b79b726feb76ce0d1b9039ce3caf7f82a75063b60",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 0
+              },
+              {
+                "subject": "英語",
+                "hours": 3
+              },
+              {
+                "subject": "国語",
+                "hours": 4
+              },
+              {
+                "subject": "理科",
+                "hours": 0
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 0
+              },
+              {
+                "subject": "英語",
+                "hours": 7
+              },
+              {
+                "subject": "国語",
+                "hours": 5
+              },
+              {
+                "subject": "理科",
+                "hours": 0
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 5
+              },
+              {
+                "subject": "英語",
+                "hours": 2
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 6
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "seed": 43,
+        "dataset_sha256": "53a7721089c6c37fb68c7880cbc76fe9fb8d860e11f3830f557ba161c34fed10",
+        "sandbox_id": "ixtmlae7qt789febs0h5v",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.6616709,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.33,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "bfe7917767d1620f8d0f5d13f57cc1bdbba16c69c8b50192f652320e124ff1e3",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 0
+              },
+              {
+                "subject": "英語",
+                "hours": 1
+              },
+              {
+                "subject": "国語",
+                "hours": 4
+              },
+              {
+                "subject": "理科",
+                "hours": 6
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 7
+              },
+              {
+                "subject": "英語",
+                "hours": 0
+              },
+              {
+                "subject": "国語",
+                "hours": 1
+              },
+              {
+                "subject": "理科",
+                "hours": 0
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 6
+              },
+              {
+                "subject": "英語",
+                "hours": 3
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "seed": 44,
+        "dataset_sha256": "cfe0ed295f65f6f01eb5e63c59a6329516ecc049d303709a7081fb4af206b2f1",
+        "sandbox_id": "ixtmlae7qt789febs0h5v",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.5940207,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.343,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "645551c91cebf7e93256755bcc63b04d07595522b393563e6eb820463c9117a5",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 2
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 6
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 7
+              },
+              {
+                "subject": "英語",
+                "hours": 2
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 0
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 0
+              },
+              {
+                "subject": "英語",
+                "hours": 2
+              },
+              {
+                "subject": "国語",
+                "hours": 5
+              },
+              {
+                "subject": "理科",
+                "hours": 0
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "development_optimal": {
+    "name": "optimal",
+    "algorithm": "Exact DP / proxy optimum",
+    "status": "completed",
+    "hard_constraint_pass": true,
+    "score": 0.6905487,
+    "score_std": 0.0249395,
+    "min_score": 0.6556386,
+    "coverage_ratio": 1.0,
+    "elapsed_seconds": 0.346,
+    "violations": [],
+    "stdout": "",
+    "stderr": "",
+    "source_sha256": "a370730c7c09a1faec6fb55f38826cf7604e2fdffe269c5027c1bbeadea183c9",
+    "sample_plans": [
+      {
+        "student_id": "S001",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 1
+          },
+          {
+            "subject": "英語",
+            "hours": 1
+          },
+          {
+            "subject": "国語",
+            "hours": 4
+          },
+          {
+            "subject": "理科",
+            "hours": 1
+          }
+        ]
+      },
+      {
+        "student_id": "S002",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 3
+          },
+          {
+            "subject": "英語",
+            "hours": 5
+          },
+          {
+            "subject": "国語",
+            "hours": 3
+          },
+          {
+            "subject": "理科",
+            "hours": 1
+          }
+        ]
+      },
+      {
+        "student_id": "S003",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 4
+          },
+          {
+            "subject": "英語",
+            "hours": 3
+          },
+          {
+            "subject": "国語",
+            "hours": 0
+          },
+          {
+            "subject": "理科",
+            "hours": 6
+          }
+        ]
+      }
+    ],
+    "passed_seeds": 3,
+    "total_seeds": 3,
+    "relative_to_optimal": null,
+    "relative_to_baseline": null,
+    "same_plans_as_baseline": null,
+    "same_plans_as_optimal": null,
+    "per_seed": [
+      {
+        "seed": 42,
+        "dataset_sha256": "a6d0739d62bbe7785f597953c3ad008358def5864ac92d09d99b0e8afe94a6fe",
+        "sandbox_id": "iw26lx8q683wipzmgp8hy",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.7123551,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.384,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "34f3d3b7e9ced8456b42cd130b72704376163e72147a3d3f42d1fc36714e3539",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 1
+              },
+              {
+                "subject": "英語",
+                "hours": 1
+              },
+              {
+                "subject": "国語",
+                "hours": 4
+              },
+              {
+                "subject": "理科",
+                "hours": 1
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 3
+              },
+              {
+                "subject": "英語",
+                "hours": 5
+              },
+              {
+                "subject": "国語",
+                "hours": 3
+              },
+              {
+                "subject": "理科",
+                "hours": 1
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 3
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 6
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "seed": 43,
+        "dataset_sha256": "53a7721089c6c37fb68c7880cbc76fe9fb8d860e11f3830f557ba161c34fed10",
+        "sandbox_id": "iw26lx8q683wipzmgp8hy",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.7036523,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.328,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "78743158ba1f19c899b0edbabfe035990bd5d035ddd56ccd4a897b51f77149be",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 1
+              },
+              {
+                "subject": "英語",
+                "hours": 1
+              },
+              {
+                "subject": "国語",
+                "hours": 4
+              },
+              {
+                "subject": "理科",
+                "hours": 5
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 0
+              },
+              {
+                "subject": "国語",
+                "hours": 3
+              },
+              {
+                "subject": "理科",
+                "hours": 1
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 3
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "seed": 44,
+        "dataset_sha256": "cfe0ed295f65f6f01eb5e63c59a6329516ecc049d303709a7081fb4af206b2f1",
+        "sandbox_id": "iw26lx8q683wipzmgp8hy",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.6556386,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.325,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "4380e21c5683ab1ff53f6371a0374192eba27813e46f65ab9e63eb0d3c1cb034",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 3
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 5
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 4
+              },
+              {
+                "subject": "国語",
+                "hours": 1
+              },
+              {
+                "subject": "理科",
+                "hours": 0
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 2
+              },
+              {
+                "subject": "英語",
+                "hours": 2
+              },
+              {
+                "subject": "国語",
+                "hours": 2
+              },
+              {
+                "subject": "理科",
+                "hours": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "development_generated": {
+    "name": "generated",
+    "algorithm": "Qwen-generated Python / initial or revised candidate",
+    "status": "completed",
+    "hard_constraint_pass": true,
+    "score": 0.6905487,
+    "score_std": 0.0249395,
+    "min_score": 0.6556386,
+    "coverage_ratio": 1.0,
+    "elapsed_seconds": 0.368,
+    "violations": [],
+    "stdout": "",
+    "stderr": "",
+    "source_sha256": "5a9153983baff918df7a7d5235bc6759f4b15e420cb0838434f705212051de44",
+    "sample_plans": [
+      {
+        "student_id": "S001",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 1
+          },
+          {
+            "subject": "英語",
+            "hours": 1
+          },
+          {
+            "subject": "国語",
+            "hours": 4
+          },
+          {
+            "subject": "理科",
+            "hours": 1
+          }
+        ]
+      },
+      {
+        "student_id": "S002",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 3
+          },
+          {
+            "subject": "英語",
+            "hours": 5
+          },
+          {
+            "subject": "国語",
+            "hours": 3
+          },
+          {
+            "subject": "理科",
+            "hours": 1
+          }
+        ]
+      },
+      {
+        "student_id": "S003",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 4
+          },
+          {
+            "subject": "英語",
+            "hours": 3
+          },
+          {
+            "subject": "国語",
+            "hours": 0
+          },
+          {
+            "subject": "理科",
+            "hours": 6
+          }
+        ]
+      }
+    ],
+    "passed_seeds": 3,
+    "total_seeds": 3,
+    "relative_to_optimal": 1.0,
+    "relative_to_baseline": 1.074241,
+    "same_plans_as_baseline": 0,
+    "same_plans_as_optimal": 2,
+    "per_seed": [
+      {
+        "seed": 42,
+        "dataset_sha256": "a6d0739d62bbe7785f597953c3ad008358def5864ac92d09d99b0e8afe94a6fe",
+        "sandbox_id": "i41q02xteusk1ezbcm7ct",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.7123551,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.443,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "9dc660a8e2f3adfb1698a8152e0b89ec543d0dece21df9d81da3d4102df3b47a",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 1
+              },
+              {
+                "subject": "英語",
+                "hours": 1
+              },
+              {
+                "subject": "国語",
+                "hours": 4
+              },
+              {
+                "subject": "理科",
+                "hours": 1
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 3
+              },
+              {
+                "subject": "英語",
+                "hours": 5
+              },
+              {
+                "subject": "国語",
+                "hours": 3
+              },
+              {
+                "subject": "理科",
+                "hours": 1
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 3
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 6
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "seed": 43,
+        "dataset_sha256": "53a7721089c6c37fb68c7880cbc76fe9fb8d860e11f3830f557ba161c34fed10",
+        "sandbox_id": "i41q02xteusk1ezbcm7ct",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.7036523,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.336,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "6f42239eff2ef394c66fc47129feb58194820f7a60c4cac3de3f2066258b6777",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 1
+              },
+              {
+                "subject": "英語",
+                "hours": 1
+              },
+              {
+                "subject": "国語",
+                "hours": 4
+              },
+              {
+                "subject": "理科",
+                "hours": 5
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 0
+              },
+              {
+                "subject": "国語",
+                "hours": 3
+              },
+              {
+                "subject": "理科",
+                "hours": 1
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 3
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "seed": 44,
+        "dataset_sha256": "cfe0ed295f65f6f01eb5e63c59a6329516ecc049d303709a7081fb4af206b2f1",
+        "sandbox_id": "i41q02xteusk1ezbcm7ct",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.6556386,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.326,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "7b4d7517d711e497c1045672a83a8bdc5a5534ff16ec2994f4ce6cee399892c2",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 3
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 5
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 4
+              },
+              {
+                "subject": "国語",
+                "hours": 1
+              },
+              {
+                "subject": "理科",
+                "hours": 0
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 2
+              },
+              {
+                "subject": "英語",
+                "hours": 2
+              },
+              {
+                "subject": "国語",
+                "hours": 2
+              },
+              {
+                "subject": "理科",
+                "hours": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "baseline": {
+    "name": "baseline",
+    "algorithm": "Static Greedy",
+    "status": "completed",
+    "hard_constraint_pass": true,
+    "score": 0.5882293,
+    "score_std": 0.0020446,
+    "min_score": 0.5861848,
+    "coverage_ratio": 1.0,
+    "elapsed_seconds": 0.367,
+    "violations": [],
+    "stdout": "",
+    "stderr": "",
+    "source_sha256": "7b6da326b3cfea3d362f6f670a74b9bfa529cf7f4e9507d40f356b4d03d55428",
+    "sample_plans": [
+      {
+        "student_id": "S001",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 1
+          },
+          {
+            "subject": "英語",
+            "hours": 6
+          },
+          {
+            "subject": "国語",
+            "hours": 0
+          },
+          {
+            "subject": "理科",
+            "hours": 5
+          }
+        ]
+      },
+      {
+        "student_id": "S002",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 3
+          },
+          {
+            "subject": "英語",
+            "hours": 7
+          },
+          {
+            "subject": "国語",
+            "hours": 0
+          },
+          {
+            "subject": "理科",
+            "hours": 0
+          }
+        ]
+      },
+      {
+        "student_id": "S003",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 0
+          },
+          {
+            "subject": "英語",
+            "hours": 0
+          },
+          {
+            "subject": "国語",
+            "hours": 1
+          },
+          {
+            "subject": "理科",
+            "hours": 7
+          }
+        ]
+      }
+    ],
+    "passed_seeds": 2,
+    "total_seeds": 2,
+    "relative_to_optimal": null,
+    "relative_to_baseline": null,
+    "same_plans_as_baseline": null,
+    "same_plans_as_optimal": null,
+    "per_seed": [
+      {
+        "seed": 10042,
+        "dataset_sha256": "73ac76801ef64379f4191777430086f4543d7d666d1fb3e9f76a6a8b03a07a16",
+        "sandbox_id": "iuv5yv8mlyg4dhwww6eii",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.5861848,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.411,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "d16b39b5e9fb93e593344b6864e5bee7e49d335d8526674827a681c7c7709f72",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 1
+              },
+              {
+                "subject": "英語",
+                "hours": 6
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 5
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 3
+              },
+              {
+                "subject": "英語",
+                "hours": 7
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 0
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 0
+              },
+              {
+                "subject": "英語",
+                "hours": 0
+              },
+              {
+                "subject": "国語",
+                "hours": 1
+              },
+              {
+                "subject": "理科",
+                "hours": 7
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "seed": 10043,
+        "dataset_sha256": "ba839059ed2744bbb39dd2ec9b32f4743efd4a6e25af8a2fc8852bd10ae31241",
+        "sandbox_id": "iuv5yv8mlyg4dhwww6eii",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.5902739,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.323,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "c56b874a0fdea6af5c3bcd69cca66f0a078c5e305053b19e76501b3fe12ade77",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 0
+              },
+              {
+                "subject": "英語",
+                "hours": 1
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 6
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 5
+              },
+              {
+                "subject": "英語",
+                "hours": 0
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 4
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 0
+              },
+              {
+                "subject": "英語",
+                "hours": 2
+              },
+              {
+                "subject": "国語",
+                "hours": 6
+              },
+              {
+                "subject": "理科",
+                "hours": 0
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "optimal": {
+    "name": "optimal",
+    "algorithm": "Exact DP / proxy optimum",
+    "status": "completed",
+    "hard_constraint_pass": true,
+    "score": 0.6659666,
+    "score_std": 0.0065095,
+    "min_score": 0.6594572,
+    "coverage_ratio": 1.0,
+    "elapsed_seconds": 0.371,
+    "violations": [],
+    "stdout": "",
+    "stderr": "",
+    "source_sha256": "a370730c7c09a1faec6fb55f38826cf7604e2fdffe269c5027c1bbeadea183c9",
+    "sample_plans": [
+      {
+        "student_id": "S001",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 3
+          },
+          {
+            "subject": "英語",
+            "hours": 3
+          },
+          {
+            "subject": "国語",
+            "hours": 2
+          },
+          {
+            "subject": "理科",
+            "hours": 4
+          }
+        ]
+      },
+      {
+        "student_id": "S002",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 3
+          },
+          {
+            "subject": "英語",
+            "hours": 4
+          },
+          {
+            "subject": "国語",
+            "hours": 3
+          },
+          {
+            "subject": "理科",
+            "hours": 0
+          }
+        ]
+      },
+      {
+        "student_id": "S003",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 1
+          },
+          {
+            "subject": "英語",
+            "hours": 1
+          },
+          {
+            "subject": "国語",
+            "hours": 2
+          },
+          {
+            "subject": "理科",
+            "hours": 4
+          }
+        ]
+      }
+    ],
+    "passed_seeds": 2,
+    "total_seeds": 2,
+    "relative_to_optimal": null,
+    "relative_to_baseline": null,
+    "same_plans_as_baseline": null,
+    "same_plans_as_optimal": null,
+    "per_seed": [
+      {
+        "seed": 10042,
+        "dataset_sha256": "73ac76801ef64379f4191777430086f4543d7d666d1fb3e9f76a6a8b03a07a16",
+        "sandbox_id": "ixdw7cusogqsy5azbb0ot",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.6724761,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.407,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "1c9d4093fc6dc4b2521a449ea13a28b33c168bf759df6d7d4ca208491337757c",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 3
+              },
+              {
+                "subject": "英語",
+                "hours": 3
+              },
+              {
+                "subject": "国語",
+                "hours": 2
+              },
+              {
+                "subject": "理科",
+                "hours": 4
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 3
+              },
+              {
+                "subject": "英語",
+                "hours": 4
+              },
+              {
+                "subject": "国語",
+                "hours": 3
+              },
+              {
+                "subject": "理科",
+                "hours": 0
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 1
+              },
+              {
+                "subject": "英語",
+                "hours": 1
+              },
+              {
+                "subject": "国語",
+                "hours": 2
+              },
+              {
+                "subject": "理科",
+                "hours": 4
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "seed": 10043,
+        "dataset_sha256": "ba839059ed2744bbb39dd2ec9b32f4743efd4a6e25af8a2fc8852bd10ae31241",
+        "sandbox_id": "ixdw7cusogqsy5azbb0ot",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.6594572,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.335,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "0bd4e9572454b99e85785b5a4236687b37d8bb566302418707939dbbcb96240a",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 1
+              },
+              {
+                "subject": "英語",
+                "hours": 2
+              },
+              {
+                "subject": "国語",
+                "hours": 1
+              },
+              {
+                "subject": "理科",
+                "hours": 3
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 0
+              },
+              {
+                "subject": "国語",
+                "hours": 2
+              },
+              {
+                "subject": "理科",
+                "hours": 3
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 0
+              },
+              {
+                "subject": "英語",
+                "hours": 2
+              },
+              {
+                "subject": "国語",
+                "hours": 4
+              },
+              {
+                "subject": "理科",
+                "hours": 2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "generated": {
+    "name": "generated",
+    "algorithm": "Qwen code selected by DEV score",
+    "status": "completed",
+    "hard_constraint_pass": true,
+    "score": 0.6659666,
+    "score_std": 0.0065095,
+    "min_score": 0.6594572,
+    "coverage_ratio": 1.0,
+    "elapsed_seconds": 0.364,
+    "violations": [],
+    "stdout": "",
+    "stderr": "",
+    "source_sha256": "5a9153983baff918df7a7d5235bc6759f4b15e420cb0838434f705212051de44",
+    "sample_plans": [
+      {
+        "student_id": "S001",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 3
+          },
+          {
+            "subject": "英語",
+            "hours": 3
+          },
+          {
+            "subject": "国語",
+            "hours": 2
+          },
+          {
+            "subject": "理科",
+            "hours": 4
+          }
+        ]
+      },
+      {
+        "student_id": "S002",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 3
+          },
+          {
+            "subject": "英語",
+            "hours": 4
+          },
+          {
+            "subject": "国語",
+            "hours": 3
+          },
+          {
+            "subject": "理科",
+            "hours": 0
+          }
+        ]
+      },
+      {
+        "student_id": "S003",
+        "allocations": [
+          {
+            "subject": "数学",
+            "hours": 1
+          },
+          {
+            "subject": "英語",
+            "hours": 1
+          },
+          {
+            "subject": "国語",
+            "hours": 2
+          },
+          {
+            "subject": "理科",
+            "hours": 4
+          }
+        ]
+      }
+    ],
+    "passed_seeds": 2,
+    "total_seeds": 2,
+    "relative_to_optimal": 1.0,
+    "relative_to_baseline": 1.132155,
+    "same_plans_as_baseline": 0,
+    "same_plans_as_optimal": 2,
+    "per_seed": [
+      {
+        "seed": 10042,
+        "dataset_sha256": "73ac76801ef64379f4191777430086f4543d7d666d1fb3e9f76a6a8b03a07a16",
+        "sandbox_id": "i3k6l4xbznvy6dynv6z4y",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.6724761,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.393,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "d62c787a43950efa1beff782ab76921b14595cf314d19a3b5496a154ba8cae5b",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 3
+              },
+              {
+                "subject": "英語",
+                "hours": 3
+              },
+              {
+                "subject": "国語",
+                "hours": 2
+              },
+              {
+                "subject": "理科",
+                "hours": 4
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 3
+              },
+              {
+                "subject": "英語",
+                "hours": 4
+              },
+              {
+                "subject": "国語",
+                "hours": 3
+              },
+              {
+                "subject": "理科",
+                "hours": 0
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 1
+              },
+              {
+                "subject": "英語",
+                "hours": 1
+              },
+              {
+                "subject": "国語",
+                "hours": 2
+              },
+              {
+                "subject": "理科",
+                "hours": 4
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "seed": 10043,
+        "dataset_sha256": "ba839059ed2744bbb39dd2ec9b32f4743efd4a6e25af8a2fc8852bd10ae31241",
+        "sandbox_id": "i3k6l4xbznvy6dynv6z4y",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.6594572,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.334,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "output_sha256": "7f6916b04f8023fbe03eeddf71283f71265609138d2584b26aaa0e00980e9ea9",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 1
+              },
+              {
+                "subject": "英語",
+                "hours": 2
+              },
+              {
+                "subject": "国語",
+                "hours": 1
+              },
+              {
+                "subject": "理科",
+                "hours": 3
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 0
+              },
+              {
+                "subject": "国語",
+                "hours": 2
+              },
+              {
+                "subject": "理科",
+                "hours": 3
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 0
+              },
+              {
+                "subject": "英語",
+                "hours": 2
+              },
+              {
+                "subject": "国語",
+                "hours": 4
+              },
+              {
+                "subject": "理科",
+                "hours": 2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "repair_attempts": [
+    {
+      "attempt_index": 0,
+      "source_sha256": "25a9f187b14a67aa59d4231f6cfe18e438f1749129992a27bdc2a68888b5577c",
+      "candidate": {
+        "name": "generated",
+        "algorithm": "Qwen-generated Python / initial or revised candidate",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.6301367,
+        "score_std": 0.0143087,
+        "min_score": 0.6108202,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.371,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "source_sha256": "25a9f187b14a67aa59d4231f6cfe18e438f1749129992a27bdc2a68888b5577c",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 2
+              },
+              {
+                "subject": "英語",
+                "hours": 2
+              },
+              {
+                "subject": "国語",
+                "hours": 2
+              },
+              {
+                "subject": "理科",
+                "hours": 1
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 3
+              },
+              {
+                "subject": "英語",
+                "hours": 3
+              },
+              {
+                "subject": "国語",
+                "hours": 3
+              },
+              {
+                "subject": "理科",
+                "hours": 3
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 3
+              },
+              {
+                "subject": "国語",
+                "hours": 3
+              },
+              {
+                "subject": "理科",
+                "hours": 3
+              }
+            ]
+          }
+        ],
+        "passed_seeds": 3,
+        "total_seeds": 3,
+        "relative_to_optimal": null,
+        "relative_to_baseline": null,
+        "same_plans_as_baseline": null,
+        "same_plans_as_optimal": null,
+        "per_seed": [
+          {
+            "seed": 42,
+            "dataset_sha256": "a6d0739d62bbe7785f597953c3ad008358def5864ac92d09d99b0e8afe94a6fe",
+            "sandbox_id": "ijx2u1j65nyj1p243mhje",
+            "status": "completed",
+            "hard_constraint_pass": true,
+            "score": 0.6450161,
+            "coverage_ratio": 1.0,
+            "elapsed_seconds": 0.44,
+            "violations": [],
+            "stdout": "",
+            "stderr": "",
+            "output_sha256": "11014f2784a5969926ea1674b152badad8f8a88ec8b8709fe936b7b9f6160a9a",
+            "sample_plans": [
+              {
+                "student_id": "S001",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 1
+                  }
+                ]
+              },
+              {
+                "student_id": "S002",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 3
+                  }
+                ]
+              },
+              {
+                "student_id": "S003",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 4
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 3
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "seed": 43,
+            "dataset_sha256": "53a7721089c6c37fb68c7880cbc76fe9fb8d860e11f3830f557ba161c34fed10",
+            "sandbox_id": "ijx2u1j65nyj1p243mhje",
+            "status": "completed",
+            "hard_constraint_pass": true,
+            "score": 0.6345739,
+            "coverage_ratio": 1.0,
+            "elapsed_seconds": 0.345,
+            "violations": [],
+            "stdout": "",
+            "stderr": "",
+            "output_sha256": "4b43ce2eaeb7d837b731f46f7f4da6167c043331052c5062b1591fa3c5608cf1",
+            "sample_plans": [
+              {
+                "student_id": "S001",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 2
+                  }
+                ]
+              },
+              {
+                "student_id": "S002",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 2
+                  }
+                ]
+              },
+              {
+                "student_id": "S003",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 2
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "seed": 44,
+            "dataset_sha256": "cfe0ed295f65f6f01eb5e63c59a6329516ecc049d303709a7081fb4af206b2f1",
+            "sandbox_id": "ijx2u1j65nyj1p243mhje",
+            "status": "completed",
+            "hard_constraint_pass": true,
+            "score": 0.6108202,
+            "coverage_ratio": 1.0,
+            "elapsed_seconds": 0.329,
+            "violations": [],
+            "stdout": "",
+            "stderr": "",
+            "output_sha256": "4681d91cd959b26489ad9b864ada375ab75bba620844b01553e35f224cfbf756",
+            "sample_plans": [
+              {
+                "student_id": "S001",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 3
+                  }
+                ]
+              },
+              {
+                "student_id": "S002",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 2
+                  }
+                ]
+              },
+              {
+                "student_id": "S003",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "verdict": "HOLD",
+      "trigger": "quality",
+      "selected": false,
+      "feedback": "QUALITY HOLD on DEVELOPMENT set; program is functionally valid but underperforms.\nCandidate development proxy utility: 0.630137\nStatic Greedy development proxy utility: 0.642825\nExact-DP development proxy utility (aggregate only): 0.690549\nCandidate/DP=0.91252; required >= 0.98000.\nCandidate/Greedy=0.98026; required >= 1.01000.\nImprove the algorithm, not merely output formatting. Use marginal utility delta=w*(exp(-h/2.5)-exp(-(h+1)/2.5)), with h=currently allocated hours. Respect all hard constraints. Recompute each step; do not use remaining caps as if they were allocated hours. Do not hardcode student IDs or dataset values.\nHeld-out evaluation scores and example solutions are unavailable. These synthetic proxy values are not real-world learning outcomes.",
+      "repair_error": "",
+      "repair_strategy": "initial",
+      "error_summary": {},
+      "code_diff": ""
+    },
+    {
+      "attempt_index": 1,
+      "source_sha256": "5a9153983baff918df7a7d5235bc6759f4b15e420cb0838434f705212051de44",
+      "candidate": {
+        "name": "generated",
+        "algorithm": "Qwen-generated Python / initial or revised candidate",
+        "status": "completed",
+        "hard_constraint_pass": true,
+        "score": 0.6905487,
+        "score_std": 0.0249395,
+        "min_score": 0.6556386,
+        "coverage_ratio": 1.0,
+        "elapsed_seconds": 0.368,
+        "violations": [],
+        "stdout": "",
+        "stderr": "",
+        "source_sha256": "5a9153983baff918df7a7d5235bc6759f4b15e420cb0838434f705212051de44",
+        "sample_plans": [
+          {
+            "student_id": "S001",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 1
+              },
+              {
+                "subject": "英語",
+                "hours": 1
+              },
+              {
+                "subject": "国語",
+                "hours": 4
+              },
+              {
+                "subject": "理科",
+                "hours": 1
+              }
+            ]
+          },
+          {
+            "student_id": "S002",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 3
+              },
+              {
+                "subject": "英語",
+                "hours": 5
+              },
+              {
+                "subject": "国語",
+                "hours": 3
+              },
+              {
+                "subject": "理科",
+                "hours": 1
+              }
+            ]
+          },
+          {
+            "student_id": "S003",
+            "allocations": [
+              {
+                "subject": "数学",
+                "hours": 4
+              },
+              {
+                "subject": "英語",
+                "hours": 3
+              },
+              {
+                "subject": "国語",
+                "hours": 0
+              },
+              {
+                "subject": "理科",
+                "hours": 6
+              }
+            ]
+          }
+        ],
+        "passed_seeds": 3,
+        "total_seeds": 3,
+        "relative_to_optimal": 1.0,
+        "relative_to_baseline": 1.074241,
+        "same_plans_as_baseline": 0,
+        "same_plans_as_optimal": 2,
+        "per_seed": [
+          {
+            "seed": 42,
+            "dataset_sha256": "a6d0739d62bbe7785f597953c3ad008358def5864ac92d09d99b0e8afe94a6fe",
+            "sandbox_id": "i41q02xteusk1ezbcm7ct",
+            "status": "completed",
+            "hard_constraint_pass": true,
+            "score": 0.7123551,
+            "coverage_ratio": 1.0,
+            "elapsed_seconds": 0.443,
+            "violations": [],
+            "stdout": "",
+            "stderr": "",
+            "output_sha256": "9dc660a8e2f3adfb1698a8152e0b89ec543d0dece21df9d81da3d4102df3b47a",
+            "sample_plans": [
+              {
+                "student_id": "S001",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 1
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 1
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 4
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 1
+                  }
+                ]
+              },
+              {
+                "student_id": "S002",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 5
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 1
+                  }
+                ]
+              },
+              {
+                "student_id": "S003",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 4
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 0
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 6
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "seed": 43,
+            "dataset_sha256": "53a7721089c6c37fb68c7880cbc76fe9fb8d860e11f3830f557ba161c34fed10",
+            "sandbox_id": "i41q02xteusk1ezbcm7ct",
+            "status": "completed",
+            "hard_constraint_pass": true,
+            "score": 0.7036523,
+            "coverage_ratio": 1.0,
+            "elapsed_seconds": 0.336,
+            "violations": [],
+            "stdout": "",
+            "stderr": "",
+            "output_sha256": "6f42239eff2ef394c66fc47129feb58194820f7a60c4cac3de3f2066258b6777",
+            "sample_plans": [
+              {
+                "student_id": "S001",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 1
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 1
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 4
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 5
+                  }
+                ]
+              },
+              {
+                "student_id": "S002",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 4
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 0
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 1
+                  }
+                ]
+              },
+              {
+                "student_id": "S003",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 4
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 0
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 2
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "seed": 44,
+            "dataset_sha256": "cfe0ed295f65f6f01eb5e63c59a6329516ecc049d303709a7081fb4af206b2f1",
+            "sandbox_id": "i41q02xteusk1ezbcm7ct",
+            "status": "completed",
+            "hard_constraint_pass": true,
+            "score": 0.6556386,
+            "coverage_ratio": 1.0,
+            "elapsed_seconds": 0.326,
+            "violations": [],
+            "stdout": "",
+            "stderr": "",
+            "output_sha256": "7b4d7517d711e497c1045672a83a8bdc5a5534ff16ec2994f4ce6cee399892c2",
+            "sample_plans": [
+              {
+                "student_id": "S001",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 4
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 3
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 0
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 5
+                  }
+                ]
+              },
+              {
+                "student_id": "S002",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 4
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 4
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 1
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 0
+                  }
+                ]
+              },
+              {
+                "student_id": "S003",
+                "allocations": [
+                  {
+                    "subject": "数学",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "英語",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "国語",
+                    "hours": 2
+                  },
+                  {
+                    "subject": "理科",
+                    "hours": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "verdict": "CONDITIONAL GO",
+      "trigger": "none",
+      "selected": true,
+      "feedback": "",
+      "repair_error": "",
+      "repair_strategy": "quality_refinement",
+      "error_summary": {},
+      "code_diff": "--- previous.py\n+++ revision.py\n@@ -1,10 +1,5 @@\n import json\n import math\n-\n-def calculate_utility(gap, priority, hours):\n-    # 極大化される効用関数: w*(1-exp(-hours/2.5)), w=gap*priority\n-    w = gap * priority\n-    return w * (1 - math.exp(-hours / 2.5))\n \n def allocate_hours(student, available_hours):\n     # 各科目の初期割当を0とする\n@@ -31,11 +26,9 @@\n         \n         for subject in subjects_with_w:\n             if subject['current_hours'] < subject['max_hours']:\n-                # 現在の時間での効用\n-                current_utility = calculate_utility(subject['w']/subject['w'], 1, subject['current_hours'])\n-                # 時間を1増やしたときの効用\n-                new_utility = calculate_utility(subject['w']/subject['w'], 1, subject['current_hours'] + 1)\n-                marginal_gain = new_utility - current_utility\n+                # marginal utility delta = w*(exp(-h/2.5)-exp(-(h+1)/2.5))\n+                h = subject['current_hours']\n+                marginal_gain = subject['w'] * (math.exp(-h / 2.5) - math.exp(-(h + 1) / 2.5))\n                 \n                 if marginal_gain > best_marginal_gain:\n                     best_marginal_gain = marginal_gain\n"
+    }
+  ],
+  "selected_attempt_index": 1,
+  "holdout_executed": true,
+  "plan_comparisons_source": "holdout",
+  "plan_comparisons": [
+    {
+      "seed": 10042,
+      "student_id": "S001",
+      "available_hours": 12,
+      "generated_valid": true,
+      "subjects": [
+        {
+          "subject": "数学",
+          "gap": 0.47,
+          "priority": 4,
+          "max_hours": 5,
+          "baseline_hours": 1,
+          "optimal_hours": 3,
+          "generated_hours": 3
+        },
+        {
+          "subject": "英語",
+          "gap": 0.47,
+          "priority": 4,
+          "max_hours": 6,
+          "baseline_hours": 6,
+          "optimal_hours": 3,
+          "generated_hours": 3
+        },
+        {
+          "subject": "国語",
+          "gap": 0.37,
+          "priority": 5,
+          "max_hours": 4,
+          "baseline_hours": 0,
+          "optimal_hours": 2,
+          "generated_hours": 2
+        },
+        {
+          "subject": "理科",
+          "gap": 0.74,
+          "priority": 5,
+          "max_hours": 5,
+          "baseline_hours": 5,
+          "optimal_hours": 4,
+          "generated_hours": 4
+        }
+      ]
+    },
+    {
+      "seed": 10042,
+      "student_id": "S002",
+      "available_hours": 10,
+      "generated_valid": true,
+      "subjects": [
+        {
+          "subject": "数学",
+          "gap": 0.94,
+          "priority": 4,
+          "max_hours": 7,
+          "baseline_hours": 3,
+          "optimal_hours": 3,
+          "generated_hours": 3
+        },
+        {
+          "subject": "英語",
+          "gap": 0.89,
+          "priority": 5,
+          "max_hours": 7,
+          "baseline_hours": 7,
+          "optimal_hours": 4,
+          "generated_hours": 4
+        },
+        {
+          "subject": "国語",
+          "gap": 0.7,
+          "priority": 4,
+          "max_hours": 6,
+          "baseline_hours": 0,
+          "optimal_hours": 3,
+          "generated_hours": 3
+        },
+        {
+          "subject": "理科",
+          "gap": 0.34,
+          "priority": 2,
+          "max_hours": 6,
+          "baseline_hours": 0,
+          "optimal_hours": 0,
+          "generated_hours": 0
+        }
+      ]
+    },
+    {
+      "seed": 10042,
+      "student_id": "S003",
+      "available_hours": 8,
+      "generated_valid": true,
+      "subjects": [
+        {
+          "subject": "数学",
+          "gap": 0.43,
+          "priority": 4,
+          "max_hours": 6,
+          "baseline_hours": 0,
+          "optimal_hours": 1,
+          "generated_hours": 1
+        },
+        {
+          "subject": "英語",
+          "gap": 0.33,
+          "priority": 5,
+          "max_hours": 5,
+          "baseline_hours": 0,
+          "optimal_hours": 1,
+          "generated_hours": 1
+        },
+        {
+          "subject": "国語",
+          "gap": 0.69,
+          "priority": 3,
+          "max_hours": 7,
+          "baseline_hours": 1,
+          "optimal_hours": 2,
+          "generated_hours": 2
+        },
+        {
+          "subject": "理科",
+          "gap": 0.77,
+          "priority": 5,
+          "max_hours": 7,
+          "baseline_hours": 7,
+          "optimal_hours": 4,
+          "generated_hours": 4
+        }
+      ]
+    }
+  ],
+  "max_repair_attempts": 2,
+  "functional_gate": "PASS（制約充足）",
+  "selection_gate": "CONDITIONAL GO（追加実証へ）",
+  "business_gate": "未検証（実顧客の検証が必要）",
+  "gate_reasons": [
+    "生成候補/厳密DPの平均代理効用比: 1.0000（要求 ≥ 0.9800）。",
+    "生成候補/固定ルールの平均代理効用比: 1.1322（改善採用閾値 ≥ 1.0100）。",
+    "合成データ上の技術比較のみ通過。学習効果・価格受容・工数削減は未検証です。"
+  ],
+  "business_scenario": {
+    "monthly_revenue_yen": 360000,
+    "monthly_operating_cost_yen": 180000,
+    "monthly_contribution_yen": 180000,
+    "hypothetical_customer_value_yen": 12500.0,
+    "break_even_schools": 15,
+    "validation_status": "仮説のみ・実顧客で未検証"
+  },
+  "report_markdown": "# AI Venture Feasibility Studio v0.6 — 新規事業の技術選定レポート\n\n> **架空案件／合成データによる検証**。代理効用は学習効果ではありません。事業化承認、市場受容、講師の実測工数削減を意味しません。\n\n| 項目 | 値 |\n|---|---|\n| 案件名 | 教育SaaS：AI個別学習プランニング（架空案件） |\n| 実行ID | `ebf190a3-2f19-44b6-93ee-37367b87f29d` |\n| UTC実行日時 | 2026-11-20T20:42:43+00:00 |\n| 生成モデル | `qwen3-coder:30b`（Mac Studio / Ollama、Metal実稼働はMac側で確認） |\n| 比較方式 | 静的Greedy / 厳密DP / Qwen生成候補 |\n| 開発用seed（修正に使用） | 42, 43, 44 |\n| 最終評価用seed（Qwenに非開示） | 10042, 10043 |\n| 各seed生徒数 | 12 |\n| コード改訂数 | 1 / 上限 2 |\n| **採用した開発試行** | **1**（DEVで機能合格した候補から選択） |\n| HOLDOUT実行 | 実施 |\n| 最終 Functional Gate | PASS（制約充足） |\n| 最終 Technology Gate | CONDITIONAL GO（追加実証へ） |\n\n## 1. 顧客の相談と未承認の要件ドラフト\n\n当社は全国の学習塾に学習管理システム（LMS）を提供しています。新しい有料オプションとして、生徒の学習可能時間、科目別の理解度、試験までの優先度を考慮して、週次学習計画を自動生成するサービスを検討しています。講師が手動で学習計画を作る時間を減らしながら、生徒の制約を厳守したいです。LLMが本当に必要なのか、ルールベースと最適化も比較して検討してください。まずはプロトタイプによる技術的成立性の検証と、料金仮説の整理をお願いします。\n\n**顧客課題**：学習塾の講師が生徒ごとの手動での学習計画作成に多くの時間を要しており、効率性と正確性の向上が求められている。\n\n**対象ユーザー**：全国の学習塾の講師, 塾の管理者, 生徒の保護者\n\n**提供価値の仮説**：AIを活用した自動生成により、講師の手動作業時間の削減と、生徒の理解度・時間制約に合った最適な学習計画の提供が可能になる。\n\n### 必須機能・受入基準\n- 生徒の学習可能時間の考慮\n- 科目別の理解度データの反映\n- 試験までの優先順位設定\n- 必須科目の配分と週の時間上限の遵守\n- ルールベースと最適化アルゴリズムの比較機能\n- 週次学習計画が指定された制約条件を満たすこと\n- 手動作成時間の30%以上削減できること\n- 講師による計画の確認・修正が容易であること\n- プロトタイプでの精度評価が80%以上であること\n- 料金モデルの仮説検証が完了すること\n\n### 顧客確認が必要な事項\n- AIによる学習計画生成が手動より効率的である\n- ルールベースと最適化アルゴリズムのどちらも十分な精度を達成できる\n- 講師が新機能を受け入れる意欲がある\n- 生徒の理解度データが正確に収集・反映可能\n- 講師の手動作業時間の具体的な割合は?\n- 生徒の理解度を測定するための評価方法は?\n- LMSとの連携における技術的制約は?\n- 料金モデルの初期仮説は?\n- 既存のLMSシステムへの統合方法は?\n\n## 2. 方式・評価手続き\n\n- **A: 固定Greedy**：`gap × priority` の高い科目からまとめて時間を配分。\n- **B: 厳密DP**：定義した分離可能・整数時間配分の代理効用の範囲で最適化。現実の学習成果の最適性ではありません。\n- **C: Qwen生成コード**：E2Bでコード実行、FastAPI側の独立した決定的評価器で検証。\n- 機能 **NO-GO**：制約違反・実行エラーの検証ログに基づく修正を指示。\n- 品質 **HOLD**：開発用seedでの平均代理効用比と改善目標を返し、アルゴリズム改善を指示（最大2回の改訂枠を共有）。\n- **段階的な機能修正**：1回目は構造化した検証エラーと出力契約で修正。2回目以降は不変条件と静的ASTの参考診断を渡し、`allocate_hours`関数のみを構造的に差し替えます（該当関数が無い場合は修正失敗として記録）。\n- **改訂案の選択**：制約を満たす開発試行のうち、開発用代理効用が最大のコードを選択。全試行で不合格なら**選択なし**、HOLDOUTをスキップ。\n- **最終評価**：有効な候補がある場合に限り、隔離した別seedで1回だけ検証。最終結果をQwenへフィードバックしません。\n- 制約：生徒と科目は各1回、時間は非負整数、科目上限以下、合計は利用可能時間と一致。\n- 代理効用：`mean_students[Σ gap × priority × (1-exp(-hours/2.5)) / Σ(gap×priority)]`。\n- しきい値：Qwen / DP ≥ 0.980、Qwen / 固定Greedy ≥ 1.010。\n- **注意**：この評価は固定した合成データ分布と仮定した代理効用の内部比較です。実測時間は単発のSandboxコマンド時間で、モデル推論・Sandbox起動・E2Bの実課金を含みません。\n\n## 3. 開発用seedでの比較・反復\n\n| 指標 | A: Greedy | B: 厳密DP | C: DEV選択候補 |\n|---|---:|---:|---:|\n| 全seed制約充足 | PASS | PASS | PASS |\n| 成功seed数 | 3/3 | 3/3 | 3/3 |\n| 平均代理効用 | 0.64282 | 0.69055 | 0.69055 |\n| 代理効用標準偏差 | 0.03481 | 0.02494 | 0.02494 |\n| 最悪seed代理効用 | 0.59402 | 0.65564 | 0.65564 |\n| 平均コマンド実行時間 (秒) | 0.420 | 0.346 | 0.368 |\n| ソースSHA256（先頭16文字） | `7b6da326b3cfea3d…` | `a370730c7c09a1fa…` | `5a9153983baff918…` |\n\n| DEV seed | A | B | C | 制約 A/B/C |\n|---|---:|---:|---:|---|\n| 42 | 0.67278 | 0.71236 | 0.71236 | PASS / PASS / PASS |\n| 43 | 0.66167 | 0.70365 | 0.70365 | PASS / PASS / PASS |\n| 44 | 0.59402 | 0.65564 | 0.65564 | PASS / PASS / PASS |\n\n### 自動修正・品質改善履歴\n\n| 試行 | 開発判定 | 修正方法 | 合格seed | DEV代理効用 | 採用 | ソースSHA256 |\n|---|---|---|---:|---:|---:|---|\n| 0 | HOLD | initial | 3/3 | 0.63014 |  | `25a9f187b14a67aa…` |\n| 1 | CONDITIONAL GO | quality_refinement | 3/3 | 0.69055 | ✓ | `5a9153983baff918…` |\n\n### Attempt 0 — 品質HOLD\n\n開発用平均代理効用: **0.63014**。実行は成功したが品質閾値に未達。\n\n**次のQwen修正に渡した情報（開発用のみ）：**\n\n```text\nQUALITY HOLD on DEVELOPMENT set; program is functionally valid but underperforms.\nCandidate development proxy utility: 0.630137\nStatic Greedy development proxy utility: 0.642825\nExact-DP development proxy utility (aggregate only): 0.690549\nCandidate/DP=0.91252; required >= 0.98000.\nCandidate/Greedy=0.98026; required >= 1.01000.\nImprove the algorithm, not merely output formatting. Use marginal utility delta=w*(exp(-h/2.5)-exp(-(h+1)/2.5)), with h=currently allocated hours. Respect all hard constraints. Recompute each step; do not use remaining caps as if they were allocated hours. Do not hardcode student IDs or dataset values.\nHeld-out evaluation scores and example solutions are unavailable. These synthetic proxy values are not real-world learning outcomes.\n```\n\n**Attempt 1 前試行からの差分**\n\n```diff\n--- previous.py\n+++ revision.py\n@@ -1,10 +1,5 @@\n import json\n import math\n-\n-def calculate_utility(gap, priority, hours):\n-    # 極大化される効用関数: w*(1-exp(-hours/2.5)), w=gap*priority\n-    w = gap * priority\n-    return w * (1 - math.exp(-hours / 2.5))\n \n def allocate_hours(student, available_hours):\n     # 各科目の初期割当を0とする\n@@ -31,11 +26,9 @@\n         \n         for subject in subjects_with_w:\n             if subject['current_hours'] < subject['max_hours']:\n-                # 現在の時間での効用\n-                current_utility = calculate_utility(subject['w']/subject['w'], 1, subject['current_hours'])\n-                # 時間を1増やしたときの効用\n-                new_utility = calculate_utility(subject['w']/subject['w'], 1, subject['current_hours'] + 1)\n-                marginal_gain = new_utility - current_utility\n+                # marginal utility delta = w*(exp(-h/2.5)-exp(-(h+1)/2.5))\n+                h = subject['current_hours']\n+                marginal_gain = subject['w'] * (math.exp(-h / 2.5) - math.exp(-(h + 1) / 2.5))\n                 \n                 if marginal_gain > best_marginal_gain:\n                     best_marginal_gain = marginal_gain\n\n```\n\n> 開発用データへの適合は最終評価の成功を保証しません。品質フィードバックは開発用の集計値のみで、最終評価データは非開示です。\n\n## 4. 最終評価（未使用seedによる一度限りの審査）\n\n| 指標 | A: Greedy | B: 厳密DP | C: Qwen候補 |\n|---|---:|---:|---:|\n| 全seed制約充足 | PASS | PASS | PASS |\n| 成功seed数 | 2/2 | 2/2 | 2/2 |\n| 平均代理効用 | 0.58823 | 0.66597 | 0.66597 |\n| 代理効用標準偏差 | 0.00204 | 0.00651 | 0.00651 |\n| 最悪seed代理効用 | 0.58618 | 0.65946 | 0.65946 |\n| 平均コマンド実行時間 (秒) | 0.367 | 0.371 | 0.364 |\n| ソースSHA256（先頭16文字） | `7b6da326b3cfea3d…` | `a370730c7c09a1fa…` | `5a9153983baff918…` |\n\n| HOLDOUT seed | A | B | C | 制約 A/B/C |\n|---|---:|---:|---:|---|\n| 10042 | 0.58618 | 0.67248 | 0.67248 | PASS / PASS / PASS |\n| 10043 | 0.59027 | 0.65946 | 0.65946 | PASS / PASS / PASS |\n\n- C / B：**1.00000**。\n- C / A：**1.13216**。\n- CとAの配分一致seed：**0 / 2**。\n- CとBの配分一致seed：**2 / 2**。\n\n### 最終の独立審査\n\n- **Functional Gate：PASS（制約充足）**\n- **Technology Selection Gate：CONDITIONAL GO（追加実証へ）**\n- 生成候補/厳密DPの平均代理効用比: 1.0000（要求 ≥ 0.9800）。\n- 生成候補/固定ルールの平均代理効用比: 1.1322（改善採用閾値 ≥ 1.0100）。\n- 合成データ上の技術比較のみ通過。学習効果・価格受容・工数削減は未検証です。\n\n最終NO-GO／実行エラーログ（保持）：\n\n- 最終評価の制約違反なし。\n\n### E2B最終実行証跡\n\n| 方式 | seed | Sandbox ID | 出力SHA256先頭 | コマンド状態 |\n|---|---:|---|---|---|\n| baseline | 10042 | `iuv5yv8mlyg4dhwww6eii` | `d16b39b5e9fb93e5` | completed |\n| baseline | 10043 | `iuv5yv8mlyg4dhwww6eii` | `c56b874a0fdea6af` | completed |\n| optimal | 10042 | `ixdw7cusogqsy5azbb0ot` | `1c9d4093fc6dc4b2` | completed |\n| optimal | 10043 | `ixdw7cusogqsy5azbb0ot` | `0bd4e9572454b99e` | completed |\n| generated | 10042 | `i3k6l4xbznvy6dynv6z4y` | `d62c787a43950efa` | completed |\n| generated | 10043 | `i3k6l4xbznvy6dynv6z4y` | `7f6916b04f8023fb` | completed |\n\n## 5. 顧客向け学習計画の比較例（HOLDOUTデータ）\n\n### seed 10042 / S001 / 利用可能 12 時間\n\n| 科目 | 理解ギャップ | 優先度 | 上限h | 静的Greedy | 厳密DP | Qwen候補 |\n|---|---:|---:|---:|---:|---:|---:|\n| 数学 | 0.47 | 4 | 5 | 1 | 3 | 3 |\n| 英語 | 0.47 | 4 | 6 | 6 | 3 | 3 |\n| 国語 | 0.37 | 5 | 4 | 0 | 2 | 2 |\n| 理科 | 0.74 | 5 | 5 | 5 | 4 | 4 |\n\n### seed 10042 / S002 / 利用可能 10 時間\n\n| 科目 | 理解ギャップ | 優先度 | 上限h | 静的Greedy | 厳密DP | Qwen候補 |\n|---|---:|---:|---:|---:|---:|---:|\n| 数学 | 0.94 | 4 | 7 | 3 | 3 | 3 |\n| 英語 | 0.89 | 5 | 7 | 7 | 4 | 4 |\n| 国語 | 0.70 | 4 | 6 | 0 | 3 | 3 |\n| 理科 | 0.34 | 2 | 6 | 0 | 0 | 0 |\n\n### seed 10042 / S003 / 利用可能 8 時間\n\n| 科目 | 理解ギャップ | 優先度 | 上限h | 静的Greedy | 厳密DP | Qwen候補 |\n|---|---:|---:|---:|---:|---:|---:|\n| 数学 | 0.43 | 4 | 6 | 0 | 1 | 1 |\n| 英語 | 0.33 | 5 | 5 | 0 | 1 | 1 |\n| 国語 | 0.69 | 3 | 7 | 1 | 2 | 2 |\n| 理科 | 0.77 | 5 | 7 | 7 | 4 | 4 |\n\n> 合成生徒の具体例。学習効果の立証ではありません。\n\n## 6. 事業仮説の単純試算（市場未検証）\n\n| 入力仮定・計算項目 | 値 |\n|---|---:|\n| 月額料金／塾 | ¥12,000 |\n| 有料契約塾数 | 30 |\n| 月間売上（仮定） | ¥360,000 |\n| 月間運用費（仮定） | ¥180,000 |\n| 月間貢献利益（単純試算） | ¥180,000 |\n| 月間講師工数削減（1塾当たり・仮定） | 5.0 時間 |\n| 1塾当たり仮の時間価値 | ¥12,500 |\n| 単純損益分岐塾数 | 15 |\n\n**Business Gate：未検証**。価格受容性・獲得費・導入費・解約率・教師の実測工数削減・学習成果など未確認。\n\n## 7. 次の顧客検証と責任分担\n\n- 学習塾講師へのインタビューで時間削減効果の確認\n- ルールベースと最適化アルゴリズムのプロトタイプ比較検証\n- 初期料金モデルの市場反応調査\n- LMSシステムとの統合技術的検証\n- 生徒理解度データ収集方法の検討\n\n- [ ] 事業責任者：顧客ニーズ・支払意思・販売チャネルの調査\n- [ ] 技術責任者：評価関数・データ分布・外れ値・制約の妥当性確認\n- [ ] 現場講師：実務タスクでの作業時間・使い勝手・成果の評価\n\n## 8. 実行再現情報\n\n- **DEV** seed 42: `a6d0739d62bbe7785f597953c3ad008358def5864ac92d09d99b0e8afe94a6fe`\n- **DEV** seed 43: `53a7721089c6c37fb68c7880cbc76fe9fb8d860e11f3830f557ba161c34fed10`\n- **DEV** seed 44: `cfe0ed295f65f6f01eb5e63c59a6329516ecc049d303709a7081fb4af206b2f1`\n- **HOLDOUT** seed 10042: `73ac76801ef64379f4191777430086f4543d7d666d1fb3e9f76a6a8b03a07a16`\n- **HOLDOUT** seed 10043: `ba839059ed2744bbb39dd2ec9b32f4743efd4a6e25af8a2fc8852bd10ae31241`\n\n成果物：`requirements.json`、`datasets.json`、`baseline.py`、`optimal.py`、`attempts/attempt_XX.py`、`attempts/attempt_XX.json`、`attempts/attempt_XX.diff`、`run.json`、`report.md`。`generated.py`は有効な候補が存在するときだけ保存。APIキーは保存しません。**この実験は実顧客データへの外挿を保証しません。**\n\n\n## 9. サービス設計（要件と実装の中間表現）\n\n**設計の状態**：`qwen_draft_unapproved`。要件と設計の一致は独立評価していません。生成された設計は人間による確認前のドラフトです。\n\n**提供範囲**：全国の学習塾向けLMSに統合するAI個別学習プランニングサービス。生徒の学習可能時間、科目理解度、試験優先順位を考慮し、週次学習計画を自動生成する。\n\n### Actors / Use cases\n- 学習塾の講師\n- 塾の管理者\n- 生徒の保護者\n- 講師が生徒の学習可能時間と理解度を入力する\n- システムが科目別・試験優先順位に基づいて週次計画を自動生成する\n- 講師が生成された計画を確認・修正する\n- 管理者が計画の効果を評価し、料金モデルを検証する\n\n### 業務フロー・ドメイン\n- 生徒データ入力（時間・理解度・試験）\n- ルールベースと最適化アルゴリズムによる計画生成\n- 講師による確認・修正\n- 計画の保存・LMS連携\n- 効果評価と料金仮説検証\n- 生徒\n- 学習時間\n- 科目理解度\n- 試験スケジュール\n- 週次計画\n- ルールベースアルゴリズム\n- 最適化アルゴリズム\n\n### ハード制約・ソフト目的・受入テスト\n- 生徒の学習可能時間は考慮する\n- 科目別の理解度を反映する\n- 試験までの優先順位を反映する\n- 必須科目の配分と週の時間上限を遵守する\n- ルールベースと最適化アルゴリズムの比較機能を提供する\n- 講師の手動作業時間の30%以上削減\n- 生徒の理解度・時間制約に合った計画提供\n- 計画の確認・修正が容易であること\n- プロトタイプ精度80%以上\n- 週次計画が指定制約を満たすこと\n- 手動作成時間の30%以上削減できること\n- 講師による計画確認・修正が容易であること\n- プロトタイプ精度が80%以上であること\n- 料金モデル仮説検証完了\n\n### 代替案・未確認の前提\n- ルールベース方式：条件に従って固定ロジックで計画生成。実装が簡単だが柔軟性に欠ける。\n- 最適化アルゴリズム方式：線形計画法や遺伝的アルゴリズムを用いて最適解を導出。精度が高いが計算コストがかかる。\n- 混合方式：ルールベースで基本構成、最適化で微調整を行う。バランスが取れたアプローチ。\n- AIによる学習計画生成は手動より効率的である\n- ルールベースと最適化アルゴリズムのどちらも十分な精度を達成できる\n- 講師が新機能を受け入れる意欲がある\n- 生徒の理解度データが正確に収集・反映可能\n\n## 10. 二軸の検証結果\n\n| 検証軸 | 判定 | 判断主体・根拠 |\n|---|---|---|\n| 実装の正しさ | PASS | 独立決定的評価器＋E2B最終評価 |\n| 要件の妥当性 | **UNVERIFIED** | 顧客証拠の出典・人間の確認状況（暫定） |\n\n合成データのスコアは要件妥当性の証拠に算入しない。顧客証拠は自己申告であり独立検証ではない。\n\n| 受入基準ID | 要件 | 暫定評価 | 採用した証拠ID |\n|---|---|---|---|\n| AC-01 | 週次学習計画が指定された制約条件を満たすこと | UNVERIFIED | なし |\n| AC-02 | 手動作成時間の30%以上削減できること | UNVERIFIED | なし |\n| AC-03 | 講師による計画の確認・修正が容易であること | UNVERIFIED | なし |\n| AC-04 | プロトタイプでの精度評価が80%以上であること | UNVERIFIED | なし |\n| AC-05 | 料金モデルの仮説検証が完了すること | UNVERIFIED | なし |\n\n### 顧客証拠台帳（LLM生成の根拠ではない）\n\n| Evidence ID | 要件ID | 由来 | 向き | 人間の確認 | 出典 |\n|---|---|---|---|---|---|\n| （なし） | — | — | — | — | — |\n\n### 未検証事項と次の顧客確認\n- 学習塾講師へのインタビューで時間削減効果の確認\n- ルールベースと最適化アルゴリズムのプロトタイプ比較検証\n- 初期料金モデルの市場反応調査\n- LMSシステムとの統合技術的検証\n- 生徒理解度データ収集方法の検討\n\n## 11. Requirement Refinement / 監査ログ\n\n- 要件改訂番号：**0**\n- 直前の実行ID：`なし（初回）`\n- 要件JSON SHA256：`d3f361697c7330e3494d757fda5c5382ab54800c0ec9aa163840e00b89095343`\n- サービス設計JSON SHA256：`91c12265e7336c8f29c58c9214fe1e9d1705bcfa691c275a924a61a79862b1c4`\n- 顧客証拠件数：**0**\n- 要件の自動承認：**しない**（人間の明示的な採否判断が必要）\n- 改訂後は新しいHOLDOUT seed群を使用する（同じ最終データを改訂フィードバックへ流用しない）。\n- `/api/refine` が返すのは**提案のみ**で、既存要件は書き換えない。\n\n**重要な制限**：現行の独立評価器・データ生成器は教育SaaSの週次配分問題に特化。海外InsurTech等の設計案を入力しても、この実験でその業務要件を検証したことにはなりません。実運用の保険案件には独立したドメイン評価器と顧客データ検証が必要です。\n",
+  "service_design": {
+    "design_source": "qwen_draft_unapproved",
+    "product_scope": "全国の学習塾向けLMSに統合するAI個別学習プランニングサービス。生徒の学習可能時間、科目理解度、試験優先順位を考慮し、週次学習計画を自動生成する。",
+    "actors": [
+      "学習塾の講師",
+      "塾の管理者",
+      "生徒の保護者"
+    ],
+    "use_cases": [
+      "講師が生徒の学習可能時間と理解度を入力する",
+      "システムが科目別・試験優先順位に基づいて週次計画を自動生成する",
+      "講師が生成された計画を確認・修正する",
+      "管理者が計画の効果を評価し、料金モデルを検証する"
+    ],
+    "domain_entities": [
+      "生徒",
+      "学習時間",
+      "科目理解度",
+      "試験スケジュール",
+      "週次計画",
+      "ルールベースアルゴリズム",
+      "最適化アルゴリズム"
+    ],
+    "service_flow": [
+      "生徒データ入力（時間・理解度・試験）",
+      "ルールベースと最適化アルゴリズムによる計画生成",
+      "講師による確認・修正",
+      "計画の保存・LMS連携",
+      "効果評価と料金仮説検証"
+    ],
+    "hard_constraints": [
+      "生徒の学習可能時間は考慮する",
+      "科目別の理解度を反映する",
+      "試験までの優先順位を反映する",
+      "必須科目の配分と週の時間上限を遵守する",
+      "ルールベースと最適化アルゴリズムの比較機能を提供する"
+    ],
+    "soft_objectives": [
+      "講師の手動作業時間の30%以上削減",
+      "生徒の理解度・時間制約に合った計画提供",
+      "計画の確認・修正が容易であること",
+      "プロトタイプ精度80%以上"
+    ],
+    "interfaces": [
+      "LMSシステムとのAPI連携",
+      "講師向けWebUI",
+      "生徒データ入力フォーム",
+      "計画確認・修正機能"
+    ],
+    "acceptance_tests": [
+      "週次計画が指定制約を満たすこと",
+      "手動作成時間の30%以上削減できること",
+      "講師による計画確認・修正が容易であること",
+      "プロトタイプ精度が80%以上であること",
+      "料金モデル仮説検証完了"
+    ],
+    "alternatives": [
+      "ルールベース方式：条件に従って固定ロジックで計画生成。実装が簡単だが柔軟性に欠ける。",
+      "最適化アルゴリズム方式：線形計画法や遺伝的アルゴリズムを用いて最適解を導出。精度が高いが計算コストがかかる。",
+      "混合方式：ルールベースで基本構成、最適化で微調整を行う。バランスが取れたアプローチ。"
+    ],
+    "assumptions": [
+      "AIによる学習計画生成は手動より効率的である",
+      "ルールベースと最適化アルゴリズムのどちらも十分な精度を達成できる",
+      "講師が新機能を受け入れる意欲がある",
+      "生徒の理解度データが正確に収集・反映可能"
+    ],
+    "external_validation_needed": [
+      "学習塾講師へのインタビューで時間削減効果の確認",
+      "ルールベースと最適化アルゴリズムのプロトタイプ比較検証",
+      "初期料金モデルの市場反応調査",
+      "LMSシステムとの統合技術的検証",
+      "生徒理解度データ収集方法の検討"
+    ]
+  },
+  "customer_evidence": [],
+  "requirement_assessment": {
+    "implementation_validity": "PASS",
+    "requirement_validity": "UNVERIFIED",
+    "findings": [
+      {
+        "requirement_id": "AC-01",
+        "criterion": "週次学習計画が指定された制約条件を満たすこと",
+        "status": "UNVERIFIED",
+        "admissible_evidence_ids": [],
+        "excluded_evidence_ids": [],
+        "rationale": "実顧客由来・出典明示・人間の確認済みの証拠がないため未検証。"
+      },
+      {
+        "requirement_id": "AC-02",
+        "criterion": "手動作成時間の30%以上削減できること",
+        "status": "UNVERIFIED",
+        "admissible_evidence_ids": [],
+        "excluded_evidence_ids": [],
+        "rationale": "実顧客由来・出典明示・人間の確認済みの証拠がないため未検証。"
+      },
+      {
+        "requirement_id": "AC-03",
+        "criterion": "講師による計画の確認・修正が容易であること",
+        "status": "UNVERIFIED",
+        "admissible_evidence_ids": [],
+        "excluded_evidence_ids": [],
+        "rationale": "実顧客由来・出典明示・人間の確認済みの証拠がないため未検証。"
+      },
+      {
+        "requirement_id": "AC-04",
+        "criterion": "プロトタイプでの精度評価が80%以上であること",
+        "status": "UNVERIFIED",
+        "admissible_evidence_ids": [],
+        "excluded_evidence_ids": [],
+        "rationale": "実顧客由来・出典明示・人間の確認済みの証拠がないため未検証。"
+      },
+      {
+        "requirement_id": "AC-05",
+        "criterion": "料金モデルの仮説検証が完了すること",
+        "status": "UNVERIFIED",
+        "admissible_evidence_ids": [],
+        "excluded_evidence_ids": [],
+        "rationale": "実顧客由来・出典明示・人間の確認済みの証拠がないため未検証。"
+      }
+    ],
+    "evidence_count": 0,
+    "next_customer_validation": [
+      "学習塾講師へのインタビューで時間削減効果の確認",
+      "ルールベースと最適化アルゴリズムのプロトタイプ比較検証",
+      "初期料金モデルの市場反応調査",
+      "LMSシステムとの統合技術的検証",
+      "生徒理解度データ収集方法の検討"
+    ],
+    "decision": "HUMAN_REVIEW_REQUIRED",
+    "note": "合成データのスコアは要件妥当性の証拠に算入しない。顧客証拠は自己申告であり独立検証ではない。"
+  },
+  "requirements_revision": 0,
+  "parent_run_id": null,
+  "requirements_sha256": "d3f361697c7330e3494d757fda5c5382ab54800c0ec9aa163840e00b89095343",
+  "service_design_sha256": "91c12265e7336c8f29c58c9214fe1e9d1705bcfa691c275a924a61a79862b1c4"
+}
