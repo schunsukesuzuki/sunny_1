@@ -11,6 +11,21 @@ const BENCHMARK_CASES: {id:string;label:string}[] = [
   {id:'conflicting_stakeholder_notes',label:'相反する模擬顧客コメント'}
 ];
 
+// Mirrors the *guidance* implied by the server-side typed acceptance templates.
+// The server remains authoritative; this preview is not a semantic evidence check.
+type ReviewFeature = '' | 'claims_assignment' | 'claim_progress_updates';
+type ReviewFeatureHint = ReviewFeature | 'ambiguous';
+function reviewFeatureHint(text: string): ReviewFeatureHint {
+  const h = text.toLowerCase();
+  const notification = /notify|notification|notifi|update|communication|communicate|status|progress|inform|連絡|通知|進捗|状況/.test(h)
+    || /(?:顧客|契約者|利用者)(?:へ|に|向けて).{0,12}報告/.test(text);
+  const assignment = /assign|allocation|allocate|reviewer|triage|priorit|schedul|routing|capacity|担当|割当|振分|配分|優先順位|資格|審査員/.test(h);
+  return notification && assignment ? 'ambiguous' : notification ? 'claim_progress_updates' : assignment ? 'claims_assignment' : '';
+}
+function assignmentHasTimeContext(text: string): boolean {
+  return /delay|delayed|late|waiting|time|processing|handling|遅延|期限|処理|deadline|due date|sla|期日|締切|時間/i.test(text);
+}
+
 async function call<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(`${BACKEND}${path}`, body === undefined ? {} : {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
@@ -77,15 +92,24 @@ export default function App() {
   const [llmExtraction, setLlmExtraction] = useState(true);
   const [explicitReview, setExplicitReview] = useState(false);
   const [evidenceMode, setEvidenceMode] = useState<'public'|'synthetic'>('public');
+  const [r1Mode, setR1Mode] = useState<'llm_only'|'skill_only'|'compare'>('compare');
+  const [diagnosticRepair, setDiagnosticRepair] = useState(true);
+  const [diagnosticBlind, setDiagnosticBlind] = useState(true);
+  const [blindCaseCount, setBlindCaseCount] = useState(4);
+  const [skillManifest, setSkillManifest] = useState<Dict | null>(null);
   const [evidenceActor, setEvidenceActor] = useState('Technical reviewer (demo)');
   const [evidenceRationale, setEvidenceRationale] = useState('公開資料を参照し、次工程では顧客未承認の検証仮説としてのみ扱う。');
   const [reviewRequirement, setReviewRequirement] = useState('');
   const [selectedEvidenceIds, setSelectedEvidenceIds] = useState<string[]>([]);
+  const [evidenceReviewError, setEvidenceReviewError] = useState('');
   const [acknowledgeEvidence, setAcknowledgeEvidence] = useState(false);
   const [supportAssessment, setSupportAssessment] = useState<'supports_problem'|'context_only'|'contradicts'>('context_only');
   const [maxTotalMissed, setMaxTotalMissed] = useState(0);
   const [minReductionPct, setMinReductionPct] = useState(50);
   const [requireBehavioral, setRequireBehavioral] = useState(true);
+  const [requirementType, setRequirementType] = useState<ReviewFeature>('');
+  const [maxNotificationDelay, setMaxNotificationDelay] = useState(24);
+  const [minNotificationCoverage, setMinNotificationCoverage] = useState(100);
   async function refreshHistory(kind: HistoryKind) {
     const result = await call<{items: Dict[]}>(`/history/${kind}`);
     setHistory(result.items);
@@ -94,6 +118,7 @@ export default function App() {
   useEffect(() => {
     call<Dict>('/sample').then(s => { setSample(s); setBrief(s.brief); setService(s.service_design_r0); }).catch(e => setError(String(e)));
     call<Dict>('/health').then(setHealth).catch(e => setError(String(e)));
+    call<Dict>('/skills/claims-allocation').then(setSkillManifest).catch(e=>setError(String(e)));
     refreshHistory('experiments').catch(e => setError(String(e)));
     call<{datasets:Dict[]}>('/evidence/datasets').then(r=>setEvidenceDatasets(r.datasets)).catch(e=>setError(String(e)));
   }, []);
@@ -138,10 +163,20 @@ export default function App() {
   const devR0 = r0?.development?.fifo;
   const refR0 = r0?.development?.deadline;
   const hasCounterexample = proposal?.condition === 'counterexample';
+  const reviewFeatureDetected = reviewFeatureHint(reviewRequirement);
+  const reviewFeatureIssue = !reviewRequirement.trim() ? '' :
+    !requirementType ? '対象機能を明示的に選択してください。通知の仮説は「進捗通知」、担当者割当の仮説は「担当者割当」です。' :
+    reviewFeatureDetected === 'ambiguous' ? '通知と担当者割当が混在しています。別々の要件に分けてください。' :
+    reviewFeatureDetected === '' ? '要件文に「担当者割当」または「請求進捗の通知」の具体的な機能を記述してください。' :
+    reviewFeatureDetected !== requirementType ?
+      `分類不一致：本文は${reviewFeatureDetected === 'claim_progress_updates' ? '進捗通知' : '担当者割当'}に該当します。機能の選択を変更するか、要件文を修正してください。` :
+    requirementType === 'claims_assignment' && !assignmentHasTimeContext(reviewRequirement) ?
+      '担当者割当の場合は、保険請求の期限超過・遅延・処理課題を要件文に明記してください。進捗通知なら対象機能を変更してください。' : '';
+
 
   return <div className="app-shell">
     <header className="masthead">
-      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.18</div>
+      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.21.1</div>
       <h1>Claims Operations <span>Planner</span></h1>
       <p className="lead">German InsurTech事業開発：審査人員を増やさず、保険金請求の期限超過を減らせるか。</p>
       <div className="tags"><span>架空顧客 / 合成請求データ</span><span>Qwen3-Coder + ODA-Fin-RL-8B · Ollama / Metal</span><span>E2B isolated execution</span><span>R0 → R1 requirement refinement</span></div>
@@ -270,7 +305,7 @@ export default function App() {
 
     <Group no={4} title="Qwen × ODA-Fin-RL-8B：独立の要件診断" desc="同じDEV結果と模擬証拠を2モデルへ独立に渡します。ODAの根本原因分類・説明・改訂案はQwenを参照しません。HOLDOUTは非開示です。">
       <div className="two-cols"><label className="radio"><input type="radio" checked={condition==='counterexample'} onChange={()=>setCondition('counterexample')}/>模擬反例 SIM-SLA-001を与える</label><label className="radio"><input type="radio" checked={condition==='control'} onChange={()=>setCondition('control')}/>対照：顧客証拠なし</label></div>
-      <div className="button-row">{button('QwenとODAで独立診断', 'propose', async ()=>{const x=await call<Dict>('/propose',{r0_run_id:r0?.run_id || '',evidence_condition:condition});setProposal(x);setApproval(null);setExperiment(null);setAssessment(null);setAssessmentExperimentId('');}, !r0)}</div>
+      <div className="button-row">{button('QwenとODAで独立診断', 'propose', async ()=>{const x=await call<Dict>('/propose',{r0_run_id:r0?.run_id || '',evidence_condition:condition,enable_repair:diagnosticRepair});setProposal(x);setApproval(null);setExperiment(null);setAssessment(null);setAssessmentExperimentId('');}, !r0)}</div>
       {proposal && <>
         <div className="status-row"><Status good={proposal.diagnosis_matches_rubric}>{proposal.diagnosis_matches_rubric?'診断ルーブリック PASS':'診断ルーブリック未達'}</Status><span className="muted">{proposal.diagnosis?.classification}</span></div>
         <div className="two-cols">
@@ -292,6 +327,7 @@ export default function App() {
           <Disclosure title="Qwenの独立診断品質（詳細・失敗コード）" data={proposal.qwen_diagnostic_quality || {note:'旧保存結果：再採点機能を利用'}} />
           <Disclosure title="ODAの独立診断品質（詳細・失敗コード）" data={proposal.oda_diagnostic_quality || {note:'旧保存結果：再採点機能を利用'}} />
         </div>
+        {proposal.diagnostic_repair?.enabled && <Disclosure title="v0.21 初回診断と再診断の区別（初回PASS率・再試行を保存）" data={{initial:proposal.diagnostic_initial_scores,revisions:proposal.diagnostic_repair}}/>}
         <p className="muted">合成反例と要件の適合: {proposal.synthetic_requirement_fit || '未判定'} ／ 実顧客における妥当性: UNVERIFIED。</p>
         <p className="muted">モデル間の分類ラベル一致（説明の一致ではありません）: {String(proposal.model_comparison?.classification_agreement)}。ODAの規制見解は一次資料検証を行っていないため事業承認の根拠にはしません。</p>
         <a className="download-link" href={`${BACKEND}/artifacts/proposals/${proposal.proposal_id}/bundle`}>診断結果・根拠のJSON ZIPを保存</a>
@@ -318,18 +354,29 @@ export default function App() {
       {approval && <p><Status good={approval.decision==='approved'}>{approval.decision.toUpperCase()}</Status> <span className="muted">{approval.timestamp_utc} · {approval.actor} · {approval.approval_path}</span></p>}
     </Group>
 
-    <Group no={6} title="R1 — Qwen生成コード・新HOLDOUT評価" desc="資格・担当者日別容量・整数時間を保持し、期限超過を減らせるかを固定KPIで検証します。">
-      <div className="button-row">{button('R1コードを生成', 'generate-r1', async()=>{const x=await call<Dict>('/generate-r1',{approval_id:approval?.approval_id || ''});setGenerated(x);setCode(x.python_code);}, !approval || approval.decision !== 'approved')}</div>
-      {generated && <><p>{generated.rationale}</p><label htmlFor="code">生成コード（実行前に確認・編集可）</label><textarea className="code-editor" id="code" rows={17} spellCheck={false} value={code} onChange={e=>setCode(e.target.value)}/>
-        <div className="button-row">{button('E2BでR1を独立評価する', 'evaluate-r1', async()=>{const x=await call<Dict>('/evaluate-r1',{approval_id:approval?.approval_id || '',python_code:code,max_repairs:2});setExperiment(x);setAssessmentExperimentId(x.experiment_id);setAssessment(null);}, !code || !!experiment)}</div>
+    <Group no={6} title="R1 — LLM・Domain Skillの独立E2B評価" desc="Qwenのコード生成と、人間が作成したClaims Allocation Skillを同じ固定DEV・HOLDOUT条件で比較します。">
+      <label htmlFor="r1-mode">R1実装方式（手動と10の一括実行で共通）</label>
+      <select id="r1-mode" value={r1Mode} onChange={e=>setR1Mode(e.target.value as 'llm_only'|'skill_only'|'compare')}>
+        <option value="compare">比較：LLM生成 + Domain Skill（推奨）</option>
+        <option value="llm_only">LLM単独生成・修復</option>
+        <option value="skill_only">Domain Skillのみ（R1コード生成は不要）</option>
+      </select>
+      <p className="muted">Skillは固定・検証可能な専門コードです。LLMが書いたコードと混同しません。DEVで選別後、未使用HOLDOUTを実行します。bounded_beamは厳密最適化ではありません。</p>
+      {skillManifest && <Disclosure title="Claims Allocation Skill の構成・ハッシュ・独立評価器" data={skillManifest}/>}
+      <div className="button-row">{button('R1コードを生成', 'generate-r1', async()=>{const x=await call<Dict>('/generate-r1',{approval_id:approval?.approval_id || ''});setGenerated(x);setCode(x.python_code);}, r1Mode==='skill_only' || !approval || approval.decision !== 'approved')}</div>
+      {r1Mode==='skill_only' && <div className="button-row">{button('Domain SkillをE2Bで評価する','evaluate-skill',async()=>{const x=await call<Dict>('/evaluate-r1',{approval_id:approval?.approval_id || '',python_code:'',max_repairs:0,r1_mode:'skill_only'});setExperiment(x);setAssessmentExperimentId(x.experiment_id);setAssessment(null);},!approval || approval.decision!=='approved' || !!experiment)}</div>}
+      {generated && r1Mode!=='skill_only' && <><p>{generated.rationale}</p><label htmlFor="code">生成コード（実行前に確認・編集可）</label><textarea className="code-editor" id="code" rows={17} spellCheck={false} value={code} onChange={e=>setCode(e.target.value)}/>
+        <div className="button-row">{button('E2BでR1を独立評価する', 'evaluate-r1', async()=>{const x=await call<Dict>('/evaluate-r1',{approval_id:approval?.approval_id || '',python_code:code,max_repairs:2,r1_mode:r1Mode});setExperiment(x);setAssessmentExperimentId(x.experiment_id);setAssessment(null);}, !code || !!experiment)}</div>
       </>}
       {experiment && <>
-        <div className="result-head"><Status good={experiment.technical_closed_loop_demonstrated || experiment.human_adjudicated_r1_kpi_improvement_demonstrated}>{experiment.technical_closed_loop_demonstrated ? 'KPI PASS (Policy probes in 10 required)' : experiment.human_adjudicated_r1_kpi_improvement_demonstrated ? 'HUMAN REVIEW + KPI PASS (ODA HOLD; policy check pending)' : 'TECHNICAL HOLD / NO-GO'}</Status><Status good={false}>REAL-WORLD REQUIREMENTS UNVERIFIED</Status></div>
+        <div className="result-head"><Status good={experiment.r1_independent_kpi_improvement_pass}>{experiment.r1_independent_kpi_improvement_pass ? (experiment.selected_engine==='llm_generated' ? 'LLM R1 KPI PASS (synthetic)' : 'Pinned Skill R1 KPI PASS (synthetic; NOT LLM)') : 'TECHNICAL HOLD / NO-GO'}</Status><Status good={false}>REAL-WORLD REQUIREMENTS UNVERIFIED</Status></div>
         <div className="top-stats"><Metric caption="R1独立HOLDOUT" value={experiment.holdout_executed?'Executed':'Not executed'} subtle/>
           <Metric caption="FIFO 期限超過" value={experiment.holdout?.fifo?.reduce((s:number,m:Dict)=>s+(m.missed_deadlines??0),0)??'—'}/>
-          <Metric caption="生成R1 期限超過" value={experiment.holdout?.generated?.reduce((s:number,m:Dict)=>s+(m.missed_deadlines??0),0)??'—'}/>
+          <Metric caption="選択R1 期限超過" value={experiment.holdout?.generated?.reduce((s:number,m:Dict)=>s+(m.missed_deadlines??0),0)??'—'}/>
           <Metric caption="改訂コード試行数" value={experiment.attempts?.length??0}/>
         </div>
+        <p className="notice"><strong>DEV採用エンジン:</strong> {experiment.selected_engine || '適格候補なし'} ／ 出典: {experiment.selected_source_provenance || 'NONE'}。Skill採用はLLMの生成成功ではありません。</p>
+        {experiment.skill_comparison?.length>0 && <div className="assessment-item"><h4>Domain SkillとLLMのDEV比較</h4><div className="evidence-register">{experiment.skill_comparison.map((c:Dict)=><div key={c.engine}><strong>{c.engine}</strong><p>DEV期限超過：{c.dev?.missed_total} ／ DEV適格：{String(c.selection_gate?.eligible)} ／ E2B実行：{c.sandbox_execution_seconds}s</p><small>独立DEVゲート: {c.selection_gate?.reasons?.join(', ') || 'PASS'}。生成モデルのコストは未計測。</small></div>)}</div><Disclosure title="DEV選択後の独立HOLDOUT比較（合格候補のみ）" data={experiment.holdout_comparators || {}}/></div>}
         <a href={`${BACKEND}/experiments/${experiment.experiment_id}/report`} target="_blank" rel="noreferrer">R0/R1比較・要件改訂監査レポート（Markdown）</a>
         <a className="download-link" href={`${BACKEND}/artifacts/experiments/${experiment.experiment_id}/bundle`}>すべての生成コード・差分・E2Bログ・承認・評価をZIP保存</a>
         <Disclosure title="R1のDEV・HOLDOUT・証拠と承認履歴" data={experiment}/>
@@ -363,9 +410,11 @@ export default function App() {
           <select id="repeats" value={benchmarkRepetitions} onChange={e=>setBenchmarkRepetitions(Number(e.target.value))}>
             <option value={1}>1回（動作確認）</option><option value={2}>2回</option><option value={3}>3回（出力のばらつきも確認）</option>
           </select>
-          <p className="muted">合計 {benchmarkCases.length * benchmarkRepetitions * 2} 回のモデル呼び出し。MacのOllamaでは直列に実行します。</p>
+          <label className="radio"><input type="checkbox" checked={diagnosticRepair} onChange={e=>setDiagnosticRepair(e.target.checked)}/>ルーブリックでHOLDなら入力事実だけを使って1回再診断（初回判定も保存）</label>
+          <label className="radio"><input type="checkbox" checked={diagnosticBlind} onChange={e=>setDiagnosticBlind(e.target.checked)}/>未使用の合成診断ケース2件を初回のみで独立評価（再診断なし）</label>
+          <p className="muted">通常 {benchmarkCases.length * benchmarkRepetitions * 2} 回、修復有効時は不合格ごとに最大1回追加、別ケース評価は4回追加。MacのOllamaでは直列に実行します。</p>
           <div className="button-row">{button('QwenとODAの診断品質を比較', 'run-benchmark', async()=>{
-              const x=await call<Dict>('/diagnostic-benchmark/run',{case_ids:benchmarkCases,repetitions:benchmarkRepetitions});setBenchmark(x);
+              const x=await call<Dict>('/diagnostic-benchmark/run',{case_ids:benchmarkCases,repetitions:benchmarkRepetitions,enable_repair:diagnosticRepair,blind_generalization:diagnosticBlind});setBenchmark(x);
             }, benchmarkCases.length===0)}</div>
         </div>
       </div>
@@ -375,7 +424,9 @@ export default function App() {
           {(['coding','finance'] as const).map(role=><div className="diagnosis-panel" key={role}>
             <h3>{role==='coding'?'Qwen3-Coder':'ODA-Fin-RL-8B'}</h3>
             <p>採点完了: {benchmark.summary?.[role]?.completed}/{benchmark.summary?.[role]?.planned}</p>
-            <p>総合PASS: {benchmark.summary?.[role]?.passed}</p>
+            <p>初回PASS: {benchmark.summary?.[role]?.initial_passed ?? '—'} / {benchmark.summary?.[role]?.planned}</p>
+            <p>再診断後PASS: {benchmark.summary?.[role]?.passed} / {benchmark.summary?.[role]?.planned}</p>
+            {benchmark.blind_generalization?.enabled && <p>別ケース初回PASS: {benchmark.blind_generalization?.summary?.[role]?.passed ?? '—'} / {benchmark.blind_generalization?.summary?.[role]?.planned ?? '—'}</p>}
             <p>基準別平均点: {benchmark.summary?.[role]?.mean_score ?? '—'}</p>
           </div>)}
         </div>
@@ -441,6 +492,7 @@ export default function App() {
 
     <Group no={10} title="00〜09 一括実行＋保存 — Full Workflow" desc="公開データモードでは、00で金融データ取得・索引化・根拠検索を自動実行し、根拠の人間レビュー後に01〜09へ進みます。05の要件改訂も別途承認が必要です。成果物は一つのZIPに保存します。">
       <div className="notice"><strong>外部データ取得失敗を合成デモとして成功扱いしません。</strong>公開データモードは00の実処理で失敗するとFAILED・PARTIAL ZIPで停止します。00の根拠選択と05の要件改訂は必ず人間が確認します。</div>
+      <div className="notice"><strong>v0.21 — R1比較と診断の品質ゲート:</strong> {r1Mode==='compare'?'Qwen生成とDomain Skillを両方DEVで比較（合格候補だけHOLDOUTへ）':r1Mode==='skill_only'?'Domain Skillのみ（R1コード生成なし）':'Qwen単独でR1コード生成・修復'}。00/05の人間承認は省略しません。</div>
       <label>一括実行のモード（明示的に選択）</label>
       <div className="two-cols">
         <label className="radio"><input type="radio" name="full-run-evidence-mode" checked={evidenceMode==='public'} onChange={()=>setEvidenceMode('public')}/><span><strong>公開データ利用</strong>（推奨） — 00取得・索引化・検索 → 根拠レビュー → 01〜09</span></label>
@@ -454,12 +506,22 @@ export default function App() {
         <p className="muted"><strong>公開資料の対象:</strong> {evidenceDataset==='insurance_claims_uk'?'保険請求の遅延・苦情（FCA/FOS）':'個人向け金融サービス。保険請求のR0/R1へは連携不可'}</p>
         <p className="muted">データセットとクエリを変更する場合は、上の00セクションで変更してください。</p>
       </div>}
+      <div className="two-cols">
+        <label className="radio"><input type="checkbox" checked={diagnosticRepair} onChange={e=>setDiagnosticRepair(e.target.checked)}/>04・08のLLM診断を入力事実に基づいて一度再試行。元の採点も保存</label>
+        <label className="radio"><input type="checkbox" checked={diagnosticBlind} onChange={e=>setDiagnosticBlind(e.target.checked)}/>08の別ケースを初回推論だけで評価。修復・選択には使用しない</label>
+      </div>
+      <label htmlFor="blind-count">08f：新しいランダム化行動HOLDOUTのケース数</label>
+      <select id="blind-count" value={blindCaseCount} onChange={e=>setBlindCaseCount(Number(e.target.value))}>
+        <option value={2}>2（簡易検証）</option><option value={4}>4（標準）</option><option value={6}>6（広め）</option><option value={8}>8（時間・E2B使用量増加）</option>
+      </select>
+      <p className="muted">08fはR1のDEV選択後にだけ生成する小規模合成ケースで、固定参照・Skill・採用方式を比較します。厳密最適解の証明はソルバーがOPTIMALを返したケースに限定します。</p>
       <div className="button-row">
         {button(evidenceMode==='public'?'公開データ取得から00〜09一括実行（00レビュー・05で停止）':'合成デモ01〜09一括実行（05で停止）', 'full-run-start', async()=>{
-          setExplicitReview(false);setFullRun(null);setReviewRequirement('');setSelectedEvidenceIds([]);setAcknowledgeEvidence(false);setSupportAssessment('context_only');
+          setExplicitReview(false);setFullRun(null);setReviewRequirement('');setSelectedEvidenceIds([]);setEvidenceReviewError('');setAcknowledgeEvidence(false);setSupportAssessment('context_only');setRequirementType('');
           const r=await call<Dict>('/full-run/start',{
             brief,seed,evidence_condition:condition,case_ids:benchmarkCases,repetitions:benchmarkRepetitions,
-            evidence_mode:evidenceMode,dataset_id:evidenceDataset,evidence_query:evidenceQuery,llm_extraction:llmExtraction
+            evidence_mode:evidenceMode,r1_mode:r1Mode,dataset_id:evidenceDataset,evidence_query:evidenceQuery,llm_extraction:llmExtraction,
+            diagnostic_repair:diagnosticRepair,diagnostic_blind_cases:diagnosticBlind,blind_case_count:blindCaseCount
           });setFullRun(r);setFullRunId(r.workflow_id);
         },brief.trim().length<20 || benchmarkCases.length===0 || (evidenceMode==='public'&&evidenceQuery.trim().length<3))}
       </div>
@@ -472,11 +534,17 @@ export default function App() {
         },!fullRunId.trim(),'secondary')}
       </div>
       {fullRun && <section className="assessment-report" aria-label="00〜09 一括実行状況">
-        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.18</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
+        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.21.1</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
           <Status good={fullRun.status==='COMPLETE'}>{fullRun.status}</Status></div>
         {fullRun.topic_alignment && <div className="notice"><strong>公開資料と保険請求課題の対応:</strong> {fullRun.topic_alignment.status} — {fullRun.topic_alignment.reason}。一致は原文の意味的支持・因果の証明ではありません。</div>}
-        {fullRun.grounded_contract_status && <p className="muted">人間設定KPIの検証: {fullRun.grounded_contract_status}（合成ケース限定）</p>}
-        <p className="muted">現在の段階: {fullRun.phase}　／　モード: {fullRun.evidence_mode==='public'?'外部データ利用':'合成デモのみ'}　／　各工程はDockerの<code>artifacts/</code>に逐次保存します。</p>
+        {fullRun.grounded_contract_status && <p className="muted">担当者割当KPIの検証: {fullRun.grounded_contract_status}（該当要件のみ）</p>}
+        {fullRun.requirement_type && <div className="notice"><strong>選択要件:</strong> {fullRun.requirement_type} ／ <strong>対応する受入試験:</strong> {fullRun.requirement_trace_status || '未実行'}<p className="muted">「進捗通知」の場合、R1担当者割当は別系統の回帰実験です。進捗通知プロトタイプの結果だけを当該要件の合成評価として扱います。</p></div>}
+        <p className="muted">現在の段階: {fullRun.phase}　／　モード: {fullRun.evidence_mode==='public'?'外部データ利用':'合成デモのみ'}　／　R1: {fullRun.r1_mode || 'legacy'}　／　各工程はDockerの<code>artifacts/</code>に逐次保存します。</p>
+        {fullRun.blind_optimality && <div className="notice">
+          <strong>08f 独立したランダム化行動HOLDOUT：</strong>{fullRun.blind_optimality.status} / {fullRun.blind_optimality.suite_size || 0}件
+          <p className="muted">証明された最適性ギャップは、ソルバーがOPTIMALを返したケースだけ計算しています。CP-SATが未導入の場合は小規模全探索に切り替わります。</p>
+          <Disclosure title="08fの比較成績とソルバーの状態（根拠ZIPにも保存）" data={fullRun.blind_optimality}/>
+        </div>}
         <ol className="workflow-progress">
           {fullRun.stages?.map((x:Dict)=><li key={x.name}><span className="step-label">{x.name}</span><span className={'assessment-state '+(x.status==='FAILED'?'hold':x.status==='COMPLETED'?'supported_synthetic':'demo_controlled')}>{x.status}</span><small>{x.detail}</small></li>)}
         </ol>
@@ -493,36 +561,69 @@ export default function App() {
             <label htmlFor="review-suggest">Qwenの未承認要求候補を参考として入力欄にコピー</label>
             <select id="review-suggest" defaultValue="" onChange={e=>{
               const item=e.target.value==='' ? null : fullRun.evidence_review.llm_suggestions[Number(e.target.value)];
-              if(item) {setReviewRequirement(item.requirement_hypothesis || '');setSelectedEvidenceIds(item.supporting_evidence_ids || []);}
+              if(item) { const h=item.requirement_hypothesis || '';setReviewRequirement(h);setEvidenceReviewError('');
+                const validIds = new Set((fullRun.evidence_review?.evidence || []).map((e:Dict)=>e.evidence_id));
+                setSelectedEvidenceIds([...new Set<string>((item.supporting_evidence_ids || []).filter((id:string)=>validIds.has(id)))]);
+                const hint=reviewFeatureHint(h);
+                setRequirementType(hint==='ambiguous'?'':hint);}
             }}><option value="">手動記述／候補を選ぶ</option>{fullRun.evidence_review.llm_suggestions.map((x:Dict,i:number)=><option key={i} value={i}>{x.requirement_hypothesis?.slice(0,110)}</option>)}</select>
             <p className="muted">候補の正しさ・引用からの含意は未検証です。必ず原文を読み、必要に応じて編集してください。</p>
           </div>}
           <label htmlFor="human-evidence-requirement">人間が確認・編集した要件仮説（20文字以上、実顧客未承認）</label>
-          <textarea id="human-evidence-requirement" rows={4} value={reviewRequirement} onChange={e=>setReviewRequirement(e.target.value)} placeholder="例：公開された保険請求遅延の報告を背景に、期限と資格を考慮した担当者割当案を合成データで検証する（実原因は未確認）"/>
+          <textarea id="human-evidence-requirement" rows={4} value={reviewRequirement} onChange={e=>{setReviewRequirement(e.target.value);setEvidenceReviewError('');}} placeholder="例：保険請求の進捗変更について契約者に通知する。顧客の正式要件としては未確認。"/>
           <label htmlFor="human-support">選択した原文が支持する範囲（人間による判断）</label>
           <select id="human-support" value={supportAssessment} onChange={e=>setSupportAssessment(e.target.value as 'supports_problem'|'context_only'|'contradicts')}>
             <option value="context_only">課題の背景説明に留まる（HOLD）</option>
             <option value="supports_problem">遅延などの問題が存在するという文脈のみ支持する（次の合成実験を許可）</option>
             <option value="contradicts">仮説に反する／不一致（HOLD）</option>
           </select>
-          <div className="two-cols">
-            <div><label htmlFor="max-missed">合成HOLDOUTで許容する期限超過（未割当を含む）件数</label>
-              <input id="max-missed" type="number" min="0" max="100" value={maxTotalMissed} onChange={e=>setMaxTotalMissed(Number(e.target.value))}/></div>
-            <div><label htmlFor="min-reduction">合成FIFO比で要求する改善率（%）</label>
-              <input id="min-reduction" type="number" min="0" max="100" value={minReductionPct} onChange={e=>setMinReductionPct(Number(e.target.value))}/></div>
-          </div>
-          <label className="radio"><input type="checkbox" checked={requireBehavioral} onChange={e=>setRequireBehavioral(e.target.checked)}/>期限優先・希少資格の既存行動プローブもPASS必須にする</label>
-          <p className="muted">上の数値は「顧客合意のKPI」ではなく、人間が今回の固定合成実験のために設定する検証条件です。未対応の任意要件から評価器を自動生成しません。</p>
+          <label htmlFor="requirement-template">要件が対象とする機能（人間が選択・確認）</label>
+          <select id="requirement-template" value={requirementType} onChange={e=>{setRequirementType(e.target.value as ReviewFeature);setEvidenceReviewError('');}}>
+            <option value="">対象機能を選択してください（初期値なし）</option>
+            <option value="claims_assignment">担当者割当（期限・資格・容量のR1）</option>
+            <option value="claim_progress_updates">保険請求の進捗通知（別の決定的プロトタイプ）</option>
+          </select>
+          {reviewFeatureIssue && <div className="notice" role="status"><strong>送信前の要件チェック：</strong>{reviewFeatureIssue}</div>}
+          <p className="muted">担当者割当の例：保険請求処理の期限超過を減らすため、資格と日別容量を考慮して担当者を割り当てる（原因は未確認）。</p>
+          <p className="muted">進捗通知の例：保険請求の状態が変わった際、契約者へ適時に通知する（実顧客の承認は未取得）。</p>
+          <div className="notice"><strong>Feature → Acceptance Test</strong><p>{requirementType==='claim_progress_updates' ?
+            '進捗変更イベント→通知率・通知遅延・受信者整合性。R1の期限超過KPIはこの要件の検証に使用しません。' :
+            '担当者割当→HOLDOUT期限超過・希少資格・期限優先・ストレス。進捗通知の要件はこの評価に接続できません。'}</p>
+            <p className="muted">不一致の機能を選ぶとサーバーが承認を拒否します。公開資料の事実から機能が必然的に導かれると主張するものではありません。</p></div>
+          {requirementType==='claims_assignment' ? <>
+            <div className="two-cols">
+              <div><label htmlFor="max-missed">合成HOLDOUTで許容する期限超過（未割当含む）</label>
+                <input id="max-missed" type="number" min="0" max="100" value={maxTotalMissed} onChange={e=>setMaxTotalMissed(Number(e.target.value))}/></div>
+              <div><label htmlFor="min-reduction">合成FIFO比で要求する改善率（%）</label>
+                <input id="min-reduction" type="number" min="0" max="100" value={minReductionPct} onChange={e=>setMinReductionPct(Number(e.target.value))}/></div>
+            </div>
+            <label className="radio"><input type="checkbox" checked={requireBehavioral} onChange={e=>setRequireBehavioral(e.target.checked)}/>期限優先・希少資格の行動プローブを必須とする</label>
+          </> : <div className="two-cols">
+              <div><label htmlFor="max-notification-delay">合成通知の許容遅延（時間）</label>
+                <input id="max-notification-delay" type="number" min="1" max="168" value={maxNotificationDelay} onChange={e=>setMaxNotificationDelay(Number(e.target.value))}/></div>
+              <div><label htmlFor="min-notification-coverage">合成通知の最低カバレッジ（%）</label>
+                <input id="min-notification-coverage" type="number" min="1" max="100" value={minNotificationCoverage} onChange={e=>setMinNotificationCoverage(Number(e.target.value))}/></div>
+            </div>}
+          <p className="muted">数値は合成デモ用の人間設定条件であり顧客合意KPIではありません。通知の独立プロトタイプはR1を実装変更せず、サービス統合も未実装です。</p>
           <label htmlFor="human-evidence-actor">確認担当者</label><input id="human-evidence-actor" value={evidenceActor} onChange={e=>setEvidenceActor(e.target.value)}/>
           <label htmlFor="human-evidence-rationale">選択・承認する根拠（10文字以上）</label><textarea id="human-evidence-rationale" rows={3} value={evidenceRationale} onChange={e=>setEvidenceRationale(e.target.value)}/>
           <label className="radio"><input type="checkbox" checked={acknowledgeEvidence} onChange={e=>setAcknowledgeEvidence(e.target.checked)}/>引用の実在と、証拠の妥当性・診断の正しさ・顧客の正式承認は別であることを確認した</label>
+          {evidenceReviewError && <div role="alert" className="error"><strong>00b 根拠レビューの承認に失敗：</strong>{evidenceReviewError}<p>要件の機能分類、証拠ID、入力文を確認してください。入力を修正して再送信できます。</p></div>}
           <div className="button-row">
             {button('根拠を選択・仮説を承認して01〜04を実行', 'evidence-review-approve', async()=>{
-              const r=await call<Dict>('/full-run/review-evidence',{workflow_id:fullRun.workflow_id,decision:'approved',actor:evidenceActor,rationale:evidenceRationale,
-                evidence_ids:selectedEvidenceIds,approved_requirement:reviewRequirement,
-                support_assessment:supportAssessment,max_total_missed:maxTotalMissed,
-                min_reduction_pct:minReductionPct,require_behavioral:requireBehavioral});setFullRun(r);
-            },!acknowledgeEvidence||fullRun.evidence_review?.topic_alignment?.status!=='TOPIC_MATCH_REVIEW_REQUIRED'||supportAssessment!=='supports_problem'||selectedEvidenceIds.length===0||!selectedEvidenceIds.some(id=>(fullRun.evidence_review?.topic_alignment?.topic_matching_evidence_ids||[]).includes(id))||reviewRequirement.trim().length<20||evidenceActor.trim().length<2||evidenceRationale.trim().length<10||!Number.isInteger(maxTotalMissed)||maxTotalMissed<0||maxTotalMissed>100||!Number.isInteger(minReductionPct)||minReductionPct<0||minReductionPct>100)}
+              setEvidenceReviewError('');
+              try {
+                const r=await call<Dict>('/full-run/review-evidence',{workflow_id:fullRun.workflow_id,decision:'approved',actor:evidenceActor,rationale:evidenceRationale,
+                  evidence_ids:selectedEvidenceIds,approved_requirement:reviewRequirement,
+                  support_assessment:supportAssessment,max_total_missed:maxTotalMissed,
+                  min_reduction_pct:minReductionPct,require_behavioral:requireBehavioral,
+                  requirement_type:requirementType,max_notification_delay_hours:maxNotificationDelay,
+                  min_notification_coverage_pct:minNotificationCoverage});setFullRun(r);
+              } catch(e) {
+                setEvidenceReviewError(e instanceof Error ? e.message : String(e));
+                throw e;
+              }
+            },!!reviewFeatureIssue||!requirementType||!acknowledgeEvidence||fullRun.evidence_review?.topic_alignment?.status!=='TOPIC_MATCH_REVIEW_REQUIRED'||supportAssessment!=='supports_problem'||selectedEvidenceIds.length===0||!selectedEvidenceIds.some(id=>(fullRun.evidence_review?.topic_alignment?.topic_matching_evidence_ids||[]).includes(id))||reviewRequirement.trim().length<20||evidenceActor.trim().length<2||evidenceRationale.trim().length<10||(requirementType==='claims_assignment' && (!Number.isInteger(maxTotalMissed)||maxTotalMissed<0||maxTotalMissed>100||!Number.isInteger(minReductionPct)||minReductionPct<0||minReductionPct>100))||(requirementType==='claim_progress_updates' && (!Number.isInteger(maxNotificationDelay)||maxNotificationDelay<1||maxNotificationDelay>168||!Number.isInteger(minNotificationCoverage)||minNotificationCoverage<1||minNotificationCoverage>100)))}
             {button('根拠を採用せず、PARTIAL ZIPで終了', 'evidence-review-reject', async()=>{
               const r=await call<Dict>('/full-run/review-evidence',{workflow_id:fullRun.workflow_id,decision:'rejected',actor:evidenceActor,rationale:evidenceRationale});setFullRun(r);
             },evidenceActor.trim().length<2||evidenceRationale.trim().length<10,'secondary')}

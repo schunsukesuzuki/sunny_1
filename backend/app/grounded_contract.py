@@ -1,4 +1,4 @@
-"""Bounded evidence-to-technical-evaluation bridge (v0.18).
+"""Bounded evidence-to-technical-evaluation bridge (v0.19).
 
 An independently testable rule is compiled from explicit human choices. Natural
 language and LLM suggestions can NEVER edit evaluator source or thresholds.
@@ -8,7 +8,7 @@ is not an arbitrary business requirement compiler and does not prove causality.
 from __future__ import annotations
 from typing import Any
 
-CONTRACT_VERSION='GROUNDED-CLAIMS-CONTRACT-v0.18.0'
+CONTRACT_VERSION='GROUNDED-CLAIMS-CONTRACT-v0.19.0'
 
 
 def compile_contract(*, requirement:str, evidence_ids:list[str], max_missed:int,
@@ -76,7 +76,7 @@ def evaluate(contract:dict, experiment:dict, policy:dict|None)->dict:
 def spec_md(contract:dict)->str:
     t=contract['thresholds']
     return '\n'.join([
-        '# Human-configured evidence-to-experiment test contract — v0.18','',
+        '# Human-configured evidence-to-experiment test contract — v0.19','',
         '## Scope and origin',
         '- Published problem context is not a customer-approved requirement.',
         f"- Human-edited hypothesis: {contract['hypothesis']}",

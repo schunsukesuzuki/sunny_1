@@ -19,18 +19,25 @@ from typing import Literal
 
 from . import export_bundle as ex
 from . import grounded_contract as gc
+from . import requirement_trace as rt
+from . import notification_demo as nd
+from . import blind_optimality as bo
 
 # The endpoints are registered by register(app, main_module) to keep the
 # existing 01..09 handlers as the single implementation of each operation.
 
 STEP_ORDER = ["00_evidence_grounded_requirements", "00b_evidence_review", "00c_grounded_test_contract", "01_input", "02_service_design", "03_r0_e2b", "04_independent_diagnoses",
               "05_human_approval", "06_r1_generation_and_evaluation", "07_audit_index",
-              "08_diagnostic_benchmark", "08b_policy_and_stress", "08c_grounded_kpi_verification", "09_business_delivery_assessment"]
+              "08_diagnostic_benchmark", "08b_policy_and_stress", "08c_grounded_kpi_verification", "08d_notification_prototype", "08e_requirement_trace", "08f_blind_optimality", "09_business_delivery_assessment"]
 KINDS = ("runs", "proposals", "approvals", "experiments", "policy_validations", "benchmarks", "assessments", "workflows")
 
 class FullRunStart(BaseModel):
     # The user must choose deliberately; no silent public-to-synthetic fallback.
     evidence_mode: Literal["public", "synthetic"]
+    r1_mode: Literal["llm_only", "skill_only", "compare"] = "compare"
+    diagnostic_repair: bool = False  # Default keeps earlier API/fixture tests comparable.
+    blind_case_count: int = Field(default=4,ge=2,le=8)
+    diagnostic_blind_cases: bool = False
     dataset_id: Literal["community_credit", "cfpb_sample", "insurance_claims_uk"] = "insurance_claims_uk"
     evidence_query: str = Field(default="insurance claim delays complaints handling", min_length=3, max_length=500)
     llm_extraction: bool = False
@@ -54,6 +61,9 @@ class FullRunEvidenceReview(BaseModel):
     max_total_missed: int = Field(default=0, ge=0, le=100)
     min_reduction_pct: int = Field(default=50, ge=0, le=100)
     require_behavioral: bool = True
+    requirement_type: Literal['claims_assignment','claim_progress_updates'] = 'claims_assignment'
+    max_notification_delay_hours: int = Field(default=24, ge=1, le=168)
+    min_notification_coverage_pct: int = Field(default=100, ge=1, le=100)
 
 
 class FullRunReview(BaseModel):
@@ -88,12 +98,15 @@ def register(app, m) -> None:
         m.store("workflows", wid, name, data)
 
     def required_steps(state: dict) -> list[str]:
-        return STEP_ORDER if state["inputs"].get("evidence_mode") == "public" else [x for x in STEP_ORDER if x not in ("00_evidence_grounded_requirements", "00b_evidence_review", "00c_grounded_test_contract", "08c_grounded_kpi_verification")]
+        return STEP_ORDER if state["inputs"].get("evidence_mode") == "public" else [x for x in STEP_ORDER if x not in ("00_evidence_grounded_requirements", "00b_evidence_review", "00c_grounded_test_contract", "08c_grounded_kpi_verification", "08d_notification_prototype", "08e_requirement_trace")]
 
     def summarize(state:dict) -> dict:
         result = {key:state.get(key) for key in (
             "workflow_id", "export_id", "created_at", "updated_at", "status", "phase", "stages",
-            "linked_ids", "error", "service_design", "evidence_mode", "topic_alignment", "grounded_contract_status")}
+            "linked_ids", "error", "service_design", "evidence_mode", "r1_mode", "topic_alignment", "grounded_contract_status", "requirement_type", "requirement_trace_status")}
+        blind_file=folder(state['workflow_id'])/'08f_blind_optimality.json'
+        if blind_file.exists():
+            result['blind_optimality']=json.loads(blind_file.read_text(encoding='utf-8'))
         if state["status"] == "AWAITING_EVIDENCE_REVIEW":
             rag = m.load("workflows", state["workflow_id"], "00_evidence_grounded_requirements.json")
             result["evidence_review"] = {
@@ -101,6 +114,7 @@ def register(app, m) -> None:
                 "evidence": rag["evidence"], "requirement_candidates": rag["requirement_candidates"],
                 "llm_suggestions": rag.get("llm_suggestions", []), "evaluation": rag["evaluation"],
                 "topic_alignment":rag.get("topic_alignment"),
+                "available_requirement_templates":rt.TEMPLATES,
                 "notice": "Topic match is a lexical screening, NOT proof of evidence supporting a requirement or of FIFO causality."
             }
         if state["status"] == "AWAITING_APPROVAL" and state["linked_ids"].get("proposals"):
@@ -117,10 +131,13 @@ def register(app, m) -> None:
         statuses={x['name']:x['status'] for x in state['stages']}
         return {
             'evidence_mode': state['inputs'].get('evidence_mode'),
+            'r1_mode':state['inputs'].get('r1_mode'),
             'dataset_id': state['inputs'].get('dataset_id') if state['inputs'].get('evidence_mode')=='public' else None,
             'rag_id': state.get('rag_id'),
             'retrieval_status': statuses.get('00_evidence_grounded_requirements', 'NOT_STARTED'),
             'review_status': statuses.get('00b_evidence_review', 'NOT_STARTED'),
+            'requirement_type': state.get('requirement_type'),
+            'feature_acceptance':state.get('requirement_trace_status','NOT_RUN'),
             'semantic_support': 'UNVERIFIED',
             'real_customer_approval': 'NOT_OBTAINED',
         }
@@ -137,7 +154,7 @@ def register(app, m) -> None:
         manifest["workflow_status"] = state["status"]
         manifest["evidence_provenance"] = provenance_summary(state)
         manifest["expected_steps"] = required_steps(state)
-        manifest["excluded_steps"] = {"00_evidence_grounded_requirements": "User explicitly selected synthetic mode", "00b_evidence_review": "Not applicable to synthetic mode", "00c_grounded_test_contract":"Not applicable to synthetic mode", "08c_grounded_kpi_verification":"Not applicable to synthetic mode"} if state["inputs"].get("evidence_mode") == "synthetic" else {}
+        manifest["excluded_steps"] = {"00_evidence_grounded_requirements": "User explicitly selected synthetic mode", "00b_evidence_review": "Not applicable to synthetic mode", "00c_grounded_test_contract":"Not applicable to synthetic mode", "08c_grounded_kpi_verification":"Not applicable to synthetic mode", "08d_notification_prototype":"Not applicable to synthetic mode", "08e_requirement_trace":"Not applicable to synthetic mode"} if state["inputs"].get("evidence_mode") == "synthetic" else {}
         manifest["completed_steps"] = [x["name"] for x in state["stages"] if x["status"] in ("COMPLETED", "COMPLETED_WITH_FINDINGS")]
         # Incomplete stages and absent stages must not be silently omitted.
         missing_steps = [x for x in required_steps(state) if x not in manifest["completed_steps"]]
@@ -155,7 +172,7 @@ def register(app, m) -> None:
         manifest.update({"workflow_id":wid, "workflow_status":state["status"],
                          "evidence_provenance":provenance_summary(state),
                          "expected_steps":required_steps(state),
-                         "excluded_steps":({"00_evidence_grounded_requirements": "User explicitly selected synthetic mode", "00b_evidence_review": "Not applicable to synthetic mode", "00c_grounded_test_contract":"Not applicable to synthetic mode", "08c_grounded_kpi_verification":"Not applicable to synthetic mode"} if state["inputs"].get("evidence_mode") == "synthetic" else {}),
+                         "excluded_steps":({"00_evidence_grounded_requirements": "User explicitly selected synthetic mode", "00b_evidence_review": "Not applicable to synthetic mode", "00c_grounded_test_contract":"Not applicable to synthetic mode", "08c_grounded_kpi_verification":"Not applicable to synthetic mode", "08d_notification_prototype":"Not applicable to synthetic mode", "08e_requirement_trace":"Not applicable to synthetic mode"} if state["inputs"].get("evidence_mode") == "synthetic" else {}),
                          "completed_steps":[x["name"] for x in state["stages"] if x["status"] in ("COMPLETED", "COMPLETED_WITH_FINDINGS")],
                          "pending_or_failed_steps":missing_steps,
                          "status":state["bundle_status"]})
@@ -191,7 +208,8 @@ def register(app, m) -> None:
             state["linked_ids"]["runs"]=r0["run_id"]
             step(state,current,"COMPLETED", r0["implementation_validity"])
             current = "04_independent_diagnoses"
-            prop=await m.propose(m.ProposeRequest(r0_run_id=r0["run_id"], evidence_condition=inp.evidence_condition,workflow_id=wid))
+            prop=await m.propose(m.ProposeRequest(r0_run_id=r0["run_id"], evidence_condition=inp.evidence_condition,workflow_id=wid,
+                                      enable_repair=inp.diagnostic_repair))
             state["linked_ids"]["proposals"]=prop["proposal_id"]
             step(state,current,"COMPLETED_WITH_FINDINGS", "ODA rubric: " + ("PASS" if prop.get("finance_diagnosis_matches_rubric") else "HOLD"))
             state["status"] = "AWAITING_APPROVAL"
@@ -225,12 +243,17 @@ def register(app, m) -> None:
         try:
             current="06_r1_generation_and_evaluation"
             try:
-                generated=await m.generate_r1(m.GenerateRequest(approval_id=state["linked_ids"]["approvals"]))
-                # generated source is recorded in approvals/*.py by existing endpoint.
+                if inp.r1_mode == 'skill_only':
+                    generated={'python_code':'','rationale':'Pinned Domain Skill, no LLM R1 code generation'}
+                else:
+                    generated=await m.generate_r1(m.GenerateRequest(approval_id=state["linked_ids"]["approvals"]))
+                # LLM source is saved only in modes that actually generate it.
                 exp=await m.evaluate_r1(m.EvaluateRequest(approval_id=state["linked_ids"]["approvals"],
-                    python_code=generated["python_code"],max_repairs=2))
+                    python_code=generated["python_code"],max_repairs=2,r1_mode=inp.r1_mode))
                 state["linked_ids"]["experiments"]=exp["experiment_id"]
-                step(state,current,"COMPLETED_WITH_FINDINGS","KPI/HOLDOUT outcome: "+str(exp.get("r1_independent_kpi_improvement_pass")))
+                step(state,current,"COMPLETED_WITH_FINDINGS",
+                    "R1 mode: "+inp.r1_mode+"; selected: "+str(exp.get('selected_engine'))+
+                    "; KPI/HOLDOUT: "+str(exp.get("r1_independent_kpi_improvement_pass")))
             except Exception as exc:
                 # Preserve partial experiment if evaluation was started and has artifacts.
                 p=folder(wid)
@@ -245,7 +268,9 @@ def register(app, m) -> None:
             step(state,current,"COMPLETED","saved evidence index; archived records retrievable by 07")
             current="08_diagnostic_benchmark"
             try:
-                bench=await m.run_benchmark(m.BenchmarkRequest(case_ids=inp.case_ids,repetitions=inp.repetitions,workflow_id=wid))
+                bench=await m.run_benchmark(m.BenchmarkRequest(case_ids=inp.case_ids,repetitions=inp.repetitions,workflow_id=wid,
+                    enable_repair=inp.diagnostic_repair,
+                    blind_generalization=inp.diagnostic_blind_cases))
                 state["linked_ids"]["benchmarks"]=bench["benchmark_id"]
                 st="COMPLETED_WITH_FINDINGS" if bench["status"]=="COMPLETED" else "FAILED"
                 step(state,current,st,"summary counts are evidence, not model reliability")
@@ -255,7 +280,9 @@ def register(app, m) -> None:
                     state["linked_ids"]["benchmarks"]=json.loads(marker.read_text())["benchmark_id"]
                 step(state,current,"FAILED",f"{type(exc).__name__}: {str(exc)[:400]}")
             current="08b_policy_and_stress"
-            if state["linked_ids"].get("experiments"):
+            exp_for_policy=(m.load("experiments",state["linked_ids"]["experiments"],"experiment.json")
+                            if state["linked_ids"].get("experiments") else {})
+            if exp_for_policy.get('selected_code_sha256'):
                 try:
                     policy=await m.run_policy_validation(m.PolicyValidationRequest(experiment_id=state["linked_ids"]["experiments"],workflow_id=wid))
                     state["linked_ids"]["policy_validations"]=policy["validation_id"]
@@ -267,20 +294,91 @@ def register(app, m) -> None:
                         state["linked_ids"]["policy_validations"]=json.loads(marker.read_text())["validation_id"]
                     step(state,current,"FAILED",f"{type(exc).__name__}: {str(exc)[:400]}")
             else:
-                step(state,current,"SKIPPED","No R1 experiment")
+                step(state,current,"COMPLETED_WITH_FINDINGS","No DEV-eligible R1; policy executed in DEV gate, no selected code for post-selection E2B validation")
             if inp.evidence_mode=="public":
                 current="08c_grounded_kpi_verification"
                 try:
                     contract=m.load("workflows",wid,"00c_grounded_test_contract.json")
                     exp_record=m.load("experiments",state["linked_ids"]["experiments"],"experiment.json") if state["linked_ids"].get("experiments") else {}
                     pol_record=m.load("policy_validations",state["linked_ids"]["policy_validations"],"validation.json") if state["linked_ids"].get("policy_validations") else None
-                    evaluation=gc.evaluate(contract,exp_record,pol_record)
+                    if state.get('requirement_type')==rt.NOTIFICATION:
+                        evaluation={'status':'NOT_APPLICABLE_TO_NOTIFICATION', 'synthetic_pass':False,
+                           'reason':'R1 is reviewer assignment and cannot satisfy the claim-progress-update feature',
+                           'comparison_only':'Unrelated fixed claims-assignment regression'}
+                    else:
+                        evaluation=gc.evaluate(contract,exp_record,pol_record)
                     add_file(wid,"08c_grounded_kpi_verification.json",evaluation)
                     state["grounded_contract_status"]=evaluation["status"]
-                    step(state,current,"COMPLETED_WITH_FINDINGS","Human thresholds: "+evaluation["status"]+" (synthetic-only)")
+                    step(state,current,"COMPLETED_WITH_FINDINGS","Typed assignment gate: "+evaluation["status"])
                 except Exception as exc:
                     state["grounded_contract_status"]="HOLD"
                     step(state,current,"FAILED",f"{type(exc).__name__}: {str(exc)[:400]}")
+                current='08d_notification_prototype'
+                if state.get('requirement_type')==rt.NOTIFICATION:
+                    try:
+                        trace=m.load('workflows',wid,'00c_requirement_trace.json')
+                        thresholds=trace['notification_thresholds']
+                        notif=nd.evaluate_prototype(max_delay_hours=thresholds['max_delay_hours'],
+                                                   min_coverage_pct=thresholds['min_coverage_pct'])
+                        add_file(wid,'08d_notification_prototype.json',notif)
+                        step(state,current,'COMPLETED_WITH_FINDINGS',notif['status']+'; deterministic example only, not R1')
+                    except Exception as exc:
+                        step(state,current,'FAILED',f"{type(exc).__name__}: {str(exc)[:400]}")
+                else:
+                    step(state,current,'COMPLETED_WITH_FINDINGS','Assignment requirement: notification feature not applicable')
+                current='08e_requirement_trace'
+                try:
+                    trace=m.load('workflows',wid,'00c_requirement_trace.json')
+                    assignment=m.load('workflows',wid,'08c_grounded_kpi_verification.json') if trace['type']==rt.ASSIGNMENT and (folder(wid)/'08c_grounded_kpi_verification.json').exists() else None
+                    notification=m.load('workflows',wid,'08d_notification_prototype.json') if trace['type']==rt.NOTIFICATION and (folder(wid)/'08d_notification_prototype.json').exists() else None
+                    traced=rt.trace_evaluation(trace,assignment_result=assignment,notification_result=notification)
+                    add_file(wid,'08e_requirement_trace.json',traced)
+                    (folder(wid)/'08e_requirement_trace.md').write_text(rt.markdown(trace,traced),encoding='utf-8')
+                    state['requirement_trace_status']=traced['trace_status']
+                    step(state,current,'COMPLETED_WITH_FINDINGS',traced['trace_status']+'; customer not approved')
+                except Exception as exc:
+                    step(state,current,'FAILED',f"{type(exc).__name__}: {str(exc)[:400]}")
+            current="08f_blind_optimality"
+            try:
+                eid=state['linked_ids'].get('experiments')
+                exp_record=m.load('experiments',eid,'experiment.json') if eid else {}
+                selected_file=m.path_for('experiments',eid)/'selected_r1.py' if eid else None
+                if not selected_file or not selected_file.exists():
+                    add_file(wid,'08f_blind_optimality.json',{'status':'HOLD_NO_ELIGIBLE_R1',
+                        'reason':'No DEV-eligible R1 selected; independent comparison not executed'})
+                    step(state,current,'COMPLETED_WITH_FINDINGS','No selected R1, blind evaluation not possible')
+                else:
+                    root_seed=bo.fresh_blind_seed()  # chosen AFTER candidate selection
+                    suite=bo.randomized_suite(root_seed,inp.blind_case_count)
+                    baseline={s:bo.exact_baseline(ds) for s,ds in suite.items()}
+                    from .domain import get_reference_sources
+                    fifo_source,deadline_source=get_reference_sources()
+                    from skills.claims_allocation import bundle as allocation_skill
+                    sources={'fifo':fifo_source,'deadline':deadline_source,
+                             'selected':selected_file.read_text(encoding='utf-8'),
+                             'skill_deadline_scarcity':allocation_skill.sandbox_source('deadline_scarcity'),
+                             'skill_bounded_beam':allocation_skill.sandbox_source('bounded_beam')}
+                    import asyncio
+                    raw=await asyncio.to_thread(m.run_in_e2b,suite,sources)
+                    metrics=bo.summarize(suite,raw,baseline)
+                    for seed,ds in suite.items():
+                        add_file(wid,f'08f_dataset_{seed}.json',ds)
+                        opt=baseline[seed].copy()
+                        add_file(wid,f'08f_exact_{seed}.json',opt)
+                    m.store_raw_e2b('workflows',wid,'08f_raw',raw)
+                    report={'version':bo.VERSION,'status':'COMPLETED_WITH_FINDINGS',
+                           'seed_root':root_seed,'suite_size':len(suite),
+                           'post_selection_only':True,'used_for_generation':False,
+                           'used_for_selection':False,'selected_engine':exp_record.get('selected_engine'),
+                           'solver_status':{str(s):x['status'] for s,x in baseline.items()},
+                           'metrics':metrics,
+                           'scope':'Small randomized synthetic cases only. Gap certified only when exact solver returned OPTIMAL.',
+                           'cp_sat_optional':True,'no_performance_guarantee':True}
+                    add_file(wid,'08f_blind_optimality.json',report)
+                    step(state,current,'COMPLETED_WITH_FINDINGS',
+                         'Post-selection blind synthetic benchmark; solver status and gaps saved')
+            except Exception as exc:
+                step(state,current,'FAILED',f'{type(exc).__name__}: {str(exc)[:400]}')
             current="09_business_delivery_assessment"
             if state["linked_ids"].get("experiments"):
                 try:
@@ -293,6 +391,10 @@ def register(app, m) -> None:
                         result=m.load("assessments",assess["assessment_id"],"assessment.json")
                         aligned=state.get("topic_alignment",{})
                         contract_eval=m.load("workflows",wid,"08c_grounded_kpi_verification.json") if (folder(wid)/"08c_grounded_kpi_verification.json").exists() else None
+                        trace=m.load('workflows',wid,'00c_requirement_trace.json')
+                        trace_verification=(m.load('workflows',wid,'08e_requirement_trace.json')
+                            if (folder(wid)/'08e_requirement_trace.json').exists() else None)
+                        result['requirement_trace']={'mapping':trace,'evaluation':trace_verification}
                         result["public_evidence_context"]={"dataset_id":inp.dataset_id,"rag_id":state.get("rag_id"),"topic_alignment":aligned,
                             "grounded_contract_evaluation":contract_eval,"customer_validation":"UNVERIFIED","causal_FIFO_explanation":"UNVERIFIED"}
                         result["source_register"].append({"id":"E08","source":f"workflows/{wid}/00b_human_evidence_review.json", 
@@ -309,18 +411,24 @@ def register(app, m) -> None:
                             "status":"PUBLIC_PROBLEM_CONTEXT_ONLY" if aligned.get("status")=="TOPIC_MATCH_REVIEW_REQUIRED" else "HOLD",
                             "finding":"原文の課題領域のみ確認。FIFO因果・顧客固有SLA・要件導出は実証していない",
                             "evidence_refs":["E08"],"next_action":"当事者の一次資料と業務観測で問題原因を確認"})
-                        result["axes"][1]["criteria"].append({"id":"AI-09","title":"人間設定の閾値による根拠紐付け合成評価",
-                            "status":(contract_eval or {}).get("status","HOLD"),
-                            "finding":"顧客承認仕様ではなく、合成HOLDOUTと既存独立プローブでの判定",
-                            "evidence_refs":["E08","E04","E06"],"next_action":"実業務データと顧客承認の評価基準を別途取得"})
-                        if not contract_eval or contract_eval.get("status")!="SUPPORTED_SYNTHETIC":
+                        result["axes"][1]["criteria"].append({"id":"AI-09","title":"要件種別に対応する合成受入評価",
+                            "status":(trace_verification or {}).get('trace_status','HOLD'),
+                            "finding":('進捗通知は独立した通知プロトタイプのみ。R1の担当者割当結果はこの要件の証明に使用しない' if trace['type']==rt.NOTIFICATION
+                                else '担当者割当は固定合成HOLDOUTと独立プローブでのみ評価'),
+                            "evidence_refs":["E08","E04","E06"],"next_action":"顧客承認済みの受入条件と実業務APIで再検証"})
+                        if trace['type']==rt.NOTIFICATION:
+                            result['decision'].update({'status':'HOLD','code':'HOLD_NOTIFICATION_NOT_INTEGRATED',
+                                'stage':'TECHNICAL_VALIDATION','production_status':'NO_GO',
+                                'production_go':False,'customer_business_go':False,
+                                'description':'公開資料と進捗通知の仮説はトレース済み。独立した合成通知プロトタイプのみを検証。R1担当者割当は当該通知要件を検証しておらず、顧客連携・実運用は未実装。'})
+                        elif not contract_eval or contract_eval.get("status")!="SUPPORTED_SYNTHETIC":
                             result["decision"].update({"status":"HOLD","code":"HOLD_GROUNDED_CONTRACT","stage":"TECHNICAL_VALIDATION",
                                 "description":"公開問題背景は取得済みだが、合成データでの人間設定KPI・仕様検証がHOLD。顧客事業価値は未検証。"})
                         else:
                             result["decision"]["description"]+=" 公開根拠は問題背景に限定。固定の合成実験が人間設定の閾値を満たすだけで、公開事例の因果や顧客価値を証明しません。"
                         assessment_dir=m.path_for("assessments",assess["assessment_id"])
                         for name,content in (("assessment.json",json.dumps(result,ensure_ascii=False,indent=2)),
-                                             ("report.md",m.ba.markdown(result))):
+                                             ("report.md",m.ba.markdown(result)+"\n## v0.21 Requirement trace\n\n"+rt.markdown(trace,trace_verification))):
                             tmp=assessment_dir/(name+".tmp")
                             tmp.write_text(content,encoding="utf-8")
                             os.replace(tmp,assessment_dir/name)
@@ -393,7 +501,7 @@ def register(app, m) -> None:
         wid, export_id=m.fresh_id(), m.fresh_id()
         public = body.evidence_mode == "public"
         record={"workflow_id":wid,"export_id":export_id,"created_at":m.now(),
-            "updated_at":m.now(),"version":"0.18.0","evidence_mode":body.evidence_mode,
+            "updated_at":m.now(),"version":"0.21.1","evidence_mode":body.evidence_mode,"r1_mode":body.r1_mode,
             "status":"RUNNING","phase":"00_evidence_grounded_requirements" if public else "02_service_design",
             "inputs":body.model_dump(),"service_design":None,"linked_ids":{k:None for k in KINDS},
             "stages":[],"bundle_ready":False}
@@ -409,6 +517,8 @@ def register(app, m) -> None:
             step(record, "00b_evidence_review", "SKIPPED_BY_USER", "No public evidence to review")
             step(record, "00c_grounded_test_contract", "SKIPPED_BY_USER", "Synthetic-only regression mode")
             step(record, "08c_grounded_kpi_verification", "SKIPPED_BY_USER", "Synthetic-only regression mode")
+            step(record, "08d_notification_prototype", "SKIPPED_BY_USER", "Synthetic-only regression mode")
+            step(record, "08e_requirement_trace", "SKIPPED_BY_USER", "Synthetic-only regression mode")
             add_file(wid, "01_input.json", {"original_brief":body.brief, "effective_brief":body.brief,
                 "evidence_mode":"synthetic", "inputs":body.model_dump(), "customer_validity":"UNVERIFIED"})
             step(record, "01_input", "COMPLETED", "Explicit synthetic demonstration; no customer evidence")
@@ -438,12 +548,31 @@ def register(app, m) -> None:
                 raise HTTPException(422,'Choose at least one topic-matching source passage; unrelated public citations cannot justify this flow')
             from . import evidence_rag as er
             htext=text.lower()
-            if not any(term in htext for term in er._INSURANCE_TERMS) or not any(term in htext for term in er._DELAY_TERMS):
-                raise HTTPException(422, 'Requirement hypothesis does not mention both insurance claims and a delay/processing problem. Refuse unsupported banking-to-claims jump.')
+            if not any(term in htext for term in er._INSURANCE_TERMS):
+                raise HTTPException(422, 'Requirement must explicitly concern insurance claims; unrelated retail banking hypotheses are not accepted.')
+            # A progress-notification hypothesis can require updates on claim status
+            # without literally saying 'delay'. The retrieved source still must be
+            # independently topic-matched to insurance claim delays above.
+            if body.requirement_type==rt.ASSIGNMENT and not any(term in htext for term in (
+                    *er._DELAY_TERMS, 'deadline', 'due date', 'sla', '期日', '締切', '時間')):
+                raise HTTPException(422, '00bで「担当者割当」を選択しています。要件文に保険請求の遅延・期限・処理問題を明記してください。進捗通知の仮説なら、機能分類を「保険請求の進捗通知」に変更してください。 (Assignment hypothesis requires claim-delay/deadline/processing context.)')
             if body.support_assessment!='supports_problem':
                 raise HTTPException(422,'Human must explicitly judge that the selected excerpt supports the *problem context* (NOT FIFO cause or implementation)')
-            contract=gc.compile_contract(requirement=text,evidence_ids=ids,max_missed=body.max_total_missed,
-                                         min_reduction_pct=body.min_reduction_pct,require_behavioral=body.require_behavioral)
+            try:
+                trace=rt.compile_trace(requirement=text,evidence_ids=ids,
+                    requirement_type=body.requirement_type,source_records=[evidence[eid] for eid in ids],
+                    review_actor=body.actor,max_notification_delay_hours=body.max_notification_delay_hours,
+                    min_notification_coverage_pct=body.min_notification_coverage_pct)
+            except ValueError as exc:
+                raise HTTPException(422,str(exc)) from exc
+            if body.requirement_type==rt.ASSIGNMENT:
+                contract=gc.compile_contract(requirement=text,evidence_ids=ids,max_missed=body.max_total_missed,
+                                             min_reduction_pct=body.min_reduction_pct,require_behavioral=body.require_behavioral)
+            else:
+                contract={'version':rt.VERSION,'type':rt.NOTIFICATION,'feature_id':trace['feature_id'],
+                          'notification_thresholds':trace['notification_thresholds'],
+                          'assignment_kpi_not_applicable':True,
+                          'scope':'STANDALONE_SYNTHETIC_NOTIFICATION_PROTOTYPE_NOT_R1'}
             # This explicitly reviewed note is context, not a change to the fixed synthetic R0/R1 contracts.
             note=("\n\n[PUBLIC EVIDENCE — HUMAN-REVIEWED HYPOTHESIS, NOT CUSTOMER APPROVAL]\n"
                   f"Hypothesis: {text}\n"
@@ -465,7 +594,7 @@ def register(app, m) -> None:
             "approval_scope":"DEMO_HYPOTHESIS_ONLY" if decision=="approved" else "REJECTED",
             "semantic_evidence_support":"HUMAN_ASSERTED_PROBLEM_CONTEXT_ONLY" if decision=="approved" else "UNVERIFIED",
             "topic_alignment":rag.get("topic_alignment"), "support_assessment":body.support_assessment,
-            "customer_requirement_approval":"NOT_OBTAINED"}
+            "customer_requirement_approval":"NOT_OBTAINED", "requirement_type":body.requirement_type if decision=='approved' else None}
         add_file(body.workflow_id,"00b_human_evidence_review.json",review)
         if decision!="approved":
             step(state, "00b_evidence_review", "REJECTED", "Source requirement hypothesis rejected by human")
@@ -475,7 +604,12 @@ def register(app, m) -> None:
             save_archive(state)
         else:
             add_file(body.workflow_id,"00c_grounded_test_contract.json",contract)
-            (folder(body.workflow_id)/"00c_technical_spec.md").write_text(gc.spec_md(contract),encoding="utf-8")
+            add_file(body.workflow_id,"00c_requirement_trace.json",trace)
+            spec=(gc.spec_md(contract) if body.requirement_type==rt.ASSIGNMENT else
+                  '# Progress-notification synthetic prototype\n\n'+rt.markdown(trace))
+            (folder(body.workflow_id)/"00c_technical_spec.md").write_text(spec,encoding="utf-8")
+            (folder(body.workflow_id)/"00c_requirement_trace.md").write_text(rt.markdown(trace),encoding='utf-8')
+            state['requirement_type']=body.requirement_type
             step(state,"00c_grounded_test_contract","COMPLETED", "Human-configured bounded KPI evaluator; pinned synthetic test fixture")
             state["execution_brief"]=effective
             step(state, "00b_evidence_review", "COMPLETED", "Human selected public source pointers and a hypothetical requirement; NOT customer-approved")
@@ -484,7 +618,8 @@ def register(app, m) -> None:
                 "approved_hypothesis":text,"selected_evidence_ids":ids,"rag_id":rag["rag_id"],
                 "evidence_mode":"public","inputs":state["inputs"],"customer_validity":"UNVERIFIED",
                 "r0_contract_changed":False,"technical_evaluator":"BOUNDED_HUMAN_CONFIGURED_SYNTHETIC_CONTRACT",
-                "technical_spec_path":"00c_technical_spec.md"})
+                "technical_spec_path":"00c_technical_spec.md", "requirement_type":body.requirement_type,
+                "requirement_trace_path":"00c_requirement_trace.json", "acceptance_test_target":trace['test_target']})
             step(state, "01_input", "COMPLETED", "Evidence-reviewed hypothesis inserted into 01 brief; fixed synthetic R0 contract unchanged")
             state["status"]="RUNNING"
             state["bundle_ready"]=False  # previous PARTIAL is superseded by in-progress work
@@ -529,5 +664,5 @@ def register(app, m) -> None:
         file=m.path_for("exports",state["export_id"])/"complete_audit_package.zip"
         if not file.is_file():
             raise HTTPException(409,"ZIP is not ready; check workflow status")
-        return FileResponse(file,filename=f"claims_full_run_v018_{workflow_id}.zip",media_type="application/zip")
+        return FileResponse(file,filename=f"claims_full_run_v020_{workflow_id}.zip",media_type="application/zip")
 

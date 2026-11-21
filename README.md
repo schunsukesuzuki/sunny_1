@@ -1,3 +1,15 @@
+> **v0.21.1 — 00b review UX fix:** 00bの対象機能を未選択から開始し、手入力要件と選択機能の不一致・混在・担当者割当の期限文脈不足を送信前に表示します。Qwenの候補を選んだ場合は文章から機能を提案し、判断不能なら未選択とします。APIの422にも日本語の修正案を追加。**証拠・要件の品質ゲートは緩めていません。** `docs/v0211-evidence-review-ui.md`を参照。
+
+> **v0.21 — 診断精度と厳密最適化比較:** 04のQwen/ODA診断と08の診断ベンチマークに、入力事実のみを使う一度限りの再診断を追加しました。**初回PASS・修復後PASS・新規ケース初回PASSを分けて保存**し、固定の8項目ルーブリックは変更しません。08fではDEV候補選択後にランダム化した小規模案件を生成し、独立E2BでLLM/Skill/固定参照を比較します。小規模全探索、またはオプションのOR-Tools CP-SATが `OPTIMAL` を返したときだけ最適性ギャップを確定します。**LLMが必ずPASSする保証はありません**。詳細: `docs/v021-diagnostic-calibration-and-exact.md`。
+
+> **v0.20 — Claims Allocation Domain Skill:** Step 06 / Step 10 now support `llm_only` / `skill_only` / `compare` (default). `skill_only` uses reviewed, pinned scheduling code and **does not ask Qwen to generate R1 source**. Skill priority, qualification/capacity feasibility, scarce specialist protection and bounded beam heuristic are separate components under `backend/skills/claims_allocation/`. E2B runs self-contained scripts, the independent evaluator remains outside the Skill, and the DEV-only gate chooses eligible candidates before HOLDOUT. Source/provenance, Skill manifest + raw execution evidence, LLM attempts, and the post-selection comparison are saved in one audit ZIP. **Skill success is not LLM repair success, and bounded beam is not an exact solver.** Full design: `docs/v020-domain-skill-and-comparison.md`.
+
+> **v0.19.1 hotfix:** 00b根拠レビューでHTTP 422が出る場合、承認ボタン近くに詳細を表示します。
+> v0.19では「公開された保険請求遅延の報告」を通知要件と誤判定するバグがありました。
+> 本版は修正済みですが、真の要件と選択機能が食い違う場合は従来どおり422で停止します。
+
+> **v0.19 — 要件トレースとR1 DEVゲート:** 00bの人間レビューで機能を明示選択します。**進捗通知**には独立した合成通知プロトタイプ＋受入テスト、**担当者割当**にはE2Bで実行するR1期限・資格・容量テストを使用し、両者を混同しません。01〜09の既存の保険案件割当実験は維持しますが、通知要件の証明には使いません。R1はDEVで行動プローブ・ストレスも通過した候補だけを新規HOLDOUTへ送ります。結果レポートでは「比較未実施」と「比較不合格」を分離します。公開資料は顧客承認の代替になりません。詳細 `docs/v019-requirement-to-tests-and-r1-gates.md`。
+
 > **v0.18 — Evidence / Domain / KPI contract alignment:** 00で保険請求遅延に関するFCA・Financial Ombudsman Serviceの公表資料を取得できます。公開金融利用者インタビューや銀行苦情を保険のR0/R1へ流用することは禁止。00の出典照合に加え**課題領域スクリーニング → 人間による支持範囲の確認 → 人間設定KPI閾値の検証契約 → 固定合成HOLDOUTによる独立検証**を実装しました。RAG検索した公開根拠の原本を一括ZIPへ収録し、Business Assessmentでは「公開された問題の背景」と「実顧客の要件/原因/ROI」を区別します。**任意の自然言語仕様や評価器を自動生成する機能ではありません**。詳細は `docs/v018-evidence-to-contract.md`。
 
 > **v0.17 — Step 10 actually runs Evidence RAG:** 公開データモードでは、ボタンから **00の取得（未取得時）・SHA256照合・索引化・検索・要件候補作成**を起動。**00bでは根拠IDと要件仮説を人間が選択・承認するまで停止**し、その後01〜04、05で再度人間承認、06〜09を実行し、実験・根拠・承認記録を一つのZIPに保存します。取得失敗時は `FAILED`/`PARTIAL` で停止し、**synthetic-demoへの自動フォールバックはしません**。合成モードは明示的に選択した場合だけ動きます。`docs/v017-full-evidence-pipeline.md` を参照。
@@ -14,7 +26,7 @@
 
 > **v0.10:** 要件診断の多軸独立採点・Qwen/ODAの合成ベンチマーク・過去ログ再採点を追加。詳細は `docs/v010-requirement-diagnostic-benchmark.md`。
 
-# Claims Operations Planner — AI Venture Feasibility Studio v0.18
+# Claims Operations Planner — AI Venture Feasibility Studio v0.21.1
 
 ドイツの保険業務SaaS企業（**架空**）の事業開発PoC。**Qwen3-Coder 30B** はサービス設計・Pythonコード生成、**OpenDataArena/ODA-Fin-RL-8B** は金融ドメイン要件診断を担当。E2Bは生成コードを隔離して実行し、独立した決定的評価器で審査割当・期限・資格・稼働上限を検証します。v0.8にあったMarkdown結果保存を維持し、生成コード・差分・各試行のE2B実行証跡・履歴取得を拡張しました。
 
@@ -30,7 +42,7 @@
 - **独立ゲート**：ODAが「実装バグではない」と理解できたかをルールで確認。理由と分類に矛盾があればHOLD。利用不可ならエラーとして保存し、Qwenへ黙って代替しない。
 - **人間の承認**：R1はアプリ側で定義した実験用契約。ODAの提案そのものを自動承認・評価基準へ採用しない。承認前にコード生成へ進まない。
 - **R1生成**：承認後、ODAの構造化診断を**参考情報としてQwenのプロンプトへ追加**し、固定R1契約に基づいてコードを生成。
-- **R1評価**：E2BでDEV修正最大2回。新しいHOLDOUTは選択後一度だけ。FIFO/固定期限優先/生成コードを同じ合成データで比較。
+- **R1評価**：E2BでDEV修正最大2回。DEV KPI・行動反例・ストレス全てに通過した場合のみHOLDOUTを一度実行。FIFO/固定期限優先/生成コードを同じ合成データで比較。
 - **事業妥当性**：**UNVERIFIED**。合成KPIは顧客価値や規制適合の証拠になりません。
 
 ## Mac Studioでの実行環境
@@ -67,18 +79,26 @@ docker compose up --build
 
 既にOllamaアプリが常駐している場合、別途 `ollama serve` は不要です。`bash scripts/preflight-mac.sh` で接続とモデル有無を確認できます。
 
-### 3. UI操作（v0.18）
+### 3. UI操作（v0.20）
 
 0. **Evidence-grounded Requirements RAG**：保険請求の合成実験に接続する場合は `insurance_claims_uk`（FCA/FOS）を選択します。`community_credit`と`cfpb_sample`は個人向け金融業務の資料であり、保険請求案件の証拠として承認できません。手動取得・別ZIPダウンロード・索引化・検索も可能ですが、**10の公開データモードでは事前操作不要**です。
 1. **顧客課題とR0サービス設計**：架空ブリーフ・seedを選択。
 2. **R0をE2B実行**：FIFO実装の仕様適合とDEV指標を確認。
 3. **Qwen × ODAで独立診断**：`SIM-SLA-001` を与え、両モデルの分類・理由・改訂提案を比較。証拠なしの対照条件も試せます。
 4. **人間がR1を承認**：ODAが品質ゲートPASSなら通常承認。HOLDでも、模擬反証と独立R0 PASSを人間が確認し、HOLDを残して明示的な理由を記録すれば、技術デモのみ継続できます。
-5. **R1生成・E2B検証**：ODAの診断を参考情報としてQwenへ渡し、独立評価器で資格・日別容量・期限超過・同一審査時間を評価。
+5. **R1実装方式を選択しE2B検証**： `llm_only` / `skill_only` / `compare` を選択。Skill専用ではR1コード生成を行わず、いずれもDEV選別→HOLDOUTで評価。従来のLLM経路ではODAの診断を参考情報としてQwenへ渡し、独立評価器で資格・日別容量・期限超過・同一審査時間を評価。
 6. **レポートと全証跡ZIP**：成功・失敗の記録をMac側 `./artifacts/` へ保存。「保存した実験と監査証跡」から過去の結果を読み直せます。
 7. **08診断品質ベンチマーク**：QwenとODAへ同じ合成ケース・同じschemaを与えて独立採点。過去のproposal IDを再採点可能（非破壊）。
 8. **09 Business & Delivery Assessment**：R1実験IDを入力（06から自動入力、または07の履歴から選択）、二軸評価を生成。**v0.14の新しい仕様・ストレス・ベンチマークをまだ紐づけていない場合、HOLD_POLICY**となります。
 9. **10 一括実行＋保存**：公開データモードでは **00データ取得/索引化/関連性検査 → 00bで出典/問題背景の支持範囲を人間確認 → 00cで合成実験に適用するKPI閾値を設定 → 01〜04 → 05で独立した人間承認 → 06〜08b → 08cで人間設定KPIを独立判定 → 09の事業評価**。銀行資料との領域不一致、関連する問題の出典不足、却下の場合は01へ進みません。公開資料の原本も単一ZIPに含めます。実顧客の要件・原因の正しさは未検証。合成モードは明示選択した場合のみ。
+
+### v0.20のSkill専用実行
+
+一括実行のStep 10でR1方式に**Domain Skillのみ**を選ぶと、
+00b（公開根拠レビュー）、05（R1承認）の人間承認を維持したまま、R1の
+Qwenコード生成を省略し、固定Skill 2方式を独立E2Bで評価します。
+比較モードではLLMにもコード生成を行わせますが、Skillのテスト結果を
+LLMの修復プロンプトに渡しません。実顧客要件は承認済みになりません。
 
 ## 保存・監査
 
@@ -220,3 +240,13 @@ The tests use mocked E2B/LLM calls and separately check the deterministic scenar
 - 要件評価器は**固定合成Claimsデータの既存独立評価ロジック**に対して閾値（最大期限超過件数、FIFO比削減率、行動プローブ）を設定する仕組みです。任意の顧客資料からアルゴリズムやOracleを自動構築していません。
 - 一括ZIPの `COMPLETE` は収録工程の完了であり、要件の意味的正しさを証明しません。技術判定と実顧客の事業採算性は別です。
 - 実公開データのダウンロード、Mac StudioでのOllama・E2B実行、Reactの完全ビルドはこの配布環境では検証していません。
+
+## v0.21 の新しい操作
+
+- **04 単独の要件診断**: 「ルーブリックHOLDなら一度再診断」を選ぶと、元の診断JSONと最終診断JSONを分けて保存します。
+- **08 診断ベンチマーク**: 初回・修復後・未使用ケース初回のPASS件数をそれぞれ確認してください。オプションの追加モデル呼び出しが発生します。
+- **10 一括実行**: v0.21のチェックボックス（診断修復・別ケース診断）と、08fのケース数を指定します。00bと05の人間承認は従来どおりです。
+- **CP-SAT利用**: `.env` に `INSTALL_SOLVER=1` を追加し、`docker compose build --no-cache api` でAPIを再ビルド。追加依存が不要なら既定の小規模全探索を使用します。
+- **ZIP確認**: `08f_blind_optimality.json` と `08f_exact_*.json` を確認し、ソルバーの `OPTIMAL` と手法間の差を区別してください。
+
+**注意**: ここでの「診断PASS」は合成例と独立ルーブリックに限定されます。実顧客における要件妥当性、業務効果、法律適合を保証しません。OR-Toolsはこの生成環境ではインストールできなかったため、CP-SATはコード・依存設定・モック外のAPI構築までを準備した段階であり、実CP-SAT実行は未検証です。

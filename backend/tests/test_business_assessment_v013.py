@@ -52,7 +52,7 @@ def test_complete_assessment_and_bundle(client):
     text = report.text
     for required in ('Business Value & Feasibility', 'AI Delivery & Operational Readiness',
                      '証拠IDの正確性 ≠ 証拠の妥当性 ≠ 診断の正しさ', 'UNVERIFIED',
-                     'E01', 'E05', 'production GO: **NO**', 'PRESALES-ASSESSMENT-v0.14.0'):
+                     'E01', 'E05', 'production GO: **NO**', 'PRESALES-ASSESSMENT-v0.19.0'):
         assert required in text
     assert 'Private Reviewer Name' not in text
     assert '役員' not in text
@@ -79,7 +79,7 @@ def test_no_fake_customer_evidence_and_failed_technical_gate(client, monkeypatch
     assert res.status_code == 200
     data = res.json()
     assert data['decision']['code'] == 'HOLD_TECHNICAL'
-    assert data['axes'][0]['criteria'][0]['status'] == 'HOLD'
+    assert data['axes'][0]['criteria'][0]['status'] == 'VALIDATION_HOLD'
     assert data['axes'][0]['criteria'][-1]['status'] == 'UNVERIFIED'
     assert data['decision']['production_go'] is False
     assert data['decision']['customer_business_go'] is False

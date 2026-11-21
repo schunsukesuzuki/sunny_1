@@ -29,7 +29,7 @@ def approve_public(client,state,ids=None,text=None):
     return client.post('/api/full-run/review-evidence',json={
         'workflow_id':state['workflow_id'], 'decision':'approved',
         'actor':'Technical Reviewer','rationale':'Use retrieved statement only as a synthetic evaluation hypothesis',
-        'evidence_ids':ids,'approved_requirement':text or 'Investigate whether insurance claims delays can be reduced without additional staffing.',
+        'evidence_ids':ids,'approved_requirement':text or 'Investigate whether insurance claims delays can be reduced by improving reviewer assignment without additional staffing.',
         'support_assessment':'supports_problem', 'max_total_missed':0,'min_reduction_pct':50})
 
 

@@ -365,7 +365,7 @@ def requirements(dataset:str,query:str)->dict:
  return assessment
 
 def report_md(r:dict)->str:
- lines=['# Evidence-grounded Requirements — v0.18','',f"- Query: {r['query']}",f"- Dataset: {r['dataset_id']}",
+ lines=['# Evidence-grounded Requirements — v0.19','',f"- Query: {r['query']}",f"- Dataset: {r['dataset_id']}",
         '- Status: **REQUIRES_VALIDATION** — no customer approval, no causal or semantic proof.','',
         '## Retrieved source excerpts (not approved requirements)','']
  for e in r['evidence']:

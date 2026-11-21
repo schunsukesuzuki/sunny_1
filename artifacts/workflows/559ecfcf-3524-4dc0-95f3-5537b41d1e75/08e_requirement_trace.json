@@ -1,0 +1,24 @@
+{
+  "version": "EVIDENCE-REQUIREMENT-TRACE-v0.19.0",
+  "requirement_id": "REQ-PUBLIC-001",
+  "type": "claim_progress_updates",
+  "feature_id": "FEATURE-CLAIM-PROGRESS-NOTIFICATION",
+  "acceptance_test_ids": [
+    "NOTIFY-ON-STATUS-CHANGE",
+    "NOTIFY-WITHIN-THRESHOLD",
+    "NOTIFY-CORRECT-RECIPIENT",
+    "NEGATIVE-CONTROL-NO-UPDATE"
+  ],
+  "target_used": "separate_deterministic_notification_prototype",
+  "result_status": "SUPPORTED_SYNTHETIC_PROTOTYPE",
+  "evaluator_executed": true,
+  "synthetic_pass": true,
+  "unrelated_r1_does_not_prove_notification": true,
+  "customer_accepted": false,
+  "production_ready": false,
+  "trace_status": "SYNTHETIC_PROTOTYPE_ONLY",
+  "evidence_ids": [
+    "PUB-003",
+    "PUB-006"
+  ]
+}

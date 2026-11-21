@@ -1,0 +1,21 @@
+{
+  "skill_id": "claims_allocation",
+  "version": "CLAIMS-ALLOCATION-SKILL-v0.20.0",
+  "strategies": [
+    "deadline_scarcity",
+    "bounded_beam"
+  ],
+  "components": {
+    "schemas.py": "3ec3672d9b00dc3a1c73d1cefa47c710662190208a2befb65ff5c02c06dec7e6",
+    "priority.py": "39cf36f4bec60a5acba4a6d1d8e1c7e8fa29e56020dc45541e2fe359d78d899f",
+    "feasibility.py": "7a321193f82fe30a60157d516709bf26024f13f4c86c3ba48ce06be2d46bc6a8",
+    "scarcity.py": "33cd943a11f17d714ab6937156377601eb74ae65bd9b6b86bedc62b6edf02fa0",
+    "optimizer.py": "ddf3e741826f4ca0b201b145bdea924cb37fe75239c95bb19aca282f922a118b",
+    "validators.py": "97342b76fd021fb61284402e591fd31a49d5a0961b1c2b984e7e8f3bf77be71e",
+    "runner.py": "5c795af19ba88f12155c09d4a8a1a04ffc49e4f6d0f524f61936c6d68b063f49"
+  },
+  "scope": "Synthetic claims reviewer scheduling, NOT actual adjudication",
+  "independent_evaluator": "backend/app/domain.py:validate",
+  "solver_claim": "bounded_beam is bounded heuristic, not exact optimizer",
+  "security": "No unapproved LLM code can be substituted for a skill component"
+}

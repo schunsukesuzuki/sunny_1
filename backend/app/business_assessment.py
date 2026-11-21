@@ -1,4 +1,4 @@
-"""v0.14 deterministic presales decision support.
+"""v0.19 deterministic presales decision support.
 
 The rubric uses ONLY locally persisted synthetic experiment records. It never
 converts an evidence ID, LLM opinion, or a synthetic metric into customer proof.
@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-RUBRIC_VERSION = "PRESALES-ASSESSMENT-v0.14.0"
+RUBRIC_VERSION = "PRESALES-ASSESSMENT-v0.19.0"
 SYNTHETIC = "SUPPORTED_SYNTHETIC"
 CONTROL = "DEMO_CONTROLLED"
 HOLD = "HOLD"
@@ -51,6 +51,9 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
         for s, f in fifo["by_seed"].items())
         and any(generated["by_seed"][s]["missed"] < f["missed"]
                 for s, f in fifo["by_seed"].items()))
+    comparison_executed = bool(aligned and deadline and
+        deadline['by_seed'].keys()==fifo['by_seed'].keys() and
+        deadline['seed_count']==fifo['seed_count'] and exp.get('holdout_executed') is True)
     technical = bool(improved and exp.get("holdout_executed") is True
                      and exp.get("r1_independent_kpi_improvement_pass") is True
                      and run.get("implementation_validity") == "PASS" and code_integrity)
@@ -79,8 +82,18 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
                               {"coding","finance"}.issubset(benchmark_counts) and
                               all(x["completed"] == x["planned"] and x["planned"] > 0
                                   for x in benchmark_counts.values()))
-    benchmark_all_pass = bool(benchmark_complete and all(
+    benchmark_selected_all_pass = bool(benchmark_complete and all(
                         x["passed"] == x["planned"] for x in benchmark_counts.values()))
+    blind_details=(benchmark or {}).get('blind_generalization') or {}
+    blind_summary=blind_details.get('summary') or {}
+    benchmark_blind_all_pass = bool(blind_details.get('enabled') and blind_summary and
+        {'coding','finance'}.issubset(blind_summary) and all(
+            x.get('planned',0)>0 and x.get('passed')==x.get('planned') and
+            x.get('completed')==x.get('planned') for x in blind_summary.values()))
+    # Optional fresh synthetic challenge is an independent quality gate. A repaired
+    # score on fixed fixtures alone is never enough to claim generalization.
+    benchmark_all_pass = benchmark_selected_all_pass and (
+        benchmark_blind_all_pass if blind_details.get('enabled') else True)
     # This is a LOCAL audit pointer, not an independent real-world evidence source.
     register = [
         {"id": "E01", "source": f"runs/{run['run_id']}/run.json", "provenance": "SYNTHETIC",
@@ -108,13 +121,16 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
          "validity": "Limited artificial cases; do not infer population-level model accuracy"},
     ]
     value = [
-        _criterion("BV-01", "顧客課題と業務KPIの整合（合成ケース）", SYNTHETIC if technical else HOLD,
+        _criterion("BV-01", "顧客課題と業務KPIの整合（合成ケース）",
+                   SYNTHETIC if technical else "EXECUTED_FAILED_KPI" if comparison_executed and not improved else "VALIDATION_HOLD" if comparison_executed else "NOT_EXECUTED",
                    "固定稼働でFIFOより期限超過が減ることを合成HOLDOUTで確認" if technical else
-                   "同一条件のR1独立KPI改善が確認できない", ["E01", "E04"],
+                   "同一条件でHOLDOUTを比較した結果、選択R1は必要なKPI改善を満たさなかった" if comparison_executed and not improved else
+                   "HOLDOUT比較したがコード整合性等の技術判定に問題がある" if comparison_executed else
+                   "DEVゲート不合格などによりHOLDOUT KPIを実行していない", ["E01", "E04"],
                    "顧客の実データでSLA・処理時間・案件到着分布を検証する"),
-        _criterion("BV-02", "代替案の定量比較", SYNTHETIC if technical and deadline and deadline["by_seed"].keys() == fifo["by_seed"].keys() and deadline["seed_count"] == fifo["seed_count"] else HOLD,
-                   "FIFO・期限優先の固定ヒューリスティック・生成R1を同条件で比較" if technical and deadline and deadline["by_seed"].keys() == fifo["by_seed"].keys() and deadline["seed_count"] == fifo["seed_count"] else
-                   "比較対象または有効なHOLDOUT評価が不足している", ["E01", "E04"],
+        _criterion("BV-02", "代替案の定量比較", SYNTHETIC if comparison_executed else "NOT_EXECUTED",
+                   "FIFO・期限優先の固定ヒューリスティック・選択R1を同条件で比較済み。R1のKPI合格/不合格はBV-01で別判定" if comparison_executed else
+                   "独立した有効HOLDOUT比較を実行できていない", ["E01", "E04"],
                    "顧客が承認した基準・失敗コストで代替案を再比較する"),
         _criterion("BV-03", "MVPの範囲と承認ゲート", CONTROL if proper_approval else HOLD,
                    "変更要件と人間のデモ承認が記録され、検証対象は担当者割当ロジックに限定" if proper_approval else
@@ -128,17 +144,19 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
                    "提案原価・運用負荷・回収可能額を見積もる"),
     ]
     delivery = [
-        _criterion("AI-01", "生成コードの隔離実行・制約検証", SYNTHETIC if technical and holdout_sandbox else HOLD,
-                   "E2B実行結果と独立評価器で資格・容量・処理を評価" if technical and holdout_sandbox else
-                   "有効なE2B実行・制約評価の証跡が不足", ["E04"],
+        _criterion("AI-01", "選択R1コードの隔離実行・制約検証",
+                   SYNTHETIC if generated and holdout_sandbox else "EXECUTED_FAILED_CONSTRAINTS" if holdout_sandbox else "NOT_EXECUTED",
+                   "E2B実行済み。資格・容量などの制約を満たした。KPIの改善合否とは別" if generated and holdout_sandbox else
+                   "E2B実行はあるが制約違反あり" if holdout_sandbox else
+                   "R1の有効なE2B HOLDOUT実行記録がない（DEV候補が全てHOLDの可能性あり）", ["E04"],
                    "権限、ネットワーク出口、CPU/メモリ制限を含む実環境のセキュリティ審査を行う"),
-        _criterion("AI-02", "DEVとHOLDOUTの分離・再現性", SYNTHETIC if technical and dev_holdout and code_selected else HOLD,
-                   "異なるseedでDEV/非開示HOLDOUTを分離しコードハッシュを記録" if technical and dev_holdout and code_selected else
-                   "独立HOLDOUT・コード選択の証跡が不足", ["E04"],
+        _criterion("AI-02", "DEVとHOLDOUTの分離・再現性", SYNTHETIC if dev_holdout and code_selected and holdout_sandbox else "NOT_EXECUTED",
+                   "DEVゲート通過コードを異なるseedのHOLDOUTで評価しハッシュを記録。KPI合否とは別" if dev_holdout and code_selected and holdout_sandbox else
+                   "DEVゲート通過コードまたは独立HOLDOUT実行がない", ["E04"],
                    "seed追加・顧客分布の変動・回帰テストで頑健性を測る"),
         _criterion("AI-03", "LLM要件診断の品質", CONTROL if diagnostics_ok and benchmark_all_pass else HOLD,
-                   "単発診断と同一条件のベンチマーク全試行が固定ルーブリックを通過（意味的な正しさは未保証）" if diagnostics_ok and benchmark_all_pass else
-                   "単発診断PASSは十分でない。独立ベンチマークの未実施・HOLD・未完了を含めてレビューが必要", ["E02","E07"],
+                   "単発診断・固定ルーブリック・有効なら追加の未修復ブラインド診断ケースもすべて通過（実顧客の真偽は未検証）" if diagnostics_ok and benchmark_all_pass else
+                   "固定ルーブリックの初回・修復後の区別、未使用ブラインドケースの未実施・HOLD・失敗を確認する必要がある", ["E02","E07"],
                    "多ケース・複数回の独立診断ベンチマークと誤判定分析を実施する"),
         _criterion("AI-04", "人間の関与と監査可能性", CONTROL if proper_approval else HOLD,
                    ("モデル診断HOLDを保持したままデモ上の人間審査で技術検証を継続" if human_override else
@@ -168,9 +186,23 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
                    if verdict == "CUSTOMER_DISCOVERY_ONLY" else
                    "独立KPI評価・承認・仕様の振る舞い・ストレス評価のいずれかが不足。顧客提案前にHOLDを確認する。")
     return {"rubric_version": RUBRIC_VERSION, "experiment_id": exp["experiment_id"],
+            "selected_engine":exp.get('selected_engine','legacy_llm'),
+            "selected_source_provenance":exp.get('selected_source_provenance','LEGACY_UNSPECIFIED'),
+            "r1_mode":exp.get('r1_mode','llm_only'),
+            "skill_comparison":exp.get('skill_comparison',[]),
+            "holdout_comparators":exp.get('holdout_comparators',{}),
             "scope": "SYNTHETIC_DEMONSTRATION_ONLY", "real_customer_validity": UNKNOWN,
             "source_register": register,
+            "execution_outcome": {
+                "dev_candidate_selection": exp.get('selection_status','UNKNOWN_LEGACY'),
+                "holdout_execution": 'EXECUTED' if exp.get('holdout_executed') else 'NOT_EXECUTED',
+                "valid_three_way_comparison":comparison_executed,
+                "r1_kpi_improvement":'PASSED' if improved and comparison_executed else 'EXECUTED_FAILED_KPI' if comparison_executed else 'NOT_EVALUATED',
+                "business_validity":UNKNOWN,
+                "constraint_validation":'PASSED' if generated and holdout_sandbox else 'FAILED' if holdout_sandbox else 'NOT_EVALUATED',
+            },
             "summary_metrics": {"fifo": fifo, "generated": generated, "deadline_heuristic": deadline,
+                                "selected_engine":exp.get("selected_engine"),
                                 "fixed_hours_and_deadline_improvement": technical,
                                 "diagnosis_qwen_rubric_pass": diagnostic_qwen,
                                 "diagnosis_oda_rubric_pass": diagnostic_oda,
@@ -183,6 +215,10 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
                                 "stress_regressions_vs_reference":stress_regressions,
                                 "benchmark_complete":benchmark_complete,
                                 "benchmark_all_trials_pass":benchmark_all_pass,
+                                "benchmark_initial_pass_by_model": {k:v.get('initial_passed') for k,v in benchmark_summary.items()},
+                                "benchmark_post_revision_pass_by_model": {k:v.get('passed') for k,v in benchmark_summary.items()},
+                                "benchmark_fresh_blind_pass": benchmark_blind_all_pass if blind_details.get('enabled') else None,
+                                "benchmark_fresh_blind_summary": blind_summary,
                                 "benchmark_by_model":benchmark_counts},
             "axes": [{"id": "BUSINESS", "title": "Business Value & Feasibility", "criteria": value},
                      {"id": "DELIVERY", "title": "AI Delivery & Operational Readiness", "criteria": delivery}],
@@ -209,7 +245,7 @@ def markdown(record: dict) -> str:
 
     d = record["decision"]
     m = record["summary_metrics"]
-    lines = ["# Project Feasibility Assessment — v0.14", "",
+    lines = ["# Project Feasibility Assessment — v0.19", "",
              "> 合成・架空顧客に限定した技術プリセールス用の判断支援。実顧客・市場・法令・本番運用の適合を保証しません。", "",
              f"- Assessment ID: `{record['assessment_id']}`",
              f"- Experiment ID: `{record['experiment_id']}`",
@@ -217,9 +253,13 @@ def markdown(record: dict) -> str:
              f"- Rubric: `{record['rubric_version']}`",
              f"- Provisional decision: **{d['status']}** — stage `{d['stage']}` ({d['code']})",
              f"- Production decision: **{d['production_status']}** (production GO: **NO**)",
-             f"- Rationale: {d['description']}", "",
+             f"- Rationale: {d['description']}",
+             f"- Selected R1 engine: `{record.get('selected_engine')}` ({record.get('selected_source_provenance')})",
+             "- Skill-selected source is NOT evidence of LLM code-generation or automatic repair success.", "",
+             "## 実施状況と合否（区別する）", "",
+             *[f"- {k}: **{v}**" for k,v in record.get('execution_outcome',{}).items()], "",
              "## 技術実験の要約", "",
-             "| 合成HOLDOUT | FIFO | 生成R1 | 期限優先参照（ヒューリスティック） |",
+             "| 合成HOLDOUT | FIFO | 選択R1 | 期限優先参照（ヒューリスティック） |",
              "|---|---:|---:|---:|"]
     for key, label in (("missed", "期限超過件数"), ("worked_hours", "割当予定時間（時間）")):
         values = [m.get(k, {}).get(key, "—") if isinstance(m.get(k), dict) else "—" for k in ("fifo", "generated", "deadline_heuristic")]

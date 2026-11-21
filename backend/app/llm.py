@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 from typing import Literal
 
 from .domain import CONTRACT_R0, CONTRACT_R1, SERVICE_R1, SIMULATED_EVIDENCE, canonical
+from .diagnostic_protocol import DECISION_PROTOCOL, public_fact_checks
 
 BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434").rstrip("/")
 MODEL = os.getenv("OLLAMA_MODEL", "qwen3-coder:30b")
@@ -117,7 +118,8 @@ async def diagnosis(r0_dev: dict, condition: str):
     evidence = [SIMULATED_EVIDENCE] if condition == "counterexample" else []
     return await query(
         Diagnosis,
-        "You are a product discovery analyst. Return only JSON. A working FIFO algorithm correctly "
+        "You are a product discovery analyst. Return only JSON. " + DECISION_PROTOCOL + "\n"
+        "A working FIFO algorithm correctly "
         "implements R0. Determine whether supplied synthetic customer evidence invalidates the "
         "REQUIREMENT or demonstrates a SOFTWARE BUG; without evidence say insufficient_evidence. "
         "For simulated deadline counterexample, propose deadline-aware assignment respecting skill, "
@@ -133,6 +135,7 @@ async def finance_diagnosis(r0_dev: dict, condition: str) -> FinanceDiagnosis:
     evidence = [SIMULATED_EVIDENCE] if condition == "counterexample" else []
     return await query(
         FinanceDiagnosis,
+        DECISION_PROTOCOL + "\n" +
         "You are a specialist in INSURANCE OPERATIONS requirement analysis, not a code generator "
         "or regulator. Output JSON matching the schema, in concise Japanese/English. "
         "Evidence is synthetic, not actual German insurance customer data; regulatory questions "
@@ -246,18 +249,60 @@ class BenchmarkDiagnosis(BaseModel):
 
 
 async def benchmark_diagnosis(payload: dict, *, model: str) -> BenchmarkDiagnosis:
-    """No hidden oracle, holdout, or the other model's answer in the prompt."""
+    """Initial blind answer. Both models use identical protocol and schema."""
     system = (
-        "You analyze insurance operations requirements, not adjudicate claims. Return JSON following schema exactly. "
-        "Separate implementation correctness from business requirement adequacy. "
-        "A PASS implementation cannot be called a software bug just for missing SLA targets. "
-        "A FAIL independent implementation test may warrant fixing code without rewriting a valid requirement. "
-        "If no reliable business evidence, use insufficient_evidence. Synthetic evidence can demonstrate a "
-        "synthetic requirement mismatch but NEVER establish real-customer validity: real_customer_validity=unverified. "
-        "Cite only evidence IDs present. NEVER cite imaginary regulations or invent customer interviews. "
-        "For a deadline-first policy, strict FIFO must be removed and may only be used as a tiebreaker. "
-        "Do not claim to preserve strict FIFO while making deadlines primary. "
-        "If there is no justified requirement change set change_required=false and scheduling_precedence=none. "
-        "Implementation bug does not automatically imply the business requirement must be rewritten."
+        "You analyze insurance operations requirements, not adjudicate claims. "
+        "Return JSON following schema exactly. " + DECISION_PROTOCOL +
+        "\nThe independent implementation test is given as an observation. "
+        "A PASS implementation cannot be labeled a software bug merely for missed business deadlines. "
+        "A FAIL implementation does not by itself warrant rewriting the requirement. "
+        "When measurable goal and synthetic observations disagree, separate correct code from defective specification. "
+        "When the business priority is missing or stakeholder views conflict without comparison, classify as insufficient_evidence. "
+        "Evidence IDs are traceability only. Do not cite evidence that does not bear on your conclusion. "
+        "For deadline-first changes, remove strict FIFO as the primary key and use FIFO only for ties. "
+        "For implementation bugs or insufficient evidence use change_required=false, scheduling_precedence=none. "
+        "Do not invent real customer validation or claim any financial regulation requires a policy."
     )
     return await query(BenchmarkDiagnosis, system, canonical(payload), model=model)
+
+
+async def revise_benchmark_diagnosis(payload:dict, *, prior:dict,
+                                    visible_feedback:list[str], model:str)->BenchmarkDiagnosis:
+    """A SECOND model call, NEVER deterministic relabeling or benchmark-oracle repair.
+
+    Critique contains only observations verifiable directly in the input. The
+    original prediction, unmodified rubric and attempt count stay in the audit.
+    """
+    system=("Reconsider your own diagnostic JSON using ONLY input facts and public "
+            "consistency checks. Do not copy any presumed gold label. "
+            "Return a NEW complete JSON object in the same schema. " + DECISION_PROTOCOL)
+    return await query(BenchmarkDiagnosis,system,
+        "Original case facts: "+canonical(payload)+
+        "\nOriginal diagnosis: "+canonical(prior)+
+        "\nObserved inconsistencies (NOT gold labels): "+canonical(visible_feedback)+
+        "\nCheck implementation, objective, evidence relevance, requirement-change policy and internal consistency.",
+        model=model)
+
+
+async def revise_proposal_diagnosis(r0_dev:dict,condition:str,*,previous:dict,
+                                    feedback:list[str],finance:bool):
+    """Second inference for ONE model; first inference is retained unmodified.
+
+    The proposed revision cannot access the other model's answer, HOLDOUT data,
+    the evaluator's hidden labels, or arbitrary test-score edits.
+    """
+    evidence=[SIMULATED_EVIDENCE] if condition=='counterexample' else []
+    schema=FinanceDiagnosis if finance else Diagnosis
+    model=FINANCE_MODEL if finance else MODEL
+    system=("Re-examine your independent requirements diagnosis using only the supplied "
+      "R0 development summary, original FIFO contract, evidence, and input-only notes. "
+      "Your output must be a completely new JSON conforming to the same schema. "
+      "Do not adopt any suspected gold label; reason about implementation correctness "
+      "versus business adequacy and do not invent evidence. " + DECISION_PROTOCOL)
+    return await query(schema,system,
+      "Pinned original FIFO contract: "+canonical(CONTRACT_R0)+
+      "\nIndependent R0 execution status: PASS for original contract."+
+      "\nDevelopment metrics: "+canonical(r0_dev)+
+      "\nSynthetic evidence: "+canonical(evidence)+
+      "\nOriginal answer from THIS MODEL ONLY: "+canonical(previous)+
+      "\nInput-only consistency notes: "+canonical(feedback),model=model)

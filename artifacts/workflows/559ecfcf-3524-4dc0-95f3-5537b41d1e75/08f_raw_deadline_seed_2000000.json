@@ -1,0 +1,43 @@
+{
+  "name": "deadline",
+  "seed": 2000000,
+  "source_sha256": "560c30d0c5a1e513ac8922ec9d66c21136394708604d356583bc81b1e09c8629",
+  "sandbox_id": "iwvacdwep2srts00rjoet",
+  "elapsed_seconds": 0.367,
+  "stdout": "",
+  "stderr": "",
+  "output": {
+    "assignments": [
+      {
+        "case_id": "BL00-02",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "BL00-01",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "BL00-00",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 1
+      },
+      {
+        "case_id": "BL00-04",
+        "reviewer_id": "R-B",
+        "day": 0,
+        "hours": 1
+      }
+    ],
+    "unassigned_case_ids": [
+      "BL00-05",
+      "BL00-03"
+    ]
+  },
+  "output_sha256": "80535fa4decc31777716272a89ecd6aa08e3f11d9d6f356b35f4e2d50c49e667",
+  "error": null
+}

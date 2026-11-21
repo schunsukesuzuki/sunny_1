@@ -36,7 +36,7 @@ def test_full_run_waits_for_explicit_human_approval_and_exports_partial(client,m
     assert st['linked_ids']['approvals'] is None
     assert not any('experiments' in x['name'] for x in st['stages'])
     assert [x['name'] for x in st['stages']]==[
-        '00_evidence_grounded_requirements','00b_evidence_review','00c_grounded_test_contract','01_input','02_service_design','03_r0_e2b','04_independent_diagnoses','05_human_approval','08c_grounded_kpi_verification']
+        '00_evidence_grounded_requirements','00b_evidence_review','00c_grounded_test_contract','01_input','02_service_design','03_r0_e2b','04_independent_diagnoses','05_human_approval','08c_grounded_kpi_verification','08d_notification_prototype','08e_requirement_trace']
     assert st['bundle_url']
     with zipfile.ZipFile(io.BytesIO(client.get(st['bundle_url']).content)) as z:
         assert json.loads(z.read('manifest.json'))['status']=='PARTIAL'
@@ -57,7 +57,7 @@ def test_full_run_waits_for_explicit_human_approval_and_exports_partial(client,m
     final=client.get(f"/api/full-run/{st['workflow_id']}").json()
     assert final['status']=='COMPLETE', final
     assert all(final['linked_ids'].values())
-    assert len(final['stages'])==14
+    assert len(final['stages'])==17  # v0.21 adds 08f blind optimality
     assert final['bundle_url']
     with zipfile.ZipFile(io.BytesIO(client.get(final['bundle_url']).content)) as z:
         manifest=json.loads(z.read('manifest.json'))

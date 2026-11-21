@@ -1,4 +1,4 @@
-"""Claims Operations Planner v0.18: E2B + local Qwen + auditable two-level verification."""
+"""Claims Operations Planner v0.21: auditable LLM and pinned Domain Skill comparison."""
 from __future__ import annotations
 
 import asyncio
@@ -26,9 +26,12 @@ from .domain import (CONTRACT_R0, CONTRACT_R1, SERVICE_R0, SERVICE_R1,
 from .e2b_runner import run_in_e2b
 from . import llm
 from . import diagnostic_quality as dq
+from . import diagnostic_protocol as dp
 from . import business_assessment as ba
 from . import policy_validation as pv
+from . import dev_selection as dsel
 from . import export_bundle as ex
+from skills.claims_allocation import bundle as claims_skill
 from .diagnostic_benchmark import FIXTURES, FIXTURE_VERSION, public_cases
 
 ARTIFACT_DIR = Path(os.getenv("ARTIFACT_DIR", "/app/artifacts"))
@@ -68,7 +71,7 @@ def store(kind: str, id_: str, filename: str, data: object):
     return target
 
 
-app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.18.0")
+app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.21.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                    allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
@@ -141,7 +144,7 @@ def artifact_bundle(kind: str, artifact_id: str):
         f = path_for("exports", state["export_id"]) / "complete_audit_package.zip"
         if not f.is_file():
             raise HTTPException(409, "Full-run ZIP not ready")
-        return FileResponse(f, filename=f"claims_full_run_v015_{artifact_id}.zip", media_type="application/zip")
+        return FileResponse(f, filename=f"claims_full_run_v021_{artifact_id}.zip", media_type="application/zip")
     data = io.BytesIO()
     with zipfile.ZipFile(data, mode="w", compression=zipfile.ZIP_DEFLATED) as z:
         # Export related records too so the R0 -> evidence -> approval -> experiment chain can be audited offline.
@@ -202,6 +205,7 @@ class R0Request(BaseModel):
 
 
 class ProposeRequest(BaseModel):
+    enable_repair: bool = False
     r0_run_id: str
     evidence_condition: Literal["counterexample", "control"] = "counterexample"
     workflow_id: str | None = None
@@ -224,8 +228,9 @@ class GenerateRequest(BaseModel):
 
 class EvaluateRequest(BaseModel):
     approval_id: str
-    python_code: str = Field(min_length=100, max_length=30000)
+    python_code: str = Field(default='', max_length=30000)
     max_repairs: int = Field(2, ge=0, le=2)
+    r1_mode: Literal['llm_only','skill_only','compare'] = 'llm_only' 
 
 
 class DesignRequest(BaseModel):
@@ -264,9 +269,14 @@ def _aggregate(rows: list[dict]) -> dict:
             "violations": [v for m in rows for v in m["violations"]][:10], "seeds": [m["seed"] for m in rows]}
 
 
+@app.get('/api/skills/claims-allocation')
+def claims_allocation_skill_manifest():
+    return claims_skill.manifest()
+
+
 @app.get("/api/sample")
 def sample():
-    return {"title": "Claims Operations Planner", "version": "0.15.0", "customer_profile": "German InsurTech SaaS (fictional)",
+    return {"title": "Claims Operations Planner", "version": "0.21.0", "customer_profile": "German InsurTech SaaS (fictional)",
             "brief": BRIEF, "contract_r0": CONTRACT_R0, "contract_r1": CONTRACT_R1,
             "service_design_r0": SERVICE_R0, "service_design_r1": SERVICE_R1,
             "synthetic_counterexample": SIMULATED_EVIDENCE,
@@ -279,7 +289,7 @@ def sample():
 
 @app.get("/api/health")
 async def health():
-    return {"app": "ok", "version": "0.15.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
+    return {"app": "ok", "version": "0.21.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
             "ollama": await llm.status()}
 
 
@@ -313,7 +323,7 @@ async def run_r0(body: R0Request):
     held_metrics = {name: _aggregate([m for m in metrics if m["seed"] in holdout]) for name, metrics in results.items()}
     if not dev_metrics["fifo"]["valid"] or not held_metrics["fifo"]["valid"]:
         raise HTTPException(502, "R0 FIFOの独立評価が失敗しました。")
-    data = {"run_id": rid, "created_at": now(), "version": "0.15.0", "contract": CONTRACT_R0,
+    data = {"run_id": rid, "created_at": now(), "version": "0.21.0", "contract": CONTRACT_R0,
             "service_design": body.service_design or SERVICE_R0, "brief": body.brief,
             "seed": body.seed, "dev_seeds": dev, "holdout_seeds": holdout,
             "development": dev_metrics, "holdout": held_metrics,
@@ -361,6 +371,38 @@ async def propose(body: ProposeRequest):
                        condition=body.evidence_condition, is_vertical=True)
     coding_score = dq.legacy_diagnostic_score(diagnosis.model_dump(),
                        condition=body.evidence_condition, is_vertical=False)
+    # Keep original answers immutable even when user opts into assisted rediagnosis.
+    initial_snapshots={'qwen':{'answer':diagnosis.model_dump(),'rubric':coding_score},
+                       'oda':{'answer':finance_diagnosis.model_dump(),'rubric':vertical_score}}
+    repair_audit={'enabled':body.enable_repair,'attempts':{},
+                  'principle':'Second model inference, NOT deterministic corrected labels; hidden rubric failures never injected into prompts'}
+    if body.enable_repair:
+        # Each model only receives its OWN previous answer and public R0 facts.
+        for role in ('qwen','oda'):
+            initial=initial_snapshots[role]
+            if initial['rubric']['pass']:
+                continue
+            finance=(role=='oda')
+            public_feedback=dp.public_proposal_checks(body.evidence_condition,initial['answer'],finance=finance)
+            audit={'initial_pass':False,'public_feedback':public_feedback,'revised':False}
+            try:
+                revised=await llm.revise_proposal_diagnosis(parent['development'],body.evidence_condition,
+                    previous=initial['answer'],feedback=public_feedback,finance=finance)
+                new_score=dq.legacy_diagnostic_score(revised.model_dump(),
+                    condition=body.evidence_condition,is_vertical=finance)
+                audit.update({'revised':True,'revised_answer':revised.model_dump(),
+                              'revised_score':new_score,'final_pass':new_score['pass']})
+                if finance:
+                    finance_diagnosis=revised
+                    vertical_score=new_score
+                else:
+                    diagnosis=revised
+                    coding_score=new_score
+            except Exception as exc:
+                audit['error']=str(getattr(exc,'detail',exc))[:350]
+            repair_audit['attempts'][role]=audit
+    store('proposals',pid,'diagnostic_initial_scores.json',initial_snapshots)
+    store('proposals',pid,'diagnostic_repair_audit.json',repair_audit)
     domain_pass, domain_errors = vertical_score["pass"], vertical_score["failure_codes"]
     baseline_pass = coding_score["pass"]
     evidence = [SIMULATED_EVIDENCE] if body.evidence_condition == "counterexample" else []
@@ -372,6 +414,9 @@ async def propose(body: ProposeRequest):
                 "finance_diagnosis_rubric_failures": domain_errors,
                 "qwen_diagnostic_quality": coding_score,
                 "oda_diagnostic_quality": vertical_score,
+                "diagnostic_repair":repair_audit,
+                "diagnostic_initial_scores":{'qwen':initial_snapshots['qwen']['rubric'],
+                                             'oda':initial_snapshots['oda']['rubric']},
                 "synthetic_requirement_fit": vertical_score["synthetic_requirement_fit"],
                 "real_customer_business_validity":"UNVERIFIED",
                 "model_comparison": {"qwen":llm.MODEL, "oda_fin_rl_8b":llm.FINANCE_MODEL,
@@ -386,6 +431,9 @@ async def propose(body: ProposeRequest):
                     "Synthetic deadline KPI compared on new HOLDOUT",],
                 "status": "AWAITING_HUMAN_APPROVAL" if domain_pass else "DOMAIN_REVIEW_HOLD",
                 "external_validity": "UNVERIFIED"}
+    if body.enable_repair:
+        store('proposals',pid,'qwen_diagnosis_final.json',diagnosis.model_dump())
+        store('proposals',pid,'oda_diagnosis_final.json',finance_diagnosis.model_dump())
     store("proposals", pid, "proposal.json", proposal)
     return proposal
 
@@ -507,6 +555,8 @@ async def generate_r1(body: GenerateRequest):
 @app.post("/api/evaluate-r1")
 async def evaluate_r1(body: EvaluateRequest):
     rec, prop, parent = approved(body.approval_id)
+    if body.r1_mode != 'skill_only' and not (100 <= len(body.python_code) <= 30000):
+        raise HTTPException(422, 'LLM or compare mode requires generated Python source (100+ chars)')
     # Refuse retests against prior evaluation: fresh new approval must be generated for another experiment.
     eid = fresh_id()
     marker = path_for("approvals", body.approval_id) / "evaluation_started.json"
@@ -517,29 +567,60 @@ async def evaluate_r1(body: EvaluateRequest):
         raise HTTPException(409, "This approval has already been used to evaluate R1") from exc
     store("experiments", eid, "started.json", {"created_at":now(), "approval_id":body.approval_id,
           "r0_run_id": parent["run_id"], "source_sha256":sha256(body.python_code)})
-    store("experiments", eid, "input_candidate.py", body.python_code)
+    if body.r1_mode != 'skill_only':
+        store("experiments", eid, "input_candidate.py", body.python_code)
+    store("experiments",eid,"execution_mode.json",{"r1_mode":body.r1_mode,
+          "requested_by":"human_approved_workflow","selection_policy":"DEV_ONLY",
+          "skill_version":claims_skill.SKILL_VERSION if body.r1_mode != 'llm_only' else None})
     seed = parent["seed"]
     dev_seeds = [seed+100, seed+101, seed+102]
     holdout_seeds = [seed+20000, seed+20001]
     dev_data = {s: make_dataset(s) for s in dev_seeds}
+    # Pinned, human-unseen DEV-only counterexamples and stresses.  The holdout
+    # remains a completely separate population and is never used in repairs.
+    dev_probes = pv.policy_probes()
+    dev_stresses = pv.stress_scenarios()
+    full_dev_data = {**dev_data, **dev_probes, **dev_stresses}
     fifo, deadline = get_reference_sources()
     try:
-        dev_refs = await asyncio.to_thread(run_in_e2b, dev_data, {"fifo": fifo, "deadline": deadline})
+        dev_refs = await asyncio.to_thread(run_in_e2b, {**dev_data, **dev_stresses}, {"fifo": fifo, "deadline": deadline})
     except Exception as exc:
         store_failure(eid, "E2B DEV reference", exc)
         raise HTTPException(502, "E2B DEV参照評価に失敗: " + str(exc)[:240]) from exc
     store_raw_e2b("experiments", eid, "dev_reference", dev_refs)
-    reference_metrics = _evaluate_e2b(dev_refs, dev_data)
+    reference_metrics = _evaluate_e2b(
+        {k:[r for r in v if r.seed in dev_data] for k,v in dev_refs.items()}, dev_data)
+    stress_refs = _evaluate_e2b(
+        {k:[r for r in v if r.seed in dev_stresses] for k,v in dev_refs.items()}, dev_stresses)
     attempts = []
     selected = None
     selected_metric = None
     current_code = body.python_code
     previous_code = None
-    for ix in range(body.max_repairs + 1):
+    for ix in range(body.max_repairs + 1) if body.r1_mode != "skill_only" else []:
         try:
-            raw = await asyncio.to_thread(run_in_e2b, dev_data, {"generated": current_code})
-            metrics = _evaluate_e2b(raw, dev_data)["generated"]
+            raw = await asyncio.to_thread(run_in_e2b, full_dev_data, {"generated": current_code})
+            dev_runs = [r for r in raw['generated'] if r.seed in dev_data]
+            probe_runs = [r for r in raw['generated'] if r.seed in dev_probes]
+            stress_runs = [r for r in raw['generated'] if r.seed in dev_stresses]
+            metrics = _evaluate_e2b({'generated':dev_runs}, dev_data)['generated']
+            probes = [pv.evaluate_probe(dev_probes[r.seed],r.output,r.error) for r in probe_runs]
+            stress_metrics = _evaluate_e2b({'generated':stress_runs}, dev_stresses)['generated']
+            stress_candidates = {r['seed']:r for r in stress_metrics}
+            stress_deadline = {r['seed']:r for r in stress_refs['deadline']}
+            # DEV stress comparison is fixed before R1 is selected.
+            stress_checks = [
+                {'seed':seed,'scenario':ds['scenario'],
+                 'generated':{'valid':bool(stress_candidates[seed]['valid']),
+                              'missed':stress_candidates[seed]['missed_deadlines'],
+                              'unassigned':stress_candidates[seed].get('unassigned_cases')},
+                 'deadline':{'valid':bool(stress_deadline[seed]['valid']),
+                             'missed':stress_deadline[seed]['missed_deadlines'],
+                             'unassigned':stress_deadline[seed].get('unassigned_cases')}}
+                for seed,ds in dev_stresses.items()]
         except Exception as exc:
+            probes = []
+            stress_checks = []
             metrics = [{"seed": s, "valid": False, "violations": ["E2B error: " + str(exc)[:180]],
                         "missed_deadlines": None, "assigned_hours": None} for s in dev_seeds]
         store_attempt_code(eid, ix, current_code, previous_code)
@@ -550,12 +631,16 @@ async def evaluate_r1(body: EvaluateRequest):
             del raw
         agg = _aggregate(metrics)
         base = reference_metrics["fifo"]
-        meets_business = (agg["valid"] and all(m["assigned_hours"] == b["assigned_hours"] and
-                                            m["missed_deadlines"] <= b["missed_deadlines"]
-                                            for m,b in zip(metrics,base)))
+        selection = dsel.gate(metrics,base,reference_metrics['deadline'],probes,stress_checks)
+        meets_business = selection['eligible']
         attempt = {"attempt": ix, "code_sha256": sha256(current_code),
                    "evaluation": agg, "metrics": metrics,
-                   "passes_fixed_hours_and_deadline": meets_business}
+                   "passes_fixed_hours_and_deadline": agg['valid'] and all(
+                       m.get('assigned_hours')==b.get('assigned_hours') and
+                       m.get('missed_deadlines',10**9)<=b.get('missed_deadlines',-1)
+                       for m,b in zip(metrics,base)),
+                   "selection_gate":selection,
+                   "behavioral_probes":probes, "stress_checks":stress_checks}
         attempts.append(attempt)
         store("experiments", eid, f"attempt_{ix:02d}.json", attempt)
         if meets_business and (selected_metric is None or agg["missed_total"] < selected_metric["missed_total"]):
@@ -568,8 +653,11 @@ async def evaluate_r1(body: EvaluateRequest):
         # Only development metrics feed back into Qwen. Holdout is not created until selection.
         feedback = canonical({"candidate": agg,
             "relevant_failures": [m["violations"][:5] for m in metrics],
+            "selection_gate_failures": selection['reasons'],
+            "behavioral_dev_checks": [{"scenario":p['scenario'],"checks":p['checks']} for p in probes],
+            "stress_dev_checks": stress_checks,
             "fifo_dev": _aggregate(base), "deadline_reference_dev": _aggregate(reference_metrics["deadline"]),
-            "requirement": "Reduce missed deadlines without more worked reviewer hours. Preserve qualifications and capacities."})
+            "requirement": "Fix DEV policy failures and stress regressions without breaking qualifications, capacity or total assigned hours. Never infer correctness from the benchmark alone."})
         try:
             repaired = await llm.generate(parent["brief"], SERVICE_R1, feedback=feedback,
                                           domain_review=domain_context_for_generation(rec, prop))
@@ -577,7 +665,64 @@ async def evaluate_r1(body: EvaluateRequest):
         except HTTPException as exc:
             attempts[-1]["repair_error"] = str(exc.detail)[:200]
             break
+    # v0.20: Domain Skill candidates run in separate E2B sandboxes. Their
+    # DEV outcomes are never passed to the LLM repair loop, and HOLDOUT has
+    # not been generated. The grader remains app.domain.validate, not a Skill.
+    skill_records = []
+    skill_sources = {}
+    selected_engine = 'llm_generated' if selected is not None else None
+    selected_dev_missed = selected_metric['missed_total'] if selected_metric else None
+    if body.r1_mode in ('skill_only', 'compare'):
+        skill_manifest=claims_skill.manifest()
+        store('experiments',eid,'skill_manifest.json',skill_manifest)
+        for fname,content in claims_skill.source_files().items():
+            store('experiments',eid,'skill_component_'+fname,content)
+        skill_sources={f'skill_{strategy}':claims_skill.sandbox_source(strategy)
+                       for strategy in claims_skill.STRATEGIES}
+        for name, source in skill_sources.items():
+            store('experiments',eid,f'{name}.py',source)
+        try:
+            skill_raw=await asyncio.to_thread(run_in_e2b,full_dev_data,skill_sources)
+        except Exception as exc:
+            store('experiments',eid,'skill_execution_error.json',
+                  {'error_type':type(exc).__name__,'detail':str(exc)[:400]})
+            raise HTTPException(502,'Skill E2B DEV evaluation failed: '+str(exc)[:200]) from exc
+        store_raw_e2b('experiments',eid,'skill_dev',skill_raw)
+        for name, series in skill_raw.items():
+            dev_rows=_evaluate_e2b({name:[r for r in series if r.seed in dev_data]},dev_data)[name]
+            probes_rows=[pv.evaluate_probe(dev_probes[r.seed],r.output,r.error)
+                         for r in series if r.seed in dev_probes]
+            stress_rows=_evaluate_e2b({name:[r for r in series if r.seed in dev_stresses]},dev_stresses)[name]
+            stress_by_seed={r['seed']:r for r in stress_rows}
+            stress_reference={r['seed']:r for r in stress_refs['deadline']}
+            stress_checks=[{'seed':sn,'scenario':ds['scenario'],
+                'generated':{'valid':bool(stress_by_seed[sn]['valid']),
+                             'missed':stress_by_seed[sn]['missed_deadlines'],
+                             'unassigned':stress_by_seed[sn].get('unassigned_cases')},
+                'deadline':{'valid':bool(stress_reference[sn]['valid']),
+                            'missed':stress_reference[sn]['missed_deadlines'],
+                            'unassigned':stress_reference[sn].get('unassigned_cases')}}
+                for sn,ds in dev_stresses.items()]
+            skill_gate=dsel.gate(dev_rows,reference_metrics['fifo'],
+                                 reference_metrics['deadline'],probes_rows,stress_checks)
+            skill_agg=_aggregate(dev_rows)
+            row={'engine':name,'provenance':'PINNED_REVIEWED_DOMAIN_SKILL_NOT_LLM',
+                 'source_sha256':sha256(skill_sources[name]),'selection_gate':skill_gate,
+                 'dev':skill_agg,'dev_rows':dev_rows,'behavioral_probes':probes_rows,
+                 'stress_checks':stress_checks,
+                 'sandbox_execution_seconds':round(sum(r.elapsed_seconds for r in series),3),
+                 'llm_tokens':'NOT_MEASURED', 'holdout_executed':False}
+            skill_records.append(row)
+            store('experiments',eid,f'{name}_dev_gate.json',row)
+            # Predeclared DEV criterion; never select using HOLDOUT. Ties
+            # keep existing LLM selection in compare mode for a fair contrast.
+            if skill_gate['eligible'] and (selected_dev_missed is None or skill_agg['missed_total'] < selected_dev_missed):
+                selected=skill_sources[name]
+                selected_metric=skill_agg
+                selected_dev_missed=skill_agg['missed_total']
+                selected_engine=name
     held = None
+    comparator_metrics = {}
     holdout_executed = False
     technical = False
     if selected is not None:
@@ -591,6 +736,35 @@ async def evaluate_r1(body: EvaluateRequest):
         store_raw_e2b("experiments", eid, "holdout", holdout_runs)
         held = _evaluate_e2b(holdout_runs, holdout_data)
         holdout_executed = True
+        # Comparative HOLDOUT is strictly post-selection and is not used for
+        # candidate selection, generation or repair. This is not an extra retry.
+        comparator_sources={}
+        if body.r1_mode=='compare':
+            if selected_engine != 'llm_generated':
+                llm_eligible=next((a for a in attempts if a['selection_gate']['eligible']),None)
+                if llm_eligible is not None:
+                    code_file=path_for('experiments',eid)/f"attempt_{llm_eligible['attempt']:02d}.py"
+                    comparator_sources['llm_generated']=code_file.read_text(encoding='utf-8')
+            for name,source in skill_sources.items():
+                if name != selected_engine and any(c['engine']==name and c['selection_gate']['eligible'] for c in skill_records):
+                    comparator_sources[name]=source
+        if comparator_sources:
+            try:
+                comparison_raw=await asyncio.to_thread(run_in_e2b,holdout_data,comparator_sources)
+                store_raw_e2b('experiments',eid,'holdout_comparators',comparison_raw)
+                comparator_metrics=_evaluate_e2b(comparison_raw,holdout_data)
+                store('experiments',eid,'holdout_comparators.json',
+                      {'purpose':'POST_DEV_SELECTION_COMPARISON_NOT_SELECTION',
+                       'selected_engine':selected_engine,'metrics':comparator_metrics,
+                       'no_holdout_feedback_to_llm':True})
+            except Exception as exc:
+                store('experiments',eid,'holdout_comparators_error.json',
+                      {'error_type':type(exc).__name__,'message':str(exc)[:500],
+                       'primary_selected_run_unchanged':True})
+                comparator_metrics={}
+        else:
+            comparator_metrics={}
+
         a,b = held["fifo"], held["generated"]
         technical = (all(x["valid"] for x in b) and all(y["valid"] for y in a)
                      and all(x["assigned_hours"] == y["assigned_hours"] for x,y in zip(b,a))
@@ -603,11 +777,25 @@ async def evaluate_r1(body: EvaluateRequest):
               "diagnostic_quality": {"qwen":prop.get("qwen_diagnostic_quality"), "oda":prop.get("oda_diagnostic_quality")},
               "finance_diagnosis_pass": prop["finance_diagnosis_matches_rubric"],
               "diagnostic_models": prop["model_comparison"],
-              "dev_seeds": dev_seeds, "holdout_seeds": holdout_seeds if holdout_executed else [],
+              "dev_seeds": dev_seeds, "dev_policy_probe_seeds":list(dev_probes),
+              "dev_stress_seeds":list(dev_stresses),
+              "selection_gate_version":dsel.VERSION,
+              "selection_status":("ELIGIBLE_LLM_SELECTED" if selected_engine == 'llm_generated' else
+                                  "ELIGIBLE_SKILL_SELECTED" if selected_engine else "HOLD_NO_ELIGIBLE_CANDIDATE"),
+              "r1_mode":body.r1_mode, "selected_engine":selected_engine,
+              "selected_source_provenance":('LLM_GENERATED' if selected_engine=='llm_generated' else
+                   'PINNED_REVIEWED_DOMAIN_SKILL_NOT_LLM' if selected_engine else 'NONE'),
+              "skill_version":claims_skill.SKILL_VERSION if skill_records else None,
+              "skill_comparison":skill_records,
+              "holdout_comparators":comparator_metrics,
+              "holdout_comparison_note":"Post-DEV-selection comparison only; not fed to any repair or selection",
+              "skill_comparison_scope":"DEV-only candidate selection; no Skill DEV metrics fed to LLM repair, no cross-model proof",
+              "holdout_seeds": holdout_seeds if holdout_executed else [],
               "development_reference": {k: _aggregate(v) for k,v in reference_metrics.items()},
-              "attempts": attempts, "selected_code_sha256": sha256(selected) if selected else None,
+              "attempts": attempts, "selected_attempt":next((a['attempt'] for a in attempts if a['code_sha256']==sha256(selected)),None) if selected_engine=='llm_generated' else None,
+              "selected_code_sha256": sha256(selected) if selected else None,
               "holdout": held, "holdout_executed": holdout_executed,
-              "technical_closed_loop_demonstrated": bool(technical and prop["finance_diagnosis_matches_rubric"]),
+              "technical_closed_loop_demonstrated": bool(technical and selected_engine=='llm_generated' and prop["finance_diagnosis_matches_rubric"]),
               "human_adjudicated_r1_kpi_improvement_demonstrated": bool(technical and rec.get("domain_review_override")),
               "r1_independent_kpi_improvement_pass": bool(technical),
               "business_requirement_validity": "UNVERIFIED",
@@ -616,6 +804,16 @@ async def evaluate_r1(body: EvaluateRequest):
                         "finance_diagnosis_sha256":sha256(prop["finance_diagnosis"]),
                         "service_design_sha256": sha256(SERVICE_R1), "r0_source_sha256": sha256(fifo),
                         "r1_source_sha256": sha256(selected) if selected else None}}
+    store("experiments", eid, "dev_selection_audit.json", {
+        'version':dsel.VERSION,'attempts':[{'attempt':a['attempt'],'source_sha256':a['code_sha256'],
+            'selection_gate':a['selection_gate'], 'behavioral_probes':a['behavioral_probes'],
+            'stress_checks':a['stress_checks']} for a in attempts],
+        'selected_code_sha256':result['selected_code_sha256'],
+        'selected_engine':selected_engine,
+        'skill_candidates':[{'engine':c['engine'],'source_sha256':c['source_sha256'],
+                             'selection_gate':c['selection_gate'],'dev':c['dev']}
+                            for c in skill_records],
+        'holdout_used_for_selection':False,'status':result['selection_status']})
     store("experiments", eid, "experiment.json", result)
     if selected:
         store("experiments", eid, "selected_r1.py", selected)
@@ -670,7 +868,9 @@ def report_r1(result: dict, parent: dict, proposal: dict) -> str:
         rows.append(f"|{name}|{ag['missed_total']}|{ag['worked_hours_total']}|{ag['deadline_hit_rate']}|{ag['valid']}|")
     changes = "\n".join(f"- {x}" for x in proposal["contract_delta"])
     attempt_rows = "\n".join(f"|{a['attempt']}|`{a['code_sha256'][:16]}`|{a['evaluation']['valid']}|{a['evaluation']['missed_total']}|" for a in result["attempts"])
-    return f"""# Claims Operations Planner v0.14 — Requirement Refinement監査レポート
+    skill_rows = [f"|{c['engine']}|{c['dev']['missed_total']}|{c['dev']['valid']}|{c['selection_gate']['eligible']}|{c['sandbox_execution_seconds']}|"
+                  for c in result.get('skill_comparison',[])]
+    return f"""# Claims Operations Planner v0.21 — Requirement Refinement監査レポート
 
 > **合成案件・模擬顧客の反例に基づく技術検証のみ**。顧客要件の現実的妥当性と実業務効果は未確認。
 
@@ -739,7 +939,9 @@ def report_r1(result: dict, parent: dict, proposal: dict) -> str:
 - R0 contract hash: `{result['audit']['human_approval']['contract_r0_sha256']}`
 - R1 contract hash: `{result['audit']['human_approval']['contract_r1_sha256']}`
 - Service design hash: `{result['audit']['service_design_sha256']}`
-- Generated code hash: `{result['selected_code_sha256']}`
+- Selected R1 source hash: `{result['selected_code_sha256']}`
+- Selected engine: `{result.get('selected_engine')}` / provenance: `{result.get('selected_source_provenance')}`
+- Selection mode: `{result.get('r1_mode')}`. A Skill selection is NOT LLM code-generation success.
 - Parent run: `{parent['run_id']}` / Proposal: `{proposal['proposal_id']}` / Experiment: `{result['experiment_id']}`
 
 ## 5. 改訂コードの開発用評価
@@ -749,7 +951,22 @@ def report_r1(result: dict, parent: dict, proposal: dict) -> str:
 {attempt_rows}
 
 - DEV: `{result['dev_seeds']}`。Qwenに渡す修正指示はDEV由来のみ。
+- DEV candidate gate: **`{result['selection_status']}`** (`{result['selection_gate_version']}`) — KPI + deadline/qualification behavioral probes + four stress scenarios.
+- DEV selected attempt: `{result['selected_attempt']}`; no eligible candidate means the untouched holdout is **NOT_EXECUTED**, not a PASS.
+- Detailed gate reasons/code hashes: `dev_selection_audit.json`.
+- The 08b post-selection policy check repeats fixed DEV probes/stresses; it is NOT an untouched independent behavioral holdout.
 - HOLDOUT: `{result['holdout_seeds']}`。生成・選択後に一度だけ実行。失敗した結果を修正プロンプトに転用しない。
+
+### 5b. Domain SkillのDEV比較（LLM修復に入力しない）
+
+|方式|DEV期限超過|制約PASS|選別適格|E2B実行秒数（DEVのみ）|
+|---|---:|---|---|---:|
+{chr(10).join(skill_rows) or '|Skill未実行|—|—|—|—|'}
+
+- Skillは人間が事前に用意したコードであり、LLMの生成・修復に成功したことを示しません。
+- `skill_manifest.json`、`skill_component_*.py`、`skill_*.py`、実行結果と独立DEVゲートが監査対象です。
+- bounded_beamは有界探索であり、厳密な最適化ソルバーではありません。
+- LLMのtokenコスト・E2Bの請求額は未計測。実行秒数はE2Bコマンドの観測値のみ。
 
 ## 6. 同じHOLDOUT・共通KPIによるR0/R1比較
 
@@ -761,7 +978,7 @@ def report_r1(result: dict, parent: dict, proposal: dict) -> str:
 - 未割当案件も期限超過に算入。割当予定時間が減るだけでは『同一稼働で改善』と判定しない。
 - 自動診断を含む外側ループ技術実証: **{result['technical_closed_loop_demonstrated']}**
 - 人間のHOLD審査を経たR1技術KPI改善: **{result.get('human_adjudicated_r1_kpi_improvement_demonstrated', False)}**
-- R1独立KPI改善（診断の適否とは別）: **{result.get('r1_independent_kpi_improvement_pass', False)}**\n- R1の期限優先・希少資格の行動プローブは手順10の追加検証が必要です。ここでのKPI PASSはR1の意味的適合を証明しません。
+- R1独立KPI改善（診断の適否とは別）: **{result.get('r1_independent_kpi_improvement_pass', False)}**\n- 期限優先・希少資格の固定DEV反例は候補選別に用いました。選択後の08bは同一フィクスチャの再実行であり独立HOLDOUTの行動証明ではありません。
 - 市場受容・価格受容・法務/GDPR・現地業務手順: **UNVERIFIED**
 
 ## 7. 事業開発の収益仮説（すべて未検証）
@@ -864,6 +1081,8 @@ def download_business_assessment(assessment_id: str):
 
 
 class BenchmarkRequest(BaseModel):
+    enable_repair: bool = False  # Explicit opt-in; old scoring remains identical.
+    blind_generalization: bool = False  # First-pass-only, no repair, nonselected cases.
     case_ids: list[Literal["fifo_sla_conflict", "correct_fifo_no_customer_evidence",
                            "actual_fifo_implementation_bug", "conflicting_stakeholder_notes"]] = Field(
             default_factory=lambda:["fifo_sla_conflict", "actual_fifo_implementation_bug"], min_length=1, max_length=4)
@@ -878,12 +1097,13 @@ def benchmark_fixtures():
 
 
 def _benchmark_report(record: dict) -> str:
-    lines = ["# Claims Operations Planner v0.14 — Diagnostic Benchmark", "",
+    lines = ["# Claims Operations Planner v0.21 — Diagnostic Benchmark", "",
         "> **合成フィクスチャの独立採点です。実顧客要件の正しさ・EU規制適合性を検証しません。**", "",
         f"- Benchmark ID: `{record['benchmark_id']}`", f"- Date: {record['created_at']}",
         f"- Fixtures: `{record['fixture_version']}` / Rubric: `{record['rubric_version']}`",
         f"- Cases: {', '.join(record['case_ids'])} / Repetitions: {record['repetitions']}",
-        "- 両モデルは同じ入力・同じスキーマ・同じ推論パラメータです。出力・独立評価は別々に記録します。", "",
+        "- 両モデルは同じ入力・同じスキーマ・同じ推論パラメータです。出力・独立評価は別々に記録します。",
+        "- 初回結果と修復後の結果を別々に報告します。修復フィードバックには隠された正解ラベルを使用しません。", "",
         "| Model | completed | overall rubric PASS | mean criterion score |", "|---|---:|---:|---:|"]
     for name, val in record['summary'].items():
         lines.append(f"|{name}|{val['completed']}|{val['passed']}|{val['mean_score']}|")
@@ -894,6 +1114,15 @@ def _benchmark_report(record: dict) -> str:
         evaluation=tr.get('rubric',{})
         pred=tr.get('diagnosis') or {}
         lines.append(f"|{tr['case_id']}|{tr['repetition']}|{tr['model_role']}|{pred.get('classification','—')}|{tr['status']}|{evaluation.get('score','—')}|{', '.join(evaluation.get('failure_codes',[])) or tr.get('error','—')}|")
+    lines.extend(["", "## Initial vs post-revision PASS", "", "| model | initial PASS | post-revision PASS | revised calls |", "|---|---:|---:|---:|"])
+    for role,stats in record['summary'].items():
+        lines.append(f"|{role}|{stats.get('initial_passed')}|{stats.get('passed')}|{stats.get('revised_calls',0)}|")
+    if record.get('blind_generalization',{}).get('enabled'):
+        lines += ["", "## Fresh blind generalization (initial calls only)", "",
+                  "These additional seeded synthetic cases receive no feedback or revisions.",
+                  "| model | passed | completed | planned |", "|---|---:|---:|---:|"]
+        for role,x in record['blind_generalization']['summary'].items():
+            lines.append(f"|{role}|{x['passed']}|{x['completed']}|{x['planned']}|")
     lines += ["", "## Interpretation", "", "- 分類だけでは合格しません。説明・改訂案・証拠ID・実装判定を独立採点します。",
               "- 同一アーキテクチャでもモデル差以外に量子化、ランダム性、応答形式の差が残ります。",
               "- 語句に基づく矛盾検出は限定的で、意味論的な証明ではありません。",
@@ -912,7 +1141,8 @@ async def run_benchmark(body: BenchmarkRequest):
     versions={"coding":llm.MODEL, "finance":llm.FINANCE_MODEL}
     meta={"benchmark_id":bid,"created_at":now(),"fixture_version":FIXTURE_VERSION,
           "rubric_version":dq.RUBRIC_VERSION,"case_ids":cases,"repetitions":body.repetitions,
-          "models":versions,"status":"RUNNING", "real_customer_validity":"UNVERIFIED"}
+          "models":versions,"status":"RUNNING", "real_customer_validity":"UNVERIFIED",
+          "diagnosis_repair_enabled":body.enable_repair,"protocol_version":dp.VERSION}
     store("benchmarks",bid,"started.json",meta)
     trials=[]
     for case in cases:
@@ -929,7 +1159,29 @@ async def run_benchmark(body: BenchmarkRequest):
                     response=await llm.benchmark_diagnosis(payload,model=model)
                     data=response.model_dump()
                     score=dq.benchmark_score(data, fixture['oracle'])
-                    tr.update({"status":"COMPLETED","diagnosis":data,"rubric":score})
+                    tr.update({"status":"COMPLETED","initial_diagnosis":data,
+                               "initial_rubric":score,"diagnosis":data,"rubric":score,
+                               "repair_attempted":False})
+                    # Repair uses ONLY checks derivable from this fixture's public input.
+                    # Oracle scoring NEVER enters revision prompts; original score retained.
+                    if body.enable_repair and not score['passed']:
+                        critique=dp.public_fact_checks(payload,data)
+                        tr['public_critique']=critique
+                        tr['repair_attempted']=True
+                        try:
+                            revised=await llm.revise_benchmark_diagnosis(payload,prior=data,
+                                visible_feedback=critique['input_only_feedback'],model=model)
+                            revised_data=revised.model_dump()
+                            revised_score=dq.benchmark_score(revised_data,fixture['oracle'])
+                            tr['revised_diagnosis']=revised_data
+                            tr['revised_rubric']=revised_score
+                            # The final score always reflects the latest actual LLM output,
+                            # never a deterministic substituted answer.
+                            tr['diagnosis']=revised_data
+                            tr['rubric']=revised_score
+                        except Exception as repair_exc:
+                            tr['repair_error']=str(getattr(repair_exc,'detail',repair_exc))[:500]
+                    tr['final_passed']=tr['rubric']['passed']
                 except Exception as exc:
                     tr["error_type"]=type(exc).__name__
                     tr["error"]=str(getattr(exc,"detail",exc))[:600]
@@ -944,11 +1196,41 @@ async def run_benchmark(body: BenchmarkRequest):
         scores=[t['rubric']['score'] for t in good]
         summary[role]={"model":versions[role],"planned":len(subset),"completed":len(good),
                        "passed":sum(t['rubric']['passed'] for t in good),
+                       "initial_passed":sum(t.get('initial_rubric',{}).get('passed',False) for t in good),
+                       "revised_calls":sum(t.get('repair_attempted',False) for t in good),
                        "mean_score":round(statistics.mean(scores),4) if scores else None,
                        "failed_calls":len(subset)-len(good)}
-    data={**meta,"status":"COMPLETED_WITH_ERRORS" if any(t['status']!='COMPLETED' for t in trials) else "COMPLETED",
+    # Blind diagnostic generalization has separate seeded cases. Do not use any
+    # failure code, score or answer from these cases for prompt revision.
+    blind_trials=[]; blind_summary={}
+    if body.blind_generalization:
+        from . import diagnostic_protocol as protocol
+        root_seed=protocol_seed=__import__('secrets').randbits(31)
+        blind_cases=protocol.blind_diagnostic_cases(root_seed)
+        for case_id,challenge in blind_cases.items():
+            for role,model in versions.items():
+                trial={'case_id':case_id,'model_role':role,'model_id':model,
+                       'input_sha256':sha256(challenge['input']),
+                       'revision_allowed':False,'status':'FAILED'}
+                try:
+                    ans=await llm.benchmark_diagnosis(challenge['input'],model=model)
+                    trial.update({'status':'COMPLETED','diagnosis':ans.model_dump(),
+                                  'rubric':dq.benchmark_score(ans.model_dump(),challenge['oracle'])})
+                except Exception as exc:
+                    trial['error']=str(getattr(exc,'detail',exc))[:500]
+                blind_trials.append(trial)
+                store('benchmarks',bid,f'blind_{case_id}_{role}.json',trial)
+        for role in versions:
+            xs=[x for x in blind_trials if x['model_role']==role]
+            blind_summary[role]={'planned':len(xs),'completed':sum(x['status']=='COMPLETED' for x in xs),
+                'passed':sum(x.get('rubric',{}).get('passed',False) for x in xs)}
+        store('benchmarks',bid,'blind_cases.json',
+            {'seed_root':root_seed,'cases':blind_cases,'scope':'Synthetic fresh cases; never used in revisions'})
+    data={**meta,"status":"COMPLETED_WITH_ERRORS" if any(t['status']!='COMPLETED' for t in trials+blind_trials) else "COMPLETED",
           "summary":summary,"trials":trials,
-          "methodology":"Same explicit schema, model-neutral prompt and exact synthetic fixture input; independent fixed oracle not included in prompt; no HOLDOUT disclosed.",
+          "blind_generalization":{'enabled':body.blind_generalization,'trials':blind_trials,
+                                  'summary':blind_summary,'no_repair_feedback':True},
+          "methodology":"Same explicit schema and common reasoning protocol. Initial scores always persisted. Optional model revision sees only input-derived checks and its previous answer, never oracle labels. Independent fixed rubric remains unchanged.",
           "caveat":"Rule-based checks, no gold-standard EU customer requirement or regulatory validation."}
     store("benchmarks",bid,"benchmark.json",data)
     store("benchmarks",bid,"report.md",_benchmark_report(data))

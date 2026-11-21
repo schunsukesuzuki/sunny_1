@@ -1,0 +1,6 @@
+{
+  "r1_mode": "compare",
+  "requested_by": "human_approved_workflow",
+  "selection_policy": "DEV_ONLY",
+  "skill_version": "CLAIMS-ALLOCATION-SKILL-v0.20.0"
+}

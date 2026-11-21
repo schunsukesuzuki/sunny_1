@@ -1,0 +1,181 @@
+{
+  "engine": "skill_bounded_beam",
+  "provenance": "PINNED_REVIEWED_DOMAIN_SKILL_NOT_LLM",
+  "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+  "selection_gate": {
+    "gate_version": "R1-DEV-SELECTION-GATE-v0.19.0",
+    "eligible": true,
+    "reasons": [],
+    "dev_cases": 3,
+    "behavioral_probes_pass": true,
+    "stress_scenarios_checked": 4,
+    "selection_rule": "Require valid DEV, strict improvement over FIFO on at least one DEV seed, equal hours, two behavioral probes and no stress regression against the fixed heuristic.",
+    "holdout_used_for_selection": false
+  },
+  "dev": {
+    "valid": true,
+    "missed_total": 0,
+    "worked_hours_total": 100,
+    "deadline_hit_rate": 1.0,
+    "all_claims_completed": true,
+    "violations": [],
+    "seeds": [
+      142,
+      143,
+      144
+    ]
+  },
+  "dev_rows": [
+    {
+      "valid": true,
+      "violations": [],
+      "missed_deadlines": 0,
+      "on_time": 18,
+      "completed": 18,
+      "assigned_hours": 31,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 1.0,
+      "seed": 142,
+      "sandbox_id": "i5gy6393bn8l50srj5z6s",
+      "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+      "output_sha256": "1caa9a4ecad6b14d3ce31e1fb87b2050bdf596925179da1ebc8ccd5c62bbe587",
+      "dataset_sha256": "448d3ad7876d740e2756419cb8d45eb846cc5182cb9f0327ee95158cfc27cea4",
+      "elapsed_seconds": 0.435,
+      "stderr": ""
+    },
+    {
+      "valid": true,
+      "violations": [],
+      "missed_deadlines": 0,
+      "on_time": 18,
+      "completed": 18,
+      "assigned_hours": 32,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 1.0,
+      "seed": 143,
+      "sandbox_id": "i5gy6393bn8l50srj5z6s",
+      "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+      "output_sha256": "3466c3e7290e816a18da862bce65ba1ae60f7cfed626884352bcfe170608a5af",
+      "dataset_sha256": "6a62c88e044b7a09eb8633e38c07e9165f03370bc92620c15d0a05895be5d618",
+      "elapsed_seconds": 0.393,
+      "stderr": ""
+    },
+    {
+      "valid": true,
+      "violations": [],
+      "missed_deadlines": 0,
+      "on_time": 18,
+      "completed": 18,
+      "assigned_hours": 37,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 1.0,
+      "seed": 144,
+      "sandbox_id": "i5gy6393bn8l50srj5z6s",
+      "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+      "output_sha256": "00de0f41b7cc391c2b335dc4a8a3f5036d5078e4d79991e153dfdda64f7000e4",
+      "dataset_sha256": "ce8763d22d707c696c13199c1518ec2f4fab33a89975bcbcd21a03e4f30bdd82",
+      "elapsed_seconds": 0.373,
+      "stderr": ""
+    }
+  ],
+  "behavioral_probes": [
+    {
+      "seed": 900001,
+      "scenario": "deadline_risk_probe",
+      "dataset_sha256": "5575eb9625e7050872d5f7cf582afd8cac3afa69270b3caabea8b79125e54cde",
+      "valid": true,
+      "checks": {
+        "urgent_served_on_due_day": true,
+        "both_cases_served": true
+      },
+      "pass": true,
+      "missed_deadlines": 0,
+      "unassigned_cases": 0,
+      "violations": [],
+      "execution_error": null
+    },
+    {
+      "seed": 900002,
+      "scenario": "scarce_qualification_probe",
+      "dataset_sha256": "152f675fe5e0514271365f4aaa711a15de12aa7266f46756994ccdbf8d4595df",
+      "valid": true,
+      "checks": {
+        "scarce_case_uses_sole_specialist": true,
+        "common_case_preserves_specialist_capacity": true,
+        "all_cases_served": true
+      },
+      "pass": true,
+      "missed_deadlines": 0,
+      "unassigned_cases": 0,
+      "violations": [],
+      "execution_error": null
+    }
+  ],
+  "stress_checks": [
+    {
+      "seed": 910000,
+      "scenario": "capacity_pressure",
+      "generated": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      }
+    },
+    {
+      "seed": 910001,
+      "scenario": "skill_bottleneck",
+      "generated": {
+        "valid": true,
+        "missed": 1,
+        "unassigned": 1
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 1,
+        "unassigned": 1
+      }
+    },
+    {
+      "seed": 910002,
+      "scenario": "deadline_compression",
+      "generated": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      }
+    },
+    {
+      "seed": 910003,
+      "scenario": "arrival_reordering",
+      "generated": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      }
+    }
+  ],
+  "sandbox_execution_seconds": 3.327,
+  "llm_tokens": "NOT_MEASURED",
+  "holdout_executed": false
+}

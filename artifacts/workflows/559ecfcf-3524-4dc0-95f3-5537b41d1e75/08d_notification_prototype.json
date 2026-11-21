@@ -1,0 +1,94 @@
+{
+  "version": "CLAIM-NOTIFICATION-PROTOTYPE-v0.19.0",
+  "status": "SUPPORTED_SYNTHETIC_PROTOTYPE",
+  "synthetic_pass": true,
+  "prototype_source": "app.notification_demo.prototype_notifications",
+  "implementation_origin": "PREBUILT_DETERMINISTIC_EXAMPLE_NOT_LLM_GENERATED",
+  "events": [
+    {
+      "event_id": "EV-001",
+      "claim_id": "C-001",
+      "policyholder_id": "P-001",
+      "changed_at_hour": 0,
+      "status": "RECEIVED"
+    },
+    {
+      "event_id": "EV-002",
+      "claim_id": "C-001",
+      "policyholder_id": "P-001",
+      "changed_at_hour": 9,
+      "status": "IN_REVIEW"
+    },
+    {
+      "event_id": "EV-003",
+      "claim_id": "C-002",
+      "policyholder_id": "P-002",
+      "changed_at_hour": 2,
+      "status": "RECEIVED"
+    },
+    {
+      "event_id": "EV-004",
+      "claim_id": "C-002",
+      "policyholder_id": "P-002",
+      "changed_at_hour": 23,
+      "status": "NEEDS_DOCUMENT"
+    }
+  ],
+  "candidate_notifications": [
+    {
+      "event_id": "EV-001",
+      "claim_id": "C-001",
+      "recipient_id": "P-001",
+      "sent_at_hour": 1,
+      "status": "RECEIVED"
+    },
+    {
+      "event_id": "EV-002",
+      "claim_id": "C-001",
+      "recipient_id": "P-001",
+      "sent_at_hour": 10,
+      "status": "IN_REVIEW"
+    },
+    {
+      "event_id": "EV-003",
+      "claim_id": "C-002",
+      "recipient_id": "P-002",
+      "sent_at_hour": 3,
+      "status": "RECEIVED"
+    },
+    {
+      "event_id": "EV-004",
+      "claim_id": "C-002",
+      "recipient_id": "P-002",
+      "sent_at_hour": 24,
+      "status": "NEEDS_DOCUMENT"
+    }
+  ],
+  "evaluation": {
+    "synthetic_pass": true,
+    "checks": {
+      "notifications_correspond_to_status_changes": true,
+      "all_sent_within_max_delay": true,
+      "coverage_threshold": true,
+      "correct_policyholder": true,
+      "status_matches_event": true,
+      "no_duplicate_or_spurious_notices": true
+    },
+    "errors": [],
+    "coverage_pct": 100.0,
+    "event_count": 4,
+    "notice_count": 4,
+    "max_delay_hours": 24,
+    "min_coverage_pct": 100
+  },
+  "negative_controls": {
+    "missing_notices_rejected": true,
+    "wrong_recipient_rejected": true
+  },
+  "scope": "STANDALONE_SYNTHETIC_NOTIFICATION_PROTOTYPE",
+  "is_R1_assignment_implementation": false,
+  "customer_integration": "NOT_IMPLEMENTED",
+  "customer_acceptance": "NOT_OBTAINED",
+  "production_go": false,
+  "note": "A deterministic prototype can pass its own independent acceptance oracle; it does not evaluate generated R1 or prove real-world service delivery."
+}

@@ -1,0 +1,3 @@
+# Optional exact CP-SAT oracle for v0.21, never a required deployment dependency.
+# The standard-library exhaustive solver remains available for small blind cases.
+ortools>=9.10,<10

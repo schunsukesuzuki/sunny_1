@@ -1,0 +1,6 @@
+{
+  "status": "NOT_APPLICABLE_TO_NOTIFICATION",
+  "synthetic_pass": false,
+  "reason": "R1 is reviewer assignment and cannot satisfy the claim-progress-update feature",
+  "comparison_only": "Unrelated fixed claims-assignment regression"
+}
