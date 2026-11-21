@@ -1,0 +1,10 @@
+{
+  "source_sha256": "e449983e87783cbd186f3436ac7f48026f8ad8b060d71009d950059d62087442",
+  "rationale": "This solution implements a deadline-first greedy assignment algorithm that prioritizes cases based on their deadlines (EDD - Earliest Deadline First) while respecting reviewer skills and daily capacity constraints. The approach:\n\n1. Loads input data from input.json\n2. Sorts cases by deadline day (earliest first) to prioritize urgent cases\n3. For each case, finds a suitable reviewer who has the required skill and available capacity on an appropriate day\n4. Assigns the case to the first reviewer who can handle it within their daily capacity\n5. Ensures no overtime by checking daily capacity limits\n6. Handles unassigned cases by adding them to the unassigned list\n7. Outputs results to output.json in the required format\n\nThe algorithm follows the business objective of minimizing deadline misses without increasing total reviewer hours, and respects all hard constraints including skill matching, capacity limits, and single assignment per case.",
+  "created_at": "2026-11-21T03:25:20+00:00",
+  "coding_model": "qwen3-coder:30b",
+  "finance_model": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+  "domain_review_sha256": "02b3cdcb9b89724693ce85a7c59769b3101b3dfe3bdc515f989f6e40985b021b",
+  "domain_review_used_as_advisory": true,
+  "human_adjudication_used_instead": false
+}

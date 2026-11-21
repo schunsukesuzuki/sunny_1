@@ -1,0 +1,17 @@
+{
+  "benchmark_id": "7eb3d37c-c456-4bb8-96d3-22a445626c72",
+  "created_at": "2026-11-21T03:27:49+00:00",
+  "fixture_version": "CLAIMS-DIAG-FIXTURES-v0.10.1",
+  "rubric_version": "DIAG-RUBRIC-v0.10.1",
+  "case_ids": [
+    "fifo_sla_conflict",
+    "actual_fifo_implementation_bug"
+  ],
+  "repetitions": 1,
+  "models": {
+    "coding": "qwen3-coder:30b",
+    "finance": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M"
+  },
+  "status": "RUNNING",
+  "real_customer_validity": "UNVERIFIED"
+}
