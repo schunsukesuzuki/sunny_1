@@ -43,7 +43,7 @@ def make_manifest(artifact_dir: Path, export_id: str, identifiers: dict,
             files.append(entry)
             total+=size
     incomplete=bool(missing or skipped or any(stage.get('status') not in ('COMPLETED','COMPLETED_WITH_FINDINGS') for stage in stages))
-    return {'format_version':'AUDIT-EXPORT-v0.21.0', 'export_id':export_id,
+    return {'format_version':'AUDIT-EXPORT-v0.22.0', 'export_id':export_id,
             'created_at':created_at,'status':'PARTIAL' if incomplete else 'COMPLETE',
             'experiment_id':identifiers.get('experiments'),
             'linked_ids':identifiers,'stages':stages,'files':files,'missing':missing,
@@ -53,7 +53,7 @@ def make_manifest(artifact_dir: Path, export_id: str, identifiers: dict,
 
 
 def make_intro(manifest:dict, assessment:dict|None)->str:
-    lines=['# Claims Operations Planner — v0.21 Domain Skill & Blind Optimality Audit Package','',
+    lines=['# Claims Operations Planner — v0.22 Dependency-safe Audit Package','',
            f"- Export: `{manifest['export_id']}`",
            f"- Original experiment: `{manifest['experiment_id']}`",
            f"- Export completeness: **{manifest['status']}**",
@@ -104,6 +104,7 @@ def make_intro(manifest:dict, assessment:dict|None)->str:
                   '- Source manifest/file hashes establish local integrity only, not semantic truth or representative sampling.',
                   '- Public evidence excerpts remain unverified as supporting customer requirements; RAG is never automatic approval.',
                   '- AI model diagnostics, human approval, and KPI PASS have separate scopes.',
+                  '- Missing experiment.json after evaluation_started.json is an upstream failure; 08b/08f/09 must not claim independent verification.',
                   ''])
     if manifest['missing'] or manifest['skipped']:
         lines.append('**Partial/incomplete output:** See `manifest.json` for missing or skipped artifacts.')

@@ -1,0 +1,19 @@
+{
+  "classification": "implementation_bug",
+  "r0_implementation_assessment": "correct",
+  "business_requirement_assessment": "unverified",
+  "synthetic_requirement_fit": null,
+  "real_customer_validity": "unverified",
+  "scheduling_precedence": "none",
+  "supporting_evidence_ids": [
+    "SIM-SLA-001"
+  ],
+  "root_cause": "contract_violation",
+  "suggested_requirement_change": "prioritize_deadlines_over_fifo",
+  "business_tradeoffs": [],
+  "compliance_questions": [
+    "deadline_misses_in_fifo",
+    "arrival_order_tiebreaker_conflict"
+  ],
+  "remaining_uncertainty": "business_objective_unquantified"
+}

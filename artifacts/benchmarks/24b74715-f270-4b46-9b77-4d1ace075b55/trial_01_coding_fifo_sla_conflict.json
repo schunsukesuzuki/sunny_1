@@ -1,0 +1,275 @@
+{
+  "case_id": "fifo_sla_conflict",
+  "repetition": 0,
+  "model_role": "coding",
+  "model_id": "qwen3-coder:30b",
+  "fixture_version": "CLAIMS-DIAG-FIXTURES-v0.10.1",
+  "prompt_input_sha256": "44a4e3a3ac93a72c65498482cb9101f04dce9209ea64911b24a507efec2a795f",
+  "status": "COMPLETED",
+  "real_customer_validity": "UNVERIFIED",
+  "observable_fact_sheet": {
+    "independent_test_reported_status": "PASS",
+    "independent_test_verbatim": "PASS: R0 matches specified FIFO, reviewer qualifications, capacities, case durations.",
+    "original_contract": "R0: assign claims strictly in arrival_order, earliest feasible qualified reviewer/day.",
+    "business_goal_verbatim": "Reduce missed deadlines without increasing total staffed hours.",
+    "synthetic_comparison_verbatim": "On identical synthetic cases and 87 reviewer-hours, FIFO misses 11 deadlines; independent deadline-priority reference misses 0. Reference is a heuristic, not proven optimal.",
+    "available_evidence": [
+      {
+        "id": "SIM-SLA-001",
+        "provenance": "synthetic",
+        "observation": "Later arriving urgent claim can be missed under FIFO while an earlier arrival with a later deadline is scheduled first."
+      }
+    ],
+    "customer_interview_count": 0,
+    "note": "These fields restate the public INPUT facts; infer diagnoses independently."
+  },
+  "initial_diagnosis": {
+    "classification": "implementation_bug",
+    "implementation_assessment": "correct",
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_validity": "unverified",
+    "supporting_evidence_ids": [
+      "SIM-SLA-001"
+    ],
+    "root_cause": "The implementation correctly follows the specified FIFO contract (R0) but violates the business objective of reducing missed deadlines without increasing staffed hours. The synthetic comparison shows that a deadline-priority approach outperforms FIFO in this metric, indicating that the current FIFO implementation, while conforming to the contract, is suboptimal for the stated business goal.",
+    "suggested_requirement_change": "The requirement should prioritize claims by deadline when arrival order is equal, rather than strictly enforcing FIFO. This change would align the implementation with the business objective of reducing missed deadlines without increasing staffed hours.",
+    "scheduling_precedence": "deadline_first_fifo_tiebreak",
+    "change_required": true,
+    "remaining_uncertainty": "The synthetic comparison provides a measurable performance difference, but does not validate real customer needs or regulatory requirements. The implementation is correct per contract but fails the business objective."
+  },
+  "initial_rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": false,
+      "implementation_correctness": true,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": true
+    },
+    "passed": false,
+    "score": 0.875,
+    "failure_codes": [
+      "CAUSE_CLASSIFICATION"
+    ],
+    "expected_classification": "requirement_mismatch",
+    "real_customer_business_validity": "UNVERIFIED"
+  },
+  "initial_grounding": {
+    "version": "EVIDENCE-BINDER-v0.21.2",
+    "applied": false,
+    "reason": "MODEL_ALREADY_CITED",
+    "added_evidence_ids": [],
+    "raw_answer": {
+      "classification": "implementation_bug",
+      "implementation_assessment": "correct",
+      "synthetic_requirement_fit": "mismatch",
+      "real_customer_validity": "unverified",
+      "supporting_evidence_ids": [
+        "SIM-SLA-001"
+      ],
+      "root_cause": "The implementation correctly follows the specified FIFO contract (R0) but violates the business objective of reducing missed deadlines without increasing staffed hours. The synthetic comparison shows that a deadline-priority approach outperforms FIFO in this metric, indicating that the current FIFO implementation, while conforming to the contract, is suboptimal for the stated business goal.",
+      "suggested_requirement_change": "The requirement should prioritize claims by deadline when arrival order is equal, rather than strictly enforcing FIFO. This change would align the implementation with the business objective of reducing missed deadlines without increasing staffed hours.",
+      "scheduling_precedence": "deadline_first_fifo_tiebreak",
+      "change_required": true,
+      "remaining_uncertainty": "The synthetic comparison provides a measurable performance difference, but does not validate real customer needs or regulatory requirements. The implementation is correct per contract but fails the business objective."
+    },
+    "assisted_answer": {
+      "classification": "implementation_bug",
+      "implementation_assessment": "correct",
+      "synthetic_requirement_fit": "mismatch",
+      "real_customer_validity": "unverified",
+      "supporting_evidence_ids": [
+        "SIM-SLA-001"
+      ],
+      "root_cause": "The implementation correctly follows the specified FIFO contract (R0) but violates the business objective of reducing missed deadlines without increasing staffed hours. The synthetic comparison shows that a deadline-priority approach outperforms FIFO in this metric, indicating that the current FIFO implementation, while conforming to the contract, is suboptimal for the stated business goal.",
+      "suggested_requirement_change": "The requirement should prioritize claims by deadline when arrival order is equal, rather than strictly enforcing FIFO. This change would align the implementation with the business objective of reducing missed deadlines without increasing staffed hours.",
+      "scheduling_precedence": "deadline_first_fifo_tiebreak",
+      "change_required": true,
+      "remaining_uncertainty": "The synthetic comparison provides a measurable performance difference, but does not validate real customer needs or regulatory requirements. The implementation is correct per contract but fails the business objective."
+    },
+    "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+  },
+  "assisted_initial_rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": false,
+      "implementation_correctness": true,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": true
+    },
+    "passed": false,
+    "score": 0.875,
+    "failure_codes": [
+      "CAUSE_CLASSIFICATION"
+    ],
+    "expected_classification": "requirement_mismatch",
+    "real_customer_business_validity": "UNVERIFIED"
+  },
+  "diagnosis": {
+    "classification": "requirement_mismatch",
+    "implementation_assessment": "correct",
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_validity": "unverified",
+    "supporting_evidence_ids": [
+      "SIM-SLA-001"
+    ],
+    "root_cause": "The implementation correctly follows the specified FIFO contract (R0) which requires strict arrival_order scheduling. However, the business objective is to reduce missed deadlines without increasing staffed hours, which conflicts with the strict FIFO requirement. The synthetic evidence shows that deadline-priority scheduling outperforms FIFO on this metric, indicating a mismatch between the contract requirements and the desired business outcome.",
+    "suggested_requirement_change": "The requirement should be modified to prioritize claims by deadline when arrival order is equal, rather than strictly enforcing FIFO. This would align the implementation with the business objective of reducing missed deadlines without increasing staffed hours.",
+    "scheduling_precedence": "deadline_first_fifo_tiebreak",
+    "change_required": true,
+    "remaining_uncertainty": "The synthetic comparison provides a measurable performance difference showing that deadline-priority scheduling outperforms FIFO in reducing missed deadlines. However, this does not validate real customer needs or regulatory requirements. The implementation is correct per the specified contract but fails to meet the business objective of reducing missed deadlines without increasing staffed hours."
+  },
+  "rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": true,
+      "implementation_correctness": true,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": true
+    },
+    "passed": true,
+    "score": 1.0,
+    "failure_codes": [],
+    "expected_classification": "requirement_mismatch",
+    "real_customer_business_validity": "UNVERIFIED"
+  },
+  "latest_raw_diagnosis": {
+    "classification": "requirement_mismatch",
+    "implementation_assessment": "correct",
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_validity": "unverified",
+    "supporting_evidence_ids": [
+      "SIM-SLA-001"
+    ],
+    "root_cause": "The implementation correctly follows the specified FIFO contract (R0) which requires strict arrival_order scheduling. However, the business objective is to reduce missed deadlines without increasing staffed hours, which conflicts with the strict FIFO requirement. The synthetic evidence shows that deadline-priority scheduling outperforms FIFO on this metric, indicating a mismatch between the contract requirements and the desired business outcome.",
+    "suggested_requirement_change": "The requirement should be modified to prioritize claims by deadline when arrival order is equal, rather than strictly enforcing FIFO. This would align the implementation with the business objective of reducing missed deadlines without increasing staffed hours.",
+    "scheduling_precedence": "deadline_first_fifo_tiebreak",
+    "change_required": true,
+    "remaining_uncertainty": "The synthetic comparison provides a measurable performance difference showing that deadline-priority scheduling outperforms FIFO in reducing missed deadlines. However, this does not validate real customer needs or regulatory requirements. The implementation is correct per the specified contract but fails to meet the business objective of reducing missed deadlines without increasing staffed hours."
+  },
+  "latest_raw_rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": true,
+      "implementation_correctness": true,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": true
+    },
+    "passed": true,
+    "score": 1.0,
+    "failure_codes": [],
+    "expected_classification": "requirement_mismatch",
+    "real_customer_business_validity": "UNVERIFIED"
+  },
+  "repair_attempted": true,
+  "public_critique": {
+    "protocol_version": "DIAG-PROTOCOL-v0.21.2",
+    "input_only_feedback": [],
+    "oracle_or_expected_labels_exposed": false
+  },
+  "revised_diagnosis": {
+    "classification": "requirement_mismatch",
+    "implementation_assessment": "correct",
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_validity": "unverified",
+    "supporting_evidence_ids": [
+      "SIM-SLA-001"
+    ],
+    "root_cause": "The implementation correctly follows the specified FIFO contract (R0) which requires strict arrival_order scheduling. However, the business objective is to reduce missed deadlines without increasing staffed hours, which conflicts with the strict FIFO requirement. The synthetic evidence shows that deadline-priority scheduling outperforms FIFO on this metric, indicating a mismatch between the contract requirements and the desired business outcome.",
+    "suggested_requirement_change": "The requirement should be modified to prioritize claims by deadline when arrival order is equal, rather than strictly enforcing FIFO. This would align the implementation with the business objective of reducing missed deadlines without increasing staffed hours.",
+    "scheduling_precedence": "deadline_first_fifo_tiebreak",
+    "change_required": true,
+    "remaining_uncertainty": "The synthetic comparison provides a measurable performance difference showing that deadline-priority scheduling outperforms FIFO in reducing missed deadlines. However, this does not validate real customer needs or regulatory requirements. The implementation is correct per the specified contract but fails to meet the business objective of reducing missed deadlines without increasing staffed hours."
+  },
+  "revised_rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": true,
+      "implementation_correctness": true,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": true
+    },
+    "passed": true,
+    "score": 1.0,
+    "failure_codes": [],
+    "expected_classification": "requirement_mismatch",
+    "real_customer_business_validity": "UNVERIFIED"
+  },
+  "revised_grounding": {
+    "version": "EVIDENCE-BINDER-v0.21.2",
+    "applied": false,
+    "reason": "MODEL_ALREADY_CITED",
+    "added_evidence_ids": [],
+    "raw_answer": {
+      "classification": "requirement_mismatch",
+      "implementation_assessment": "correct",
+      "synthetic_requirement_fit": "mismatch",
+      "real_customer_validity": "unverified",
+      "supporting_evidence_ids": [
+        "SIM-SLA-001"
+      ],
+      "root_cause": "The implementation correctly follows the specified FIFO contract (R0) which requires strict arrival_order scheduling. However, the business objective is to reduce missed deadlines without increasing staffed hours, which conflicts with the strict FIFO requirement. The synthetic evidence shows that deadline-priority scheduling outperforms FIFO on this metric, indicating a mismatch between the contract requirements and the desired business outcome.",
+      "suggested_requirement_change": "The requirement should be modified to prioritize claims by deadline when arrival order is equal, rather than strictly enforcing FIFO. This would align the implementation with the business objective of reducing missed deadlines without increasing staffed hours.",
+      "scheduling_precedence": "deadline_first_fifo_tiebreak",
+      "change_required": true,
+      "remaining_uncertainty": "The synthetic comparison provides a measurable performance difference showing that deadline-priority scheduling outperforms FIFO in reducing missed deadlines. However, this does not validate real customer needs or regulatory requirements. The implementation is correct per the specified contract but fails to meet the business objective of reducing missed deadlines without increasing staffed hours."
+    },
+    "assisted_answer": {
+      "classification": "requirement_mismatch",
+      "implementation_assessment": "correct",
+      "synthetic_requirement_fit": "mismatch",
+      "real_customer_validity": "unverified",
+      "supporting_evidence_ids": [
+        "SIM-SLA-001"
+      ],
+      "root_cause": "The implementation correctly follows the specified FIFO contract (R0) which requires strict arrival_order scheduling. However, the business objective is to reduce missed deadlines without increasing staffed hours, which conflicts with the strict FIFO requirement. The synthetic evidence shows that deadline-priority scheduling outperforms FIFO on this metric, indicating a mismatch between the contract requirements and the desired business outcome.",
+      "suggested_requirement_change": "The requirement should be modified to prioritize claims by deadline when arrival order is equal, rather than strictly enforcing FIFO. This would align the implementation with the business objective of reducing missed deadlines without increasing staffed hours.",
+      "scheduling_precedence": "deadline_first_fifo_tiebreak",
+      "change_required": true,
+      "remaining_uncertainty": "The synthetic comparison provides a measurable performance difference showing that deadline-priority scheduling outperforms FIFO in reducing missed deadlines. However, this does not validate real customer needs or regulatory requirements. The implementation is correct per the specified contract but fails to meet the business objective of reducing missed deadlines without increasing staffed hours."
+    },
+    "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+  },
+  "revised_assisted_rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": true,
+      "implementation_correctness": true,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": true
+    },
+    "passed": true,
+    "score": 1.0,
+    "failure_codes": [],
+    "expected_classification": "requirement_mismatch",
+    "real_customer_business_validity": "UNVERIFIED"
+  },
+  "final_model_raw_passed": true,
+  "final_assisted_passed": true,
+  "final_passed": true,
+  "elapsed_seconds": 10.49,
+  "created_at": "2026-11-21T08:21:22+00:00"
+}

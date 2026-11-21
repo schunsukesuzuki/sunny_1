@@ -76,7 +76,8 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
     stress_no_regression = bool(stress_valid and stress_regressions == 0)
     benchmark_summary = (benchmark or {}).get("summary") or {}
     benchmark_counts = {role: {"planned": x.get("planned",0),"completed":x.get("completed",0),
-                        "passed":x.get("passed",0),"mean_score":x.get("mean_score")}
+                        "passed":x.get("raw_final_passed",x.get("passed",0)),"mean_score":x.get("mean_score"),
+                        "assisted_passed":x.get("assisted_final_passed",x.get("passed",0))}
                         for role,x in benchmark_summary.items()}
     benchmark_complete = bool(benchmark and benchmark.get("status") == "COMPLETED" and
                               {"coding","finance"}.issubset(benchmark_counts) and
@@ -216,7 +217,8 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
                                 "benchmark_complete":benchmark_complete,
                                 "benchmark_all_trials_pass":benchmark_all_pass,
                                 "benchmark_initial_pass_by_model": {k:v.get('initial_passed') for k,v in benchmark_summary.items()},
-                                "benchmark_post_revision_pass_by_model": {k:v.get('passed') for k,v in benchmark_summary.items()},
+                                "benchmark_post_revision_pass_by_model": {k:v.get('raw_final_passed',v.get('passed')) for k,v in benchmark_summary.items()},
+                                "benchmark_harness_assisted_pass_by_model": {k:v.get('assisted_final_passed') for k,v in benchmark_summary.items()},
                                 "benchmark_fresh_blind_pass": benchmark_blind_all_pass if blind_details.get('enabled') else None,
                                 "benchmark_fresh_blind_summary": blind_summary,
                                 "benchmark_by_model":benchmark_counts},
@@ -229,7 +231,7 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
                          "production_go": False, "customer_business_go": False,
                          "automatic_diagnosis_accepted": diagnostics_ok and benchmark_all_pass},
             "next_actions": [{"priority": "P1", "action": "顧客の業務SLA・分布・処理時間・資格・例外を実測で確認", "owner_role": "Customer / product owner"},
-                             {"priority": "P1", "action": "R1の期限・希少資格の行動プローブとストレス試験の不合格を修正/再評価", "owner_role": "AI technical reviewer"},
+                             {"priority": "P1", "action": "R1の行動プローブとストレス試験の結果を確認し、不合格時のみ修正する", "owner_role": "AI technical reviewer"},
                              {"priority": "P1", "action": "単発診断と診断ベンチマークを分離して誤判定を検証", "owner_role": "AI technical reviewer"},
                              {"priority": "P2", "action": "実顧客ROI、PoC費用、採算、支払意思を検証", "owner_role": "Business development"},
                              {"priority": "P2", "action": "本番ワークフロー、認証、監査・規制・データ保護を精査", "owner_role": "Delivery / compliance"}],

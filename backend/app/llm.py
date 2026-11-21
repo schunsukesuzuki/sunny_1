@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from typing import Literal
 
 from .domain import CONTRACT_R0, CONTRACT_R1, SERVICE_R1, SIMULATED_EVIDENCE, canonical
-from .diagnostic_protocol import DECISION_PROTOCOL, public_fact_checks
+from .diagnostic_protocol import DECISION_PROTOCOL, public_fact_checks, observable_fact_sheet
 
 BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434").rstrip("/")
 MODEL = os.getenv("OLLAMA_MODEL", "qwen3-coder:30b")
@@ -261,9 +261,25 @@ async def benchmark_diagnosis(payload: dict, *, model: str) -> BenchmarkDiagnosi
         "Evidence IDs are traceability only. Do not cite evidence that does not bear on your conclusion. "
         "For deadline-first changes, remove strict FIFO as the primary key and use FIFO only for ties. "
         "For implementation bugs or insufficient evidence use change_required=false, scheduling_precedence=none. "
-        "Do not invent real customer validation or claim any financial regulation requires a policy."
+        "Do not invent real customer validation or claim any financial regulation requires a policy. "
+        "REQUIRED THREE DISTINCT JUDGMENTS: (A) Determine the code-versus-contract "
+        "result solely from the independent PASS/FAIL test. (B) Independently read "
+        "the stated business objective AND the synthetic comparison; absence of a "
+        "real customer does not erase an explicitly measured synthetic mismatch. "
+        "(C) Only then choose the cause and whether to change a requirement. "
+        "When code fails an approved contract but there is no independent request "
+        "to change the contract, choose a code fix, not a requirement rewrite. "
+        "In supporting_evidence_ids copy relevant IDs from available_evidence; "
+        "never leave them blank solely because the evidence is synthetic. "
+        "Evidence IDs MUST refer to stated input observations, not guessed labels. "
+        "When evidence is conflicting and cannot distinguish a KPI, do not claim "
+        "the business goal is validated."
     )
-    return await query(BenchmarkDiagnosis, system, canonical(payload), model=model)
+    # Explicit observable fact sheet: independent code test and separate business
+    # comparison, both supplied verbatim. Not a fixture oracle or a gold label.
+    return await query(BenchmarkDiagnosis, system,
+        "Observable input facts (NOT gold labels): " + canonical(observable_fact_sheet(payload))+
+        "\nSource case data: " + canonical(payload), model=model)
 
 
 async def revise_benchmark_diagnosis(payload:dict, *, prior:dict,

@@ -1,4 +1,4 @@
-"""Claims Operations Planner v0.21: auditable LLM and pinned Domain Skill comparison."""
+"""Claims Operations Planner v0.22: auditable LLM and pinned Domain Skill comparison."""
 from __future__ import annotations
 
 import asyncio
@@ -71,7 +71,7 @@ def store(kind: str, id_: str, filename: str, data: object):
     return target
 
 
-app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.21.0")
+app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.22.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                    allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
@@ -144,7 +144,7 @@ def artifact_bundle(kind: str, artifact_id: str):
         f = path_for("exports", state["export_id"]) / "complete_audit_package.zip"
         if not f.is_file():
             raise HTTPException(409, "Full-run ZIP not ready")
-        return FileResponse(f, filename=f"claims_full_run_v021_{artifact_id}.zip", media_type="application/zip")
+        return FileResponse(f, filename=f"claims_full_run_v022_{artifact_id}.zip", media_type="application/zip")
     data = io.BytesIO()
     with zipfile.ZipFile(data, mode="w", compression=zipfile.ZIP_DEFLATED) as z:
         # Export related records too so the R0 -> evidence -> approval -> experiment chain can be audited offline.
@@ -1097,12 +1097,13 @@ def benchmark_fixtures():
 
 
 def _benchmark_report(record: dict) -> str:
-    lines = ["# Claims Operations Planner v0.21 — Diagnostic Benchmark", "",
+    lines = ["# Claims Operations Planner v0.21.2 — Diagnostic Benchmark", "",
         "> **合成フィクスチャの独立採点です。実顧客要件の正しさ・EU規制適合性を検証しません。**", "",
         f"- Benchmark ID: `{record['benchmark_id']}`", f"- Date: {record['created_at']}",
         f"- Fixtures: `{record['fixture_version']}` / Rubric: `{record['rubric_version']}`",
         f"- Cases: {', '.join(record['case_ids'])} / Repetitions: {record['repetitions']}",
         "- 両モデルは同じ入力・同じスキーマ・同じ推論パラメータです。出力・独立評価は別々に記録します。",
+        "- 入力だけから作ったFact Sheetを両モデルへ渡し、独立実装テストと合成事業KPIを区別して読ませます。",
         "- 初回結果と修復後の結果を別々に報告します。修復フィードバックには隠された正解ラベルを使用しません。", "",
         "| Model | completed | overall rubric PASS | mean criterion score |", "|---|---:|---:|---:|"]
     for name, val in record['summary'].items():
@@ -1114,16 +1115,20 @@ def _benchmark_report(record: dict) -> str:
         evaluation=tr.get('rubric',{})
         pred=tr.get('diagnosis') or {}
         lines.append(f"|{tr['case_id']}|{tr['repetition']}|{tr['model_role']}|{pred.get('classification','—')}|{tr['status']}|{evaluation.get('score','—')}|{', '.join(evaluation.get('failure_codes',[])) or tr.get('error','—')}|")
-    lines.extend(["", "## Initial vs post-revision PASS", "", "| model | initial PASS | post-revision PASS | revised calls |", "|---|---:|---:|---:|"])
+    lines.extend(["", "## Model raw inference vs audited harness assistance", "",
+        "**Raw PASS is the model's own prediction. Assisted PASS includes deterministic citation binding and MUST NOT be described as model-only accuracy.**", "",
+        "| model | initial raw PASS | final raw PASS | initial assisted PASS | final assisted PASS | revision calls | citations bound |",
+        "|---|---:|---:|---:|---:|---:|---:|"])
     for role,stats in record['summary'].items():
-        lines.append(f"|{role}|{stats.get('initial_passed')}|{stats.get('passed')}|{stats.get('revised_calls',0)}|")
+        lines.append(f"|{role}|{stats.get('raw_initial_passed')}|{stats.get('raw_final_passed')}|{stats.get('assisted_initial_passed')}|{stats.get('assisted_final_passed')}|{stats.get('revised_calls',0)}|{stats.get('grounding_applied',0)}|")
     if record.get('blind_generalization',{}).get('enabled'):
         lines += ["", "## Fresh blind generalization (initial calls only)", "",
                   "These additional seeded synthetic cases receive no feedback or revisions.",
-                  "| model | passed | completed | planned |", "|---|---:|---:|---:|"]
+                  "| model | raw PASS | assisted PASS | grounded | completed | planned |", "|---|---:|---:|---:|---:|---:|"]
         for role,x in record['blind_generalization']['summary'].items():
-            lines.append(f"|{role}|{x['passed']}|{x['completed']}|{x['planned']}|")
-    lines += ["", "## Interpretation", "", "- 分類だけでは合格しません。説明・改訂案・証拠ID・実装判定を独立採点します。",
+            lines.append(f"|{role}|{x['passed']}|{x.get('assisted_passed',0)}|{x.get('grounding_applied',0)}|{x['completed']}|{x['planned']}|")
+    lines += ["", "## Interpretation", "", "- 生回答・根拠ID補完後・再診断後を別々に保存。補完後PASSはモデル単独PASSではありません。",
+              "- 元入力の単一証拠IDのみ、説明と整合するときに補助付与。欠落ID以外の診断・改訂方針は自動修正しません。", "- 分類だけでは合格しません。説明・改訂案・証拠ID・実装判定を独立採点します。",
               "- 同一アーキテクチャでもモデル差以外に量子化、ランダム性、応答形式の差が残ります。",
               "- 語句に基づく矛盾検出は限定的で、意味論的な証明ではありません。",
               "- 正解ラベルはモデル入力へ渡していません。市場と顧客による検証はUNVERIFIEDのままです。",
@@ -1158,13 +1163,23 @@ async def run_benchmark(body: BenchmarkRequest):
                 try:
                     response=await llm.benchmark_diagnosis(payload,model=model)
                     data=response.model_dump()
-                    score=dq.benchmark_score(data, fixture['oracle'])
+                    raw_initial=dq.benchmark_score(data, fixture['oracle'])
+                    grounded=dp.evidence_bind_from_input(payload,data)
+                    tr['observable_fact_sheet']=dp.observable_fact_sheet(payload)
+                    assisted_initial=dq.benchmark_score(grounded['assisted_answer'], fixture['oracle'])
                     tr.update({"status":"COMPLETED","initial_diagnosis":data,
-                               "initial_rubric":score,"diagnosis":data,"rubric":score,
+                               "initial_rubric":raw_initial,
+                               "initial_grounding":grounded,
+                               "assisted_initial_rubric":assisted_initial,
+                               "diagnosis":grounded['assisted_answer'],
+                               "rubric":assisted_initial,
+                               "latest_raw_diagnosis":data,
+                               "latest_raw_rubric":raw_initial,
                                "repair_attempted":False})
-                    # Repair uses ONLY checks derivable from this fixture's public input.
-                    # Oracle scoring NEVER enters revision prompts; original score retained.
-                    if body.enable_repair and not score['passed']:
+                    # Only a NEW model call can change substantive reasoning.
+                    # Grounding merely attaches an input-grounded evidence ID,
+                    # and never converts the model's original raw score to PASS.
+                    if body.enable_repair and not assisted_initial['passed']:
                         critique=dp.public_fact_checks(payload,data)
                         tr['public_critique']=critique
                         tr['repair_attempted']=True
@@ -1173,14 +1188,20 @@ async def run_benchmark(body: BenchmarkRequest):
                                 visible_feedback=critique['input_only_feedback'],model=model)
                             revised_data=revised.model_dump()
                             revised_score=dq.benchmark_score(revised_data,fixture['oracle'])
-                            tr['revised_diagnosis']=revised_data
-                            tr['revised_rubric']=revised_score
-                            # The final score always reflects the latest actual LLM output,
-                            # never a deterministic substituted answer.
-                            tr['diagnosis']=revised_data
-                            tr['rubric']=revised_score
+                            revised_grounded=dp.evidence_bind_from_input(payload,revised_data)
+                            revised_assisted=dq.benchmark_score(revised_grounded['assisted_answer'],fixture['oracle'])
+                            tr.update({'revised_diagnosis':revised_data,
+                                       'revised_rubric':revised_score,
+                                       'revised_grounding':revised_grounded,
+                                       'revised_assisted_rubric':revised_assisted,
+                                       'latest_raw_diagnosis':revised_data,
+                                       'latest_raw_rubric':revised_score,
+                                       'diagnosis':revised_grounded['assisted_answer'],
+                                       'rubric':revised_assisted})
                         except Exception as repair_exc:
                             tr['repair_error']=str(getattr(repair_exc,'detail',repair_exc))[:500]
+                    tr['final_model_raw_passed']=tr['latest_raw_rubric']['passed']
+                    tr['final_assisted_passed']=tr['rubric']['passed']
                     tr['final_passed']=tr['rubric']['passed']
                 except Exception as exc:
                     tr["error_type"]=type(exc).__name__
@@ -1197,8 +1218,16 @@ async def run_benchmark(body: BenchmarkRequest):
         summary[role]={"model":versions[role],"planned":len(subset),"completed":len(good),
                        "passed":sum(t['rubric']['passed'] for t in good),
                        "initial_passed":sum(t.get('initial_rubric',{}).get('passed',False) for t in good),
+                       "raw_initial_passed":sum(t.get('initial_rubric',{}).get('passed',False) for t in good),
+                       "raw_final_passed":sum(t.get('latest_raw_rubric',{}).get('passed',False) for t in good),
+                       "assisted_initial_passed":sum(t.get('assisted_initial_rubric',{}).get('passed',False) for t in good),
+                       "assisted_final_passed":sum(t.get('rubric',{}).get('passed',False) for t in good),
+                       "grounding_applied":sum(t.get('initial_grounding',{}).get('applied',False) or
+                           t.get('revised_grounding',{}).get('applied',False) for t in good),
                        "revised_calls":sum(t.get('repair_attempted',False) for t in good),
                        "mean_score":round(statistics.mean(scores),4) if scores else None,
+                       "mean_raw_score":round(statistics.mean([t['latest_raw_rubric']['score'] for t in good]),4) if good else None,
+                       "mean_assisted_score":round(statistics.mean(scores),4) if scores else None,
                        "failed_calls":len(subset)-len(good)}
     # Blind diagnostic generalization has separate seeded cases. Do not use any
     # failure code, score or answer from these cases for prompt revision.
@@ -1214,8 +1243,14 @@ async def run_benchmark(body: BenchmarkRequest):
                        'revision_allowed':False,'status':'FAILED'}
                 try:
                     ans=await llm.benchmark_diagnosis(challenge['input'],model=model)
-                    trial.update({'status':'COMPLETED','diagnosis':ans.model_dump(),
-                                  'rubric':dq.benchmark_score(ans.model_dump(),challenge['oracle'])})
+                    raw=ans.model_dump()
+                    binding=dp.evidence_bind_from_input(challenge['input'],raw)
+                    trial['observable_fact_sheet']=dp.observable_fact_sheet(challenge['input'])
+                    trial.update({'status':'COMPLETED','diagnosis':raw,
+                                  'rubric':dq.benchmark_score(raw,challenge['oracle']),
+                                  'grounding':binding,
+                                  'assisted_diagnosis':binding['assisted_answer'],
+                                  'assisted_rubric':dq.benchmark_score(binding['assisted_answer'],challenge['oracle'])})
                 except Exception as exc:
                     trial['error']=str(getattr(exc,'detail',exc))[:500]
                 blind_trials.append(trial)
@@ -1223,14 +1258,17 @@ async def run_benchmark(body: BenchmarkRequest):
         for role in versions:
             xs=[x for x in blind_trials if x['model_role']==role]
             blind_summary[role]={'planned':len(xs),'completed':sum(x['status']=='COMPLETED' for x in xs),
-                'passed':sum(x.get('rubric',{}).get('passed',False) for x in xs)}
+                'passed':sum(x.get('rubric',{}).get('passed',False) for x in xs),
+                'assisted_passed':sum(x.get('assisted_rubric',{}).get('passed',False) for x in xs),
+                'grounding_applied':sum(x.get('grounding',{}).get('applied',False) for x in xs)}
         store('benchmarks',bid,'blind_cases.json',
             {'seed_root':root_seed,'cases':blind_cases,'scope':'Synthetic fresh cases; never used in revisions'})
     data={**meta,"status":"COMPLETED_WITH_ERRORS" if any(t['status']!='COMPLETED' for t in trials+blind_trials) else "COMPLETED",
           "summary":summary,"trials":trials,
           "blind_generalization":{'enabled':body.blind_generalization,'trials':blind_trials,
                                   'summary':blind_summary,'no_repair_feedback':True},
-          "methodology":"Same explicit schema and common reasoning protocol. Initial scores always persisted. Optional model revision sees only input-derived checks and its previous answer, never oracle labels. Independent fixed rubric remains unchanged.",
+          "grounding_version":"EVIDENCE-BINDER-v0.21.2",
+          "methodology":"Two-layer audit: raw model prediction (unaltered), optional deterministic input-only evidence-ID binding, optional second model inference, and fresh blind raw+assisted scores. The fixture oracle grades ONLY, never enters model prompts or grounder. Assistance is not a model-level diagnostic success. Fixed rubric unchanged.",
           "caveat":"Rule-based checks, no gold-standard EU customer requirement or regulatory validation."}
     store("benchmarks",bid,"benchmark.json",data)
     store("benchmarks",bid,"report.md",_benchmark_report(data))

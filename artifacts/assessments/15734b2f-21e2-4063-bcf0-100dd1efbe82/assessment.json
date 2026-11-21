@@ -1,0 +1,911 @@
+{
+  "rubric_version": "PRESALES-ASSESSMENT-v0.19.0",
+  "experiment_id": "f692e410-bb74-4bae-bf9a-1e93c5dd8ed7",
+  "selected_engine": "skill_deadline_scarcity",
+  "selected_source_provenance": "PINNED_REVIEWED_DOMAIN_SKILL_NOT_LLM",
+  "r1_mode": "compare",
+  "skill_comparison": [
+    {
+      "engine": "skill_deadline_scarcity",
+      "provenance": "PINNED_REVIEWED_DOMAIN_SKILL_NOT_LLM",
+      "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+      "selection_gate": {
+        "gate_version": "R1-DEV-SELECTION-GATE-v0.19.0",
+        "eligible": true,
+        "reasons": [],
+        "dev_cases": 3,
+        "behavioral_probes_pass": true,
+        "stress_scenarios_checked": 4,
+        "selection_rule": "Require valid DEV, strict improvement over FIFO on at least one DEV seed, equal hours, two behavioral probes and no stress regression against the fixed heuristic.",
+        "holdout_used_for_selection": false
+      },
+      "dev": {
+        "valid": true,
+        "missed_total": 0,
+        "worked_hours_total": 100,
+        "deadline_hit_rate": 1.0,
+        "all_claims_completed": true,
+        "violations": [],
+        "seeds": [
+          142,
+          143,
+          144
+        ]
+      },
+      "dev_rows": [
+        {
+          "valid": true,
+          "violations": [],
+          "missed_deadlines": 0,
+          "on_time": 18,
+          "completed": 18,
+          "assigned_hours": 31,
+          "total_cases": 18,
+          "planned_capacity_hours": 60,
+          "unassigned_cases": 0,
+          "deadline_hit_rate": 1.0,
+          "seed": 142,
+          "sandbox_id": "igv53s7ukxl1s5wdgtx44",
+          "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+          "output_sha256": "fdc22b6f942e09ae40ece4029a04a650a6896643605fdbf802fadf2ae8748ce9",
+          "dataset_sha256": "448d3ad7876d740e2756419cb8d45eb846cc5182cb9f0327ee95158cfc27cea4",
+          "elapsed_seconds": 0.374,
+          "stderr": ""
+        },
+        {
+          "valid": true,
+          "violations": [],
+          "missed_deadlines": 0,
+          "on_time": 18,
+          "completed": 18,
+          "assigned_hours": 32,
+          "total_cases": 18,
+          "planned_capacity_hours": 60,
+          "unassigned_cases": 0,
+          "deadline_hit_rate": 1.0,
+          "seed": 143,
+          "sandbox_id": "igv53s7ukxl1s5wdgtx44",
+          "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+          "output_sha256": "3466c3e7290e816a18da862bce65ba1ae60f7cfed626884352bcfe170608a5af",
+          "dataset_sha256": "6a62c88e044b7a09eb8633e38c07e9165f03370bc92620c15d0a05895be5d618",
+          "elapsed_seconds": 0.321,
+          "stderr": ""
+        },
+        {
+          "valid": true,
+          "violations": [],
+          "missed_deadlines": 0,
+          "on_time": 18,
+          "completed": 18,
+          "assigned_hours": 37,
+          "total_cases": 18,
+          "planned_capacity_hours": 60,
+          "unassigned_cases": 0,
+          "deadline_hit_rate": 1.0,
+          "seed": 144,
+          "sandbox_id": "igv53s7ukxl1s5wdgtx44",
+          "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+          "output_sha256": "9dfa5e5fd157b580088560ebd07d847593bdad42bc902fc231c8bd17f5226120",
+          "dataset_sha256": "ce8763d22d707c696c13199c1518ec2f4fab33a89975bcbcd21a03e4f30bdd82",
+          "elapsed_seconds": 0.324,
+          "stderr": ""
+        }
+      ],
+      "behavioral_probes": [
+        {
+          "seed": 900001,
+          "scenario": "deadline_risk_probe",
+          "dataset_sha256": "5575eb9625e7050872d5f7cf582afd8cac3afa69270b3caabea8b79125e54cde",
+          "valid": true,
+          "checks": {
+            "urgent_served_on_due_day": true,
+            "both_cases_served": true
+          },
+          "pass": true,
+          "missed_deadlines": 0,
+          "unassigned_cases": 0,
+          "violations": [],
+          "execution_error": null
+        },
+        {
+          "seed": 900002,
+          "scenario": "scarce_qualification_probe",
+          "dataset_sha256": "152f675fe5e0514271365f4aaa711a15de12aa7266f46756994ccdbf8d4595df",
+          "valid": true,
+          "checks": {
+            "scarce_case_uses_sole_specialist": true,
+            "common_case_preserves_specialist_capacity": true,
+            "all_cases_served": true
+          },
+          "pass": true,
+          "missed_deadlines": 0,
+          "unassigned_cases": 0,
+          "violations": [],
+          "execution_error": null
+        }
+      ],
+      "stress_checks": [
+        {
+          "seed": 910000,
+          "scenario": "capacity_pressure",
+          "generated": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        },
+        {
+          "seed": 910001,
+          "scenario": "skill_bottleneck",
+          "generated": {
+            "valid": true,
+            "missed": 1,
+            "unassigned": 1
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 1,
+            "unassigned": 1
+          }
+        },
+        {
+          "seed": 910002,
+          "scenario": "deadline_compression",
+          "generated": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        },
+        {
+          "seed": 910003,
+          "scenario": "arrival_reordering",
+          "generated": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        }
+      ],
+      "sandbox_execution_seconds": 3.01,
+      "llm_tokens": "NOT_MEASURED",
+      "holdout_executed": false
+    },
+    {
+      "engine": "skill_bounded_beam",
+      "provenance": "PINNED_REVIEWED_DOMAIN_SKILL_NOT_LLM",
+      "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+      "selection_gate": {
+        "gate_version": "R1-DEV-SELECTION-GATE-v0.19.0",
+        "eligible": true,
+        "reasons": [],
+        "dev_cases": 3,
+        "behavioral_probes_pass": true,
+        "stress_scenarios_checked": 4,
+        "selection_rule": "Require valid DEV, strict improvement over FIFO on at least one DEV seed, equal hours, two behavioral probes and no stress regression against the fixed heuristic.",
+        "holdout_used_for_selection": false
+      },
+      "dev": {
+        "valid": true,
+        "missed_total": 0,
+        "worked_hours_total": 100,
+        "deadline_hit_rate": 1.0,
+        "all_claims_completed": true,
+        "violations": [],
+        "seeds": [
+          142,
+          143,
+          144
+        ]
+      },
+      "dev_rows": [
+        {
+          "valid": true,
+          "violations": [],
+          "missed_deadlines": 0,
+          "on_time": 18,
+          "completed": 18,
+          "assigned_hours": 31,
+          "total_cases": 18,
+          "planned_capacity_hours": 60,
+          "unassigned_cases": 0,
+          "deadline_hit_rate": 1.0,
+          "seed": 142,
+          "sandbox_id": "i8kqxh9wes2dqhlmg7fqc",
+          "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+          "output_sha256": "1caa9a4ecad6b14d3ce31e1fb87b2050bdf596925179da1ebc8ccd5c62bbe587",
+          "dataset_sha256": "448d3ad7876d740e2756419cb8d45eb846cc5182cb9f0327ee95158cfc27cea4",
+          "elapsed_seconds": 0.414,
+          "stderr": ""
+        },
+        {
+          "valid": true,
+          "violations": [],
+          "missed_deadlines": 0,
+          "on_time": 18,
+          "completed": 18,
+          "assigned_hours": 32,
+          "total_cases": 18,
+          "planned_capacity_hours": 60,
+          "unassigned_cases": 0,
+          "deadline_hit_rate": 1.0,
+          "seed": 143,
+          "sandbox_id": "i8kqxh9wes2dqhlmg7fqc",
+          "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+          "output_sha256": "3466c3e7290e816a18da862bce65ba1ae60f7cfed626884352bcfe170608a5af",
+          "dataset_sha256": "6a62c88e044b7a09eb8633e38c07e9165f03370bc92620c15d0a05895be5d618",
+          "elapsed_seconds": 0.336,
+          "stderr": ""
+        },
+        {
+          "valid": true,
+          "violations": [],
+          "missed_deadlines": 0,
+          "on_time": 18,
+          "completed": 18,
+          "assigned_hours": 37,
+          "total_cases": 18,
+          "planned_capacity_hours": 60,
+          "unassigned_cases": 0,
+          "deadline_hit_rate": 1.0,
+          "seed": 144,
+          "sandbox_id": "i8kqxh9wes2dqhlmg7fqc",
+          "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+          "output_sha256": "00de0f41b7cc391c2b335dc4a8a3f5036d5078e4d79991e153dfdda64f7000e4",
+          "dataset_sha256": "ce8763d22d707c696c13199c1518ec2f4fab33a89975bcbcd21a03e4f30bdd82",
+          "elapsed_seconds": 0.338,
+          "stderr": ""
+        }
+      ],
+      "behavioral_probes": [
+        {
+          "seed": 900001,
+          "scenario": "deadline_risk_probe",
+          "dataset_sha256": "5575eb9625e7050872d5f7cf582afd8cac3afa69270b3caabea8b79125e54cde",
+          "valid": true,
+          "checks": {
+            "urgent_served_on_due_day": true,
+            "both_cases_served": true
+          },
+          "pass": true,
+          "missed_deadlines": 0,
+          "unassigned_cases": 0,
+          "violations": [],
+          "execution_error": null
+        },
+        {
+          "seed": 900002,
+          "scenario": "scarce_qualification_probe",
+          "dataset_sha256": "152f675fe5e0514271365f4aaa711a15de12aa7266f46756994ccdbf8d4595df",
+          "valid": true,
+          "checks": {
+            "scarce_case_uses_sole_specialist": true,
+            "common_case_preserves_specialist_capacity": true,
+            "all_cases_served": true
+          },
+          "pass": true,
+          "missed_deadlines": 0,
+          "unassigned_cases": 0,
+          "violations": [],
+          "execution_error": null
+        }
+      ],
+      "stress_checks": [
+        {
+          "seed": 910000,
+          "scenario": "capacity_pressure",
+          "generated": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        },
+        {
+          "seed": 910001,
+          "scenario": "skill_bottleneck",
+          "generated": {
+            "valid": true,
+            "missed": 1,
+            "unassigned": 1
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 1,
+            "unassigned": 1
+          }
+        },
+        {
+          "seed": 910002,
+          "scenario": "deadline_compression",
+          "generated": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        },
+        {
+          "seed": 910003,
+          "scenario": "arrival_reordering",
+          "generated": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        }
+      ],
+      "sandbox_execution_seconds": 3.081,
+      "llm_tokens": "NOT_MEASURED",
+      "holdout_executed": false
+    }
+  ],
+  "holdout_comparators": {
+    "skill_bounded_beam": [
+      {
+        "valid": true,
+        "violations": [],
+        "missed_deadlines": 0,
+        "on_time": 18,
+        "completed": 18,
+        "assigned_hours": 33,
+        "total_cases": 18,
+        "planned_capacity_hours": 60,
+        "unassigned_cases": 0,
+        "deadline_hit_rate": 1.0,
+        "seed": 20042,
+        "sandbox_id": "igvx30aihivjpk5muolod",
+        "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+        "output_sha256": "ee13e1eba87cd29ea14ff9083ee643ca9d0e2a4d2e0c37753fa74c512b1dbdbd",
+        "dataset_sha256": "c8bdd00103b9d5910e5dcdaa3f7949ec78242959b55e643a78fd18b3007d2533",
+        "elapsed_seconds": 0.406,
+        "stderr": ""
+      },
+      {
+        "valid": true,
+        "violations": [],
+        "missed_deadlines": 0,
+        "on_time": 18,
+        "completed": 18,
+        "assigned_hours": 35,
+        "total_cases": 18,
+        "planned_capacity_hours": 60,
+        "unassigned_cases": 0,
+        "deadline_hit_rate": 1.0,
+        "seed": 20043,
+        "sandbox_id": "igvx30aihivjpk5muolod",
+        "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+        "output_sha256": "9484eff95b50b36d37958ab65ce032f6ec1037427bc59ae96d5932882ea681fe",
+        "dataset_sha256": "f158d687eb3f08d48ac722ef39e523478290913c08aef10cae6c4fb0130b85fc",
+        "elapsed_seconds": 0.344,
+        "stderr": ""
+      }
+    ]
+  },
+  "scope": "SYNTHETIC_DEMONSTRATION_ONLY",
+  "real_customer_validity": "UNVERIFIED",
+  "source_register": [
+    {
+      "id": "E01",
+      "source": "runs/13d976d6-742b-473d-9df7-e7164c242dd5/run.json",
+      "provenance": "SYNTHETIC",
+      "description": "R0 contract, E2B execution and synthetic DEV/HOLDOUT metrics",
+      "validity": "Local experiment result; not customer-reported"
+    },
+    {
+      "id": "E02",
+      "source": "proposals/8036427b-8045-4640-bee0-b09a3d6c720b/proposal.json",
+      "provenance": "SYNTHETIC",
+      "description": "Mock requirement counterexample, Qwen/ODA diagnostics and rubric status",
+      "validity": "Synthetic fixture; evidence IDs are application-defined"
+    },
+    {
+      "id": "E03",
+      "source": "approvals/a61e26f7-7ab8-4164-a1a8-e059ae634415/approval.json",
+      "provenance": "DEMO_CONTROLLED",
+      "description": "Demo human decision / original HOLD retained if overridden",
+      "validity": "Simulated approval, not actual client authorization"
+    },
+    {
+      "id": "E04",
+      "source": "experiments/f692e410-bb74-4bae-bf9a-1e93c5dd8ed7/experiment.json",
+      "provenance": "SYNTHETIC",
+      "description": "Generated code evaluation, held-out results, constraints, attempts",
+      "validity": "Synthetic E2B-based test; not production deployment"
+    },
+    {
+      "id": "E05",
+      "source": "No direct customer business data or authorized claims workflow attached (public contextual evidence is E08)",
+      "provenance": "UNVERIFIED",
+      "description": "Customer-specific demand, ROI, and real process evidence remain missing",
+      "validity": "No independent external verification"
+    },
+    {
+      "id": "E06",
+      "source": "policy_validations/694e3bcc-4306-421f-9935-0cd40a9851fc/validation.json",
+      "provenance": "SYNTHETIC",
+      "description": "Fixed behavioral policy probes and E2B synthetic stress tests",
+      "validity": "Selected synthetic behaviors only; not formal specification proof"
+    },
+    {
+      "id": "E07",
+      "source": "benchmarks/24b74715-f270-4b46-9b77-4d1ace075b55/benchmark.json",
+      "provenance": "SYNTHETIC",
+      "description": "Separate same-input Qwen/ODA diagnostic quality benchmark",
+      "validity": "Limited artificial cases; do not infer population-level model accuracy"
+    },
+    {
+      "id": "E08",
+      "source": "workflows/8bd2eb84-182a-4876-a649-1148bd5593e9/00b_human_evidence_review.json",
+      "provenance": "PUBLIC_PROBLEM_CONTEXT_ONLY",
+      "description": "Official/public source excerpts and human-reviewed hypothetical claim problem",
+      "validity": "Published problem context, not current client evidence, not proof of FIFO/skill scheduling"
+    }
+  ],
+  "execution_outcome": {
+    "dev_candidate_selection": "ELIGIBLE_SKILL_SELECTED",
+    "holdout_execution": "EXECUTED",
+    "valid_three_way_comparison": true,
+    "r1_kpi_improvement": "PASSED",
+    "business_validity": "UNVERIFIED",
+    "constraint_validation": "PASSED"
+  },
+  "summary_metrics": {
+    "fifo": {
+      "missed": 6,
+      "worked_hours": 68,
+      "seed_count": 2,
+      "by_seed": {
+        "20042": {
+          "missed": 2,
+          "worked_hours": 33
+        },
+        "20043": {
+          "missed": 4,
+          "worked_hours": 35
+        }
+      }
+    },
+    "generated": {
+      "missed": 0,
+      "worked_hours": 68,
+      "seed_count": 2,
+      "by_seed": {
+        "20042": {
+          "missed": 0,
+          "worked_hours": 33
+        },
+        "20043": {
+          "missed": 0,
+          "worked_hours": 35
+        }
+      }
+    },
+    "deadline_heuristic": {
+      "missed": 0,
+      "worked_hours": 68,
+      "seed_count": 2,
+      "by_seed": {
+        "20042": {
+          "missed": 0,
+          "worked_hours": 33
+        },
+        "20043": {
+          "missed": 0,
+          "worked_hours": 35
+        }
+      }
+    },
+    "selected_engine": "skill_deadline_scarcity",
+    "fixed_hours_and_deadline_improvement": true,
+    "diagnosis_qwen_rubric_pass": true,
+    "diagnosis_oda_rubric_pass": false,
+    "human_override": true,
+    "holdout_executed": true,
+    "selected_code_integrity": true,
+    "behavioral_contract_pass": true,
+    "stress_all_constraints_valid": true,
+    "stress_no_regression_vs_reference": true,
+    "stress_regressions_vs_reference": 0,
+    "benchmark_complete": true,
+    "benchmark_all_trials_pass": false,
+    "benchmark_initial_pass_by_model": {
+      "coding": 0,
+      "finance": 0
+    },
+    "benchmark_post_revision_pass_by_model": {
+      "coding": 1,
+      "finance": 1
+    },
+    "benchmark_harness_assisted_pass_by_model": {
+      "coding": 1,
+      "finance": 1
+    },
+    "benchmark_fresh_blind_pass": false,
+    "benchmark_fresh_blind_summary": {
+      "coding": {
+        "planned": 2,
+        "completed": 2,
+        "passed": 0,
+        "assisted_passed": 0,
+        "grounding_applied": 0
+      },
+      "finance": {
+        "planned": 2,
+        "completed": 2,
+        "passed": 0,
+        "assisted_passed": 0,
+        "grounding_applied": 0
+      }
+    },
+    "benchmark_by_model": {
+      "coding": {
+        "planned": 2,
+        "completed": 2,
+        "passed": 1,
+        "mean_score": 0.9375,
+        "assisted_passed": 1
+      },
+      "finance": {
+        "planned": 2,
+        "completed": 2,
+        "passed": 1,
+        "mean_score": 0.9375,
+        "assisted_passed": 1
+      }
+    }
+  },
+  "axes": [
+    {
+      "id": "BUSINESS",
+      "title": "Business Value & Feasibility",
+      "criteria": [
+        {
+          "id": "BV-01",
+          "title": "顧客課題と業務KPIの整合（合成ケース）",
+          "status": "SUPPORTED_SYNTHETIC",
+          "finding": "固定稼働でFIFOより期限超過が減ることを合成HOLDOUTで確認",
+          "evidence_refs": [
+            "E01",
+            "E04"
+          ],
+          "next_action": "顧客の実データでSLA・処理時間・案件到着分布を検証する"
+        },
+        {
+          "id": "BV-02",
+          "title": "代替案の定量比較",
+          "status": "SUPPORTED_SYNTHETIC",
+          "finding": "FIFO・期限優先の固定ヒューリスティック・選択R1を同条件で比較済み。R1のKPI合格/不合格はBV-01で別判定",
+          "evidence_refs": [
+            "E01",
+            "E04"
+          ],
+          "next_action": "顧客が承認した基準・失敗コストで代替案を再比較する"
+        },
+        {
+          "id": "BV-03",
+          "title": "MVPの範囲と承認ゲート",
+          "status": "DEMO_CONTROLLED",
+          "finding": "変更要件と人間のデモ承認が記録され、検証対象は担当者割当ロジックに限定",
+          "evidence_refs": [
+            "E02",
+            "E03"
+          ],
+          "next_action": "顧客とスコープ、除外事項、受入基準を合意する"
+        },
+        {
+          "id": "BV-04",
+          "title": "実顧客の需要・支払意思",
+          "status": "UNVERIFIED",
+          "finding": "公開された問題背景はE08に収録。実顧客の需要・支払意思・保険案件の処理フローは未検証",
+          "evidence_refs": [
+            "E05"
+          ],
+          "next_action": "顧客ヒアリングと有償PoCの支払意思を確認する"
+        },
+        {
+          "id": "BV-05",
+          "title": "収益性・投資回収",
+          "status": "UNVERIFIED",
+          "finding": "開発費・運用費・CAC・料金・期限超過削減の金銭価値は未実測",
+          "evidence_refs": [
+            "E05"
+          ],
+          "next_action": "提案原価・運用負荷・回収可能額を見積もる"
+        },
+        {
+          "id": "BV-06",
+          "title": "外部証拠と当該事業課題の整合（限定的）",
+          "status": "PUBLIC_PROBLEM_CONTEXT_ONLY",
+          "finding": "原文の課題領域のみ確認。FIFO因果・顧客固有SLA・要件導出は実証していない",
+          "evidence_refs": [
+            "E08"
+          ],
+          "next_action": "当事者の一次資料と業務観測で問題原因を確認"
+        }
+      ]
+    },
+    {
+      "id": "DELIVERY",
+      "title": "AI Delivery & Operational Readiness",
+      "criteria": [
+        {
+          "id": "AI-01",
+          "title": "選択R1コードの隔離実行・制約検証",
+          "status": "SUPPORTED_SYNTHETIC",
+          "finding": "E2B実行済み。資格・容量などの制約を満たした。KPIの改善合否とは別",
+          "evidence_refs": [
+            "E04"
+          ],
+          "next_action": "権限、ネットワーク出口、CPU/メモリ制限を含む実環境のセキュリティ審査を行う"
+        },
+        {
+          "id": "AI-02",
+          "title": "DEVとHOLDOUTの分離・再現性",
+          "status": "SUPPORTED_SYNTHETIC",
+          "finding": "DEVゲート通過コードを異なるseedのHOLDOUTで評価しハッシュを記録。KPI合否とは別",
+          "evidence_refs": [
+            "E04"
+          ],
+          "next_action": "seed追加・顧客分布の変動・回帰テストで頑健性を測る"
+        },
+        {
+          "id": "AI-03",
+          "title": "LLM要件診断の品質",
+          "status": "HOLD",
+          "finding": "固定ルーブリックの初回・修復後の区別、未使用ブラインドケースの未実施・HOLD・失敗を確認する必要がある",
+          "evidence_refs": [
+            "E02",
+            "E07"
+          ],
+          "next_action": "多ケース・複数回の独立診断ベンチマークと誤判定分析を実施する"
+        },
+        {
+          "id": "AI-04",
+          "title": "人間の関与と監査可能性",
+          "status": "DEMO_CONTROLLED",
+          "finding": "モデル診断HOLDを保持したままデモ上の人間審査で技術検証を継続",
+          "evidence_refs": [
+            "E02",
+            "E03",
+            "E04"
+          ],
+          "next_action": "顧客側の権限分掌・承認者・監査保持期間を設計する"
+        },
+        {
+          "id": "AI-05",
+          "title": "業務ワークフロー・本番運用",
+          "status": "UNVERIFIED",
+          "finding": "顧客基盤への統合、認証、SLA、障害対応、監視・復旧は未検証",
+          "evidence_refs": [
+            "E05"
+          ],
+          "next_action": "API・監査運用・例外処理・データ移行の設計レビューを行う"
+        },
+        {
+          "id": "AI-06",
+          "title": "法務・個人情報・規制",
+          "status": "UNVERIFIED",
+          "finding": "実顧客のデータ処理、GDPR、保険規制との適合を検証していない",
+          "evidence_refs": [
+            "E05"
+          ],
+          "next_action": "適用法令、データ保護、委託契約、保険金判断の人間関与を専門家と確認する"
+        },
+        {
+          "id": "AI-07",
+          "title": "R1契約の振る舞い（期限と希少資格）",
+          "status": "SUPPORTED_SYNTHETIC",
+          "finding": "固定の期限優先・希少資格プローブで期待される割当を確認",
+          "evidence_refs": [
+            "E06"
+          ],
+          "next_action": "追加の業務反例・プロパティテスト・顧客受入条件へ拡張する"
+        },
+        {
+          "id": "AI-08",
+          "title": "高負荷・資格偏在・短納期への頑健性",
+          "status": "SUPPORTED_SYNTHETIC",
+          "finding": "固定した合成ストレスケースで制約を守り参照ヒューリスティックからの悪化は検出されず",
+          "evidence_refs": [
+            "E06"
+          ],
+          "next_action": "到着時刻・ピーク負荷・実顧客分布を使って再検証する"
+        },
+        {
+          "id": "AI-09",
+          "title": "要件種別に対応する合成受入評価",
+          "status": "SYNTHETIC_PROTOTYPE_ONLY",
+          "finding": "進捗通知は独立した通知プロトタイプのみ。R1の担当者割当結果はこの要件の証明に使用しない",
+          "evidence_refs": [
+            "E08",
+            "E04",
+            "E06"
+          ],
+          "next_action": "顧客承認済みの受入条件と実業務APIで再検証"
+        }
+      ]
+    }
+  ],
+  "decision": {
+    "code": "HOLD_NOTIFICATION_NOT_INTEGRATED",
+    "description": "公開資料と進捗通知の仮説はトレース済み。独立した合成通知プロトタイプのみを検証。R1担当者割当は当該通知要件を検証しておらず、顧客連携・実運用は未実装。",
+    "status": "HOLD",
+    "stage": "TECHNICAL_VALIDATION",
+    "production_status": "NO_GO",
+    "production_go": false,
+    "customer_business_go": false,
+    "automatic_diagnosis_accepted": false
+  },
+  "next_actions": [
+    {
+      "priority": "P1",
+      "action": "顧客の業務SLA・分布・処理時間・資格・例外を実測で確認",
+      "owner_role": "Customer / product owner"
+    },
+    {
+      "priority": "P1",
+      "action": "R1の行動プローブとストレス試験の結果を確認し、不合格時のみ修正する",
+      "owner_role": "AI technical reviewer"
+    },
+    {
+      "priority": "P1",
+      "action": "単発診断と診断ベンチマークを分離して誤判定を検証",
+      "owner_role": "AI technical reviewer"
+    },
+    {
+      "priority": "P2",
+      "action": "実顧客ROI、PoC費用、採算、支払意思を検証",
+      "owner_role": "Business development"
+    },
+    {
+      "priority": "P2",
+      "action": "本番ワークフロー、認証、監査・規制・データ保護を精査",
+      "owner_role": "Delivery / compliance"
+    }
+  ],
+  "disclaimer": "Evidence ID correctness != evidence validity != diagnostic correctness. SIM-SLA-001 and report E01-E05 are local/synthetic references, not external citations. No customer, market, legal, regulatory or production approval is inferred.",
+  "assessment_id": "15734b2f-21e2-4063-bcf0-100dd1efbe82",
+  "created_at": "2026-11-21T08:25:23+00:00",
+  "policy_validation_id": "694e3bcc-4306-421f-9935-0cd40a9851fc",
+  "benchmark_id": "24b74715-f270-4b46-9b77-4d1ace075b55",
+  "source_sha256": {
+    "experiment.json": "2d4343e19dd0b6e192cdcd0335a08b9b89e002122f1169d9528007c7fedb0443",
+    "run.json": "bb5697228f79b4f244599d342685a00373a7a407fcb6da7ad12e5334e5f83db3",
+    "proposal.json": "91047ccc27d89fca10ea82c98059f05243b8ad5921a8805cf1b6a7b5b2a59a65",
+    "approval.json": "45d051c08798b9a4ade68f9a80e3a5a8a490ab2981e49ca57a0801e3f7bf3210"
+  },
+  "requirement_trace": {
+    "mapping": {
+      "version": "EVIDENCE-REQUIREMENT-TRACE-v0.19.0",
+      "requirement_id": "REQ-PUBLIC-001",
+      "requirement_hypothesis": "Insurers must provide clear and timely updates on claim progress",
+      "type": "claim_progress_updates",
+      "feature_id": "FEATURE-CLAIM-PROGRESS-NOTIFICATION",
+      "feature_description": "Notify policyholders of claim progress and status changes",
+      "source_evidence_ids": [
+        "PUB-003",
+        "PUB-006"
+      ],
+      "source_links": [
+        {
+          "evidence_id": "PUB-003",
+          "source_url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication",
+          "source_file": "fos_insurance_delays.html",
+          "start_char": 4100,
+          "end_char": 4520
+        },
+        {
+          "evidence_id": "PUB-006",
+          "source_url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication",
+          "source_file": "fos_insurance_delays.html",
+          "start_char": 2460,
+          "end_char": 2880
+        }
+      ],
+      "reviewer": "Technical reviewer (demo)",
+      "classification_check": "claim_progress_updates",
+      "mapping_status": "TEMPLATE_MAPPED_HUMAN_SELECTED",
+      "kpis": [
+        "notification_coverage_pct",
+        "maximum_status_update_delay_hours",
+        "no_wrong_recipient"
+      ],
+      "acceptance_test_ids": [
+        "NOTIFY-ON-STATUS-CHANGE",
+        "NOTIFY-WITHIN-THRESHOLD",
+        "NOTIFY-CORRECT-RECIPIENT",
+        "NEGATIVE-CONTROL-NO-UPDATE"
+      ],
+      "test_target": "separate_deterministic_notification_prototype",
+      "implementation_scope": "Standalone deterministic example, NOT generated R1 or integrated service",
+      "backend_evaluator": "app.notification_demo.evaluate_prototype",
+      "notification_thresholds": {
+        "max_delay_hours": 24,
+        "min_coverage_pct": 100
+      },
+      "semantic_evidence_support": "HUMAN_ASSERTED_CONTEXT_ONLY_NOT_INDEPENDENTLY_VERIFIED",
+      "source_proves_FIFO_causality": false,
+      "is_real_customer_approved": false,
+      "notes": "Typed mapping only. An existing acceptance template cannot prove that the source entails the requirement or the feature is deployed."
+    },
+    "evaluation": {
+      "version": "EVIDENCE-REQUIREMENT-TRACE-v0.19.0",
+      "requirement_id": "REQ-PUBLIC-001",
+      "type": "claim_progress_updates",
+      "feature_id": "FEATURE-CLAIM-PROGRESS-NOTIFICATION",
+      "acceptance_test_ids": [
+        "NOTIFY-ON-STATUS-CHANGE",
+        "NOTIFY-WITHIN-THRESHOLD",
+        "NOTIFY-CORRECT-RECIPIENT",
+        "NEGATIVE-CONTROL-NO-UPDATE"
+      ],
+      "target_used": "separate_deterministic_notification_prototype",
+      "result_status": "SUPPORTED_SYNTHETIC_PROTOTYPE",
+      "evaluator_executed": true,
+      "synthetic_pass": true,
+      "unrelated_r1_does_not_prove_notification": true,
+      "customer_accepted": false,
+      "production_ready": false,
+      "trace_status": "SYNTHETIC_PROTOTYPE_ONLY",
+      "evidence_ids": [
+        "PUB-003",
+        "PUB-006"
+      ]
+    }
+  },
+  "public_evidence_context": {
+    "dataset_id": "insurance_claims_uk",
+    "rag_id": "e1cc6d4f-2e90-410d-be50-1fc701c5d2dc",
+    "topic_alignment": {
+      "status": "TOPIC_MATCH_REVIEW_REQUIRED",
+      "target_domain": "insurance_claims",
+      "source_domain": "insurance_claims",
+      "topic_matching_evidence_ids": [
+        "PUB-001",
+        "PUB-002",
+        "PUB-003",
+        "PUB-004",
+        "PUB-005",
+        "PUB-006"
+      ],
+      "reason": "Topic match is lexical; it does not prove FIFO causation, customer approval, or requirements validity."
+    },
+    "grounded_contract_evaluation": {
+      "status": "NOT_APPLICABLE_TO_NOTIFICATION",
+      "synthetic_pass": false,
+      "reason": "R1 is reviewer assignment and cannot satisfy the claim-progress-update feature",
+      "comparison_only": "Unrelated fixed claims-assignment regression"
+    },
+    "customer_validation": "UNVERIFIED",
+    "causal_FIFO_explanation": "UNVERIFIED"
+  }
+}

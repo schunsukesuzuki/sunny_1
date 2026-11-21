@@ -1,0 +1,202 @@
+{
+  "attempt": 1,
+  "code_sha256": "88fd4a7a0b58118b6692fd893ea9076b74a74cd3db5841c989e6c053135bab8a",
+  "evaluation": {
+    "valid": false,
+    "missed_total": null,
+    "worked_hours_total": null,
+    "deadline_hit_rate": null,
+    "all_claims_completed": false,
+    "violations": [
+      "Capacity exceeded: R-A/day0: 6",
+      "Capacity exceeded: R-A/day3: 8",
+      "Capacity exceeded: R-A/day2: 6",
+      "Capacity exceeded: R-A/day3: 8",
+      "Capacity exceeded: R-A/day1: 6",
+      "Capacity exceeded: R-A/day2: 8",
+      "Capacity exceeded: R-A/day3: 8"
+    ],
+    "seeds": [
+      142,
+      143,
+      144
+    ]
+  },
+  "metrics": [
+    {
+      "valid": false,
+      "violations": [
+        "Capacity exceeded: R-A/day0: 6",
+        "Capacity exceeded: R-A/day3: 8"
+      ],
+      "missed_deadlines": 0,
+      "on_time": 18,
+      "completed": 18,
+      "assigned_hours": 31,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 1.0,
+      "seed": 142,
+      "sandbox_id": "ic7l9zktyt8eblsm0k3cp",
+      "source_sha256": "88fd4a7a0b58118b6692fd893ea9076b74a74cd3db5841c989e6c053135bab8a",
+      "output_sha256": "f8861a74eccefd62b88fe9889a6e739d443ea9c928d6df59b88b6163cd42505a",
+      "dataset_sha256": "448d3ad7876d740e2756419cb8d45eb846cc5182cb9f0327ee95158cfc27cea4",
+      "elapsed_seconds": 0.466,
+      "stderr": ""
+    },
+    {
+      "valid": false,
+      "violations": [
+        "Capacity exceeded: R-A/day2: 6",
+        "Capacity exceeded: R-A/day3: 8"
+      ],
+      "missed_deadlines": 0,
+      "on_time": 18,
+      "completed": 18,
+      "assigned_hours": 32,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 1.0,
+      "seed": 143,
+      "sandbox_id": "ic7l9zktyt8eblsm0k3cp",
+      "source_sha256": "88fd4a7a0b58118b6692fd893ea9076b74a74cd3db5841c989e6c053135bab8a",
+      "output_sha256": "d60f4961a31225ee411d044050573f7ae36a9251626d7ffc2c3cbeedc395e8ef",
+      "dataset_sha256": "6a62c88e044b7a09eb8633e38c07e9165f03370bc92620c15d0a05895be5d618",
+      "elapsed_seconds": 0.322,
+      "stderr": ""
+    },
+    {
+      "valid": false,
+      "violations": [
+        "Capacity exceeded: R-A/day1: 6",
+        "Capacity exceeded: R-A/day2: 8",
+        "Capacity exceeded: R-A/day3: 8"
+      ],
+      "missed_deadlines": 0,
+      "on_time": 18,
+      "completed": 18,
+      "assigned_hours": 37,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 1.0,
+      "seed": 144,
+      "sandbox_id": "ic7l9zktyt8eblsm0k3cp",
+      "source_sha256": "88fd4a7a0b58118b6692fd893ea9076b74a74cd3db5841c989e6c053135bab8a",
+      "output_sha256": "be3e022e9e01787da58c7a2f04762847788b95eb01ec36773254ac2998a03b83",
+      "dataset_sha256": "ce8763d22d707c696c13199c1518ec2f4fab33a89975bcbcd21a03e4f30bdd82",
+      "elapsed_seconds": 0.325,
+      "stderr": ""
+    }
+  ],
+  "passes_fixed_hours_and_deadline": false,
+  "selection_gate": {
+    "gate_version": "R1-DEV-SELECTION-GATE-v0.19.0",
+    "eligible": false,
+    "reasons": [
+      "DEV_CONSTRAINT_INVALID",
+      "BEHAVIORAL_PROBE_FAIL_OR_IDENTITY_MISMATCH",
+      "STRESS_CONSTRAINT_INVALID"
+    ],
+    "dev_cases": 3,
+    "behavioral_probes_pass": false,
+    "stress_scenarios_checked": 4,
+    "selection_rule": "Require valid DEV, strict improvement over FIFO on at least one DEV seed, equal hours, two behavioral probes and no stress regression against the fixed heuristic.",
+    "holdout_used_for_selection": false
+  },
+  "behavioral_probes": [
+    {
+      "seed": 900001,
+      "scenario": "deadline_risk_probe",
+      "dataset_sha256": "5575eb9625e7050872d5f7cf582afd8cac3afa69270b3caabea8b79125e54cde",
+      "valid": true,
+      "checks": {
+        "urgent_served_on_due_day": true,
+        "both_cases_served": true
+      },
+      "pass": true,
+      "missed_deadlines": 0,
+      "unassigned_cases": 0,
+      "violations": [],
+      "execution_error": null
+    },
+    {
+      "seed": 900002,
+      "scenario": "scarce_qualification_probe",
+      "dataset_sha256": "152f675fe5e0514271365f4aaa711a15de12aa7266f46756994ccdbf8d4595df",
+      "valid": false,
+      "checks": {
+        "scarce_case_uses_sole_specialist": true,
+        "common_case_preserves_specialist_capacity": false,
+        "all_cases_served": true
+      },
+      "pass": false,
+      "missed_deadlines": 0,
+      "unassigned_cases": 0,
+      "violations": [
+        "Capacity exceeded: R-A/day0: 2"
+      ],
+      "execution_error": null
+    }
+  ],
+  "stress_checks": [
+    {
+      "seed": 910000,
+      "scenario": "capacity_pressure",
+      "generated": {
+        "valid": false,
+        "missed": 0,
+        "unassigned": 0
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      }
+    },
+    {
+      "seed": 910001,
+      "scenario": "skill_bottleneck",
+      "generated": {
+        "valid": false,
+        "missed": 1,
+        "unassigned": 1
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 1,
+        "unassigned": 1
+      }
+    },
+    {
+      "seed": 910002,
+      "scenario": "deadline_compression",
+      "generated": {
+        "valid": false,
+        "missed": 0,
+        "unassigned": 0
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      }
+    },
+    {
+      "seed": 910003,
+      "scenario": "arrival_reordering",
+      "generated": {
+        "valid": false,
+        "missed": 0,
+        "unassigned": 0
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      }
+    }
+  ]
+}

@@ -22,6 +22,7 @@ from . import grounded_contract as gc
 from . import requirement_trace as rt
 from . import notification_demo as nd
 from . import blind_optimality as bo
+from . import artifact_readiness as ar
 
 # The endpoints are registered by register(app, main_module) to keep the
 # existing 01..09 handlers as the single implementation of each operation.
@@ -96,6 +97,16 @@ def register(app, m) -> None:
     def add_file(wid: str, name:str, data:dict) -> None:
         # Append-only snapshots contain the exact inputs/output of 01 and 02.
         m.store("workflows", wid, name, data)
+
+    def check_experiment(state: dict, stage: str) -> dict:
+        """Independently inspect R1 artifacts before any downstream consumer.
+
+        The probe is read-only; a linked ID or started marker never implies a
+        successful evaluation. Stage-specific snapshots stay in the audit ZIP.
+        """
+        audit = ar.inspect_experiment(m.ARTIFACT_DIR, state["linked_ids"].get("experiments"))
+        add_file(state["workflow_id"], f"{stage}_experiment_dependency.json", ar.public_view(audit))
+        return audit
 
     def required_steps(state: dict) -> list[str]:
         return STEP_ORDER if state["inputs"].get("evidence_mode") == "public" else [x for x in STEP_ORDER if x not in ("00_evidence_grounded_requirements", "00b_evidence_review", "00c_grounded_test_contract", "08c_grounded_kpi_verification", "08d_notification_prototype", "08e_requirement_trace")]
@@ -251,18 +262,32 @@ def register(app, m) -> None:
                 exp=await m.evaluate_r1(m.EvaluateRequest(approval_id=state["linked_ids"]["approvals"],
                     python_code=generated["python_code"],max_repairs=2,r1_mode=inp.r1_mode))
                 state["linked_ids"]["experiments"]=exp["experiment_id"]
-                step(state,current,"COMPLETED_WITH_FINDINGS",
-                    "R1 mode: "+inp.r1_mode+"; selected: "+str(exp.get('selected_engine'))+
-                    "; KPI/HOLDOUT: "+str(exp.get("r1_independent_kpi_improvement_pass")))
+                probe=check_experiment(state,"06")
+                if not ar.record_is_complete(probe):
+                    state["error"] = "06 R1成果物が不完全: " + probe['status'] + ": " + probe['reason']
+                    step(state,current,"FAILED", "Experiment returned but artifact integrity is " + probe['status'] + ": " + probe['reason'])
+                else:
+                    step(state,current,"COMPLETED_WITH_FINDINGS",
+                        "R1 mode: "+inp.r1_mode+"; selected: "+str(exp.get('selected_engine'))+
+                        "; KPI/HOLDOUT: "+str(exp.get("r1_independent_kpi_improvement_pass")))
             except Exception as exc:
-                # Preserve partial experiment if evaluation was started and has artifacts.
-                p=folder(wid)
-                approval_folder=m.path_for("approvals",state["linked_ids"]["approvals"])
-                marker=approval_folder/"evaluation_started.json"
-                if marker.is_file():
-                    state["linked_ids"]["experiments"] = json.loads(marker.read_text())["experiment_id"]
+                # Preserve partial experiment ID as a pointer, not a completion claim.
+                marker=folder(wid)/"06_unused_marker.json"
+                try:
+                    marker=m.path_for("approvals",state["linked_ids"]["approvals"])/"evaluation_started.json"
+                    if marker.is_file():
+                        raw_marker=json.loads(marker.read_text(encoding="utf-8"))
+                        state["linked_ids"]["experiments"]=raw_marker.get("experiment_id")
+                except (ValueError, OSError, TypeError, KeyError) as marker_exc:
+                    add_file(wid,"06_marker_read_error.json",{"error_type":type(marker_exc).__name__,"message":str(marker_exc)[:300]})
+                probe=check_experiment(state,"06")
                 msg=f"{type(exc).__name__}: {str(getattr(exc,'detail',exc))[:400]}"
-                step(state,current,"FAILED",msg)
+                state["error"]="06 R1実験失敗: " + msg + "; artifact=" + probe['status']
+                add_file(wid,"06_r1_failure.json",{"status":"FAILED","error_type":type(exc).__name__,
+                    "detail":str(getattr(exc,'detail',exc))[:1000],
+                    "artifact_readiness":ar.public_view(probe),
+                    "note":"Upstream R1 failed; downstream evaluators must not consume a started marker as an experiment result."})
+                step(state,current,"FAILED",msg + "; artifact=" + probe['status'])
             current="07_audit_index"
             snapshot_index(state)
             step(state,current,"COMPLETED","saved evidence index; archived records retrievable by 07")
@@ -280,9 +305,8 @@ def register(app, m) -> None:
                     state["linked_ids"]["benchmarks"]=json.loads(marker.read_text())["benchmark_id"]
                 step(state,current,"FAILED",f"{type(exc).__name__}: {str(exc)[:400]}")
             current="08b_policy_and_stress"
-            exp_for_policy=(m.load("experiments",state["linked_ids"]["experiments"],"experiment.json")
-                            if state["linked_ids"].get("experiments") else {})
-            if exp_for_policy.get('selected_code_sha256'):
+            policy_input=check_experiment(state,"08b")
+            if ar.ready_for_policy(policy_input):
                 try:
                     policy=await m.run_policy_validation(m.PolicyValidationRequest(experiment_id=state["linked_ids"]["experiments"],workflow_id=wid))
                     state["linked_ids"]["policy_validations"]=policy["validation_id"]
@@ -290,26 +314,46 @@ def register(app, m) -> None:
                     step(state,current,st,"R1 behavioral + stress evaluation")
                 except Exception as exc:
                     marker=folder(wid)/"08b_policy_started.json"
-                    if marker.is_file():
-                        state["linked_ids"]["policy_validations"]=json.loads(marker.read_text())["validation_id"]
-                    step(state,current,"FAILED",f"{type(exc).__name__}: {str(exc)[:400]}")
+                    try:
+                        if marker.is_file():
+                            state["linked_ids"]["policy_validations"]=json.loads(marker.read_text(encoding="utf-8"))["validation_id"]
+                    except (ValueError, OSError, TypeError, KeyError):
+                        pass
+                    add_file(wid,"08b_policy_failure.json",{"error_type":type(exc).__name__,
+                          "detail":str(getattr(exc,'detail',exc))[:600], "experiment_id":state["linked_ids"].get("experiments")})
+                    step(state,current,"FAILED",f"{type(exc).__name__}: {str(getattr(exc,'detail',exc))[:400]}")
             else:
-                step(state,current,"COMPLETED_WITH_FINDINGS","No DEV-eligible R1; policy executed in DEV gate, no selected code for post-selection E2B validation")
+                add_file(wid,"08b_policy_skip.json",{"status":"SKIPPED_UPSTREAM_DEPENDENCY",
+                    "artifact_readiness":ar.public_view(policy_input),
+                    "policy_executed":False,"technical_pass":False,
+                    "reason":"No verified selected R1. Do not claim post-selection behavioral verification."})
+                step(state,current,"SKIPPED", "06 R1 dependency: " + policy_input['status'] + "; " + policy_input['reason'])
             if inp.evidence_mode=="public":
                 current="08c_grounded_kpi_verification"
                 try:
                     contract=m.load("workflows",wid,"00c_grounded_test_contract.json")
-                    exp_record=m.load("experiments",state["linked_ids"]["experiments"],"experiment.json") if state["linked_ids"].get("experiments") else {}
-                    pol_record=m.load("policy_validations",state["linked_ids"]["policy_validations"],"validation.json") if state["linked_ids"].get("policy_validations") else None
+                    dependency=check_experiment(state,"08c")
                     if state.get('requirement_type')==rt.NOTIFICATION:
                         evaluation={'status':'NOT_APPLICABLE_TO_NOTIFICATION', 'synthetic_pass':False,
                            'reason':'R1 is reviewer assignment and cannot satisfy the claim-progress-update feature',
                            'comparison_only':'Unrelated fixed claims-assignment regression'}
+                    elif not ar.record_is_complete(dependency):
+                        evaluation={'status':'HOLD_UPSTREAM_R1_INCOMPLETE','synthetic_pass':False,
+                                    'reason':'06 experiment unavailable: '+dependency['status'],
+                                    'dependency':ar.public_view(dependency)}
                     else:
+                        exp_record=dependency['record']
+                        pol_record=None
+                        policy_id=state["linked_ids"].get("policy_validations")
+                        if policy_id and ar.ready_for_policy(dependency):
+                            p=m.path_for("policy_validations",policy_id)/"validation.json"
+                            if p.is_file():
+                                pol_record=m.load("policy_validations",policy_id,"validation.json")
                         evaluation=gc.evaluate(contract,exp_record,pol_record)
                     add_file(wid,"08c_grounded_kpi_verification.json",evaluation)
                     state["grounded_contract_status"]=evaluation["status"]
-                    step(state,current,"COMPLETED_WITH_FINDINGS","Typed assignment gate: "+evaluation["status"])
+                    st='SKIPPED' if evaluation['status']=='HOLD_UPSTREAM_R1_INCOMPLETE' else 'COMPLETED_WITH_FINDINGS'
+                    step(state,current,st,"Typed assignment gate: "+evaluation["status"])
                 except Exception as exc:
                     state["grounded_contract_status"]="HOLD"
                     step(state,current,"FAILED",f"{type(exc).__name__}: {str(exc)[:400]}")
@@ -340,14 +384,16 @@ def register(app, m) -> None:
                     step(state,current,'FAILED',f"{type(exc).__name__}: {str(exc)[:400]}")
             current="08f_blind_optimality"
             try:
+                dependency=check_experiment(state,"08f")
                 eid=state['linked_ids'].get('experiments')
-                exp_record=m.load('experiments',eid,'experiment.json') if eid else {}
-                selected_file=m.path_for('experiments',eid)/'selected_r1.py' if eid else None
-                if not selected_file or not selected_file.exists():
-                    add_file(wid,'08f_blind_optimality.json',{'status':'HOLD_NO_ELIGIBLE_R1',
-                        'reason':'No DEV-eligible R1 selected; independent comparison not executed'})
-                    step(state,current,'COMPLETED_WITH_FINDINGS','No selected R1, blind evaluation not possible')
+                if not ar.ready_for_policy(dependency):
+                    add_file(wid,'08f_blind_optimality.json',{'status':'HOLD_DEPENDENCY_NOT_READY',
+                        'reason':'Independent blind comparison was not executed',
+                        'dependency':ar.public_view(dependency), 'solver_executed':False, 'holdout_executed':False})
+                    step(state,current,'SKIPPED','No verified R1 for blind comparison: '+dependency['status'])
                 else:
+                    exp_record=dependency['record']
+                    selected_file=m.path_for('experiments',eid)/'selected_r1.py'
                     root_seed=bo.fresh_blind_seed()  # chosen AFTER candidate selection
                     suite=bo.randomized_suite(root_seed,inp.blind_case_count)
                     baseline={s:bo.exact_baseline(ds) for s,ds in suite.items()}
@@ -380,13 +426,18 @@ def register(app, m) -> None:
             except Exception as exc:
                 step(state,current,'FAILED',f'{type(exc).__name__}: {str(exc)[:400]}')
             current="09_business_delivery_assessment"
-            if state["linked_ids"].get("experiments"):
+            assessment_input=check_experiment(state,"09")
+            if ar.record_is_complete(assessment_input):
                 try:
+                    bid=state["linked_ids"].get("benchmarks")
+                    benchmark_path=m.path_for('benchmarks',bid)/'benchmark.json' if bid else None
+                    if not (benchmark_path and benchmark_path.is_file()):
+                        bid=None
                     assess=m.generate_business_assessment(m.BusinessAssessmentRequest(
                         experiment_id=state["linked_ids"]["experiments"],
                         policy_validation_id=state["linked_ids"].get("policy_validations")
                           if any(x["name"]=="08b_policy_and_stress" and x["status"]=="COMPLETED_WITH_FINDINGS" for x in state["stages"]) else None,
-                        benchmark_id=state["linked_ids"].get("benchmarks")))
+                        benchmark_id=bid))
                     if inp.evidence_mode=="public":
                         result=m.load("assessments",assess["assessment_id"],"assessment.json")
                         aligned=state.get("topic_alignment",{})
@@ -435,16 +486,24 @@ def register(app, m) -> None:
                     state["linked_ids"]["assessments"]=assess["assessment_id"]
                     step(state,current,"COMPLETED_WITH_FINDINGS", "Production remains NO-GO; public source is contextual")
                 except Exception as exc:
-                    marker=folder(wid)/"08b_policy_started.json"
-                    if marker.is_file():
-                        state["linked_ids"]["policy_validations"]=json.loads(marker.read_text())["validation_id"]
-                    step(state,current,"FAILED",f"{type(exc).__name__}: {str(exc)[:400]}")
+                    add_file(wid,"09_assessment_failure.json",{"error_type":type(exc).__name__,
+                        "detail":str(getattr(exc,'detail',exc))[:600],
+                        "artifact_readiness":ar.public_view(assessment_input)})
+                    step(state,current,"FAILED",f"{type(exc).__name__}: {str(getattr(exc,'detail',exc))[:400]}")
             else:
-                step(state,current,"SKIPPED","No R1 experiment")
+                add_file(wid,"09_assessment_skip.json",{"status":"SKIPPED_UPSTREAM_DEPENDENCY",
+                    "reason":"Complete R1 experiment is required for assessment",
+                    "artifact_readiness":ar.public_view(assessment_input),
+                    "production_go":False,"customer_business_go":False})
+                step(state,current,"SKIPPED","06 R1 dependency: "+assessment_input['status'] + '; no business/production GO')
             snapshot_index(state)
             all_good=all(any(x["name"]==name and x["status"] in ("COMPLETED", "COMPLETED_WITH_FINDINGS")
                     for x in state["stages"]) for name in required_steps(state))
             state["status"]="COMPLETE" if all_good else "PARTIAL"
+            if not all_good and not state.get("error"):
+                first_issue=next((x for x in state["stages"] if x["status"] in ("FAILED","SKIPPED")),None)
+                if first_issue:
+                    state["error"]=first_issue["name"]+": "+first_issue.get("detail", "")
             state["phase"]="DONE"
             write(wid,state)
             save_archive(state)

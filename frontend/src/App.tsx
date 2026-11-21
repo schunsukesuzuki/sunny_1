@@ -424,10 +424,16 @@ export default function App() {
           {(['coding','finance'] as const).map(role=><div className="diagnosis-panel" key={role}>
             <h3>{role==='coding'?'Qwen3-Coder':'ODA-Fin-RL-8B'}</h3>
             <p>採点完了: {benchmark.summary?.[role]?.completed}/{benchmark.summary?.[role]?.planned}</p>
-            <p>初回PASS: {benchmark.summary?.[role]?.initial_passed ?? '—'} / {benchmark.summary?.[role]?.planned}</p>
-            <p>再診断後PASS: {benchmark.summary?.[role]?.passed} / {benchmark.summary?.[role]?.planned}</p>
-            {benchmark.blind_generalization?.enabled && <p>別ケース初回PASS: {benchmark.blind_generalization?.summary?.[role]?.passed ?? '—'} / {benchmark.blind_generalization?.summary?.[role]?.planned ?? '—'}</p>}
-            <p>基準別平均点: {benchmark.summary?.[role]?.mean_score ?? '—'}</p>
+            <p>モデル生回答・初回PASS: {benchmark.summary?.[role]?.raw_initial_passed ?? benchmark.summary?.[role]?.initial_passed ?? '—'} / {benchmark.summary?.[role]?.planned}</p>
+            <p>モデル生回答・再診断後PASS: {benchmark.summary?.[role]?.raw_final_passed ?? '—'} / {benchmark.summary?.[role]?.planned}</p>
+            <p>根拠ID補助込み・最終PASS: {benchmark.summary?.[role]?.assisted_final_passed ?? benchmark.summary?.[role]?.passed} / {benchmark.summary?.[role]?.planned}</p>
+            <p>根拠IDの構造的補助: {benchmark.summary?.[role]?.grounding_applied ?? 0}件（モデル単独の正解には含めない）</p>
+            {benchmark.blind_generalization?.enabled && <>
+              <p>Fresh Blind 生回答PASS: {benchmark.blind_generalization?.summary?.[role]?.passed ?? '—'} / {benchmark.blind_generalization?.summary?.[role]?.planned ?? '—'}</p>
+              <p>Fresh Blind 根拠補助込みPASS: {benchmark.blind_generalization?.summary?.[role]?.assisted_passed ?? '—'} / {benchmark.blind_generalization?.summary?.[role]?.planned ?? '—'}</p>
+            </>}
+            <p>生回答の平均点: {benchmark.summary?.[role]?.mean_raw_score ?? '—'}</p>
+            <p>ハーネス補助込みの平均点: {benchmark.summary?.[role]?.mean_assisted_score ?? benchmark.summary?.[role]?.mean_score ?? '—'}</p>
           </div>)}
         </div>
         <a href={`${BACKEND}/diagnostic-benchmark/${benchmark.benchmark_id}/report`} target="_blank" rel="noreferrer">比較レポート（Markdown）</a>
@@ -534,7 +540,7 @@ export default function App() {
         },!fullRunId.trim(),'secondary')}
       </div>
       {fullRun && <section className="assessment-report" aria-label="00〜09 一括実行状況">
-        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.21.1</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
+        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.22</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
           <Status good={fullRun.status==='COMPLETE'}>{fullRun.status}</Status></div>
         {fullRun.topic_alignment && <div className="notice"><strong>公開資料と保険請求課題の対応:</strong> {fullRun.topic_alignment.status} — {fullRun.topic_alignment.reason}。一致は原文の意味的支持・因果の証明ではありません。</div>}
         {fullRun.grounded_contract_status && <p className="muted">担当者割当KPIの検証: {fullRun.grounded_contract_status}（該当要件のみ）</p>}
@@ -664,6 +670,7 @@ export default function App() {
             },!actor.trim() || rationale.trim().length<5,'secondary')}
           </div>
         </div>}
+        {fullRun.status==='PARTIAL' && <div className="notice"><strong>一括実行はPARTIALです。</strong> 先行工程の失敗と、依存成果物の不足によって実行しなかった工程（SKIPPED）を区別しています。06が失敗した場合、08b・08f・09の結果をPASSとみなさず、ZIP内の <code>06_r1_failure.json</code> と <code>08b_policy_skip.json</code> を確認してください。</div>}
         {fullRun.error && <div className="error" role="alert">処理が完了できませんでした: {fullRun.error}</div>}
         {fullRun.bundle_url && <div className="notice"><strong>証跡ZIPが保存されました。</strong> 現在の状態は{fullRun.status}です。途中停止時のZIPはPARTIALで、未完了・失敗工程をマニフェストに残します。
           <p><a className="download-link" href={fullRun.bundle_url}>00〜09の取得・根拠・実験証跡を1つのZIPでダウンロード</a></p>

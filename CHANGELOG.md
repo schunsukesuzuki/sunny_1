@@ -1,3 +1,23 @@
+## v0.22 — Dependency-safe experiment artifacts and PARTIAL audit (2026-11-21)
+
+- Fix stage **08b `HTTPException: Artifact not found`** caused by treating `evaluation_started.json` (06 marker) as a completed `experiment.json`.
+- Add read-only, shared readiness validation for experiment JSON, required chain identifiers, execution failure status, selected R1 SHA256 and HOLDOUT completion.
+- Preserve original 06 error, started-only provenance, and explicit `06_r1_failure.json` / `06_experiment_dependency.json` in the audit ZIP.
+- Guard 08b, 08c, 08f and 09 against absent or incomplete R1 artifacts; record dependency-specific `SKIPPED` / `HOLD` statuses without misleading success or secondary 404.
+- PARTIAL exports retain all available files with SHA256. UI surfaces first failing stage and emphasizes which results were **not executed**.
+- Add 4 new backend regression tests (108 in total) for started-only and failed experiment records, source hash mismatches, and integrated PARTIAL export.
+- Prior v0.21.2 RAG, Skill, independent diagnostic rubric and exact-solver comparison are retained. No change to scoring thresholds. Real E2B/Ollama and frontend full build remain unverified.
+
+## v0.21.2 — Diagnostic grounding without silent grade inflation
+
+- Before both Qwen and ODA benchmark calls, supply a machine-extracted **public input fact sheet** separating independent R0 implementation test, contract, synthetic KPI comparison and evidence registry. No fixture oracle is sent.
+- Make model prompt explicitly assess **implementation-vs-contract** and **requirements-vs-objective** before classifying cause; synthetically supported KPI mismatch is different from unknown real customer acceptance.
+- Add conservative `evidence_bind_from_input()` to attach a **single supported missing evidence ID**, only after a semantically consistent diagnosis. No class, implementation judgment, scheduling policy, or change decision is rewritten.
+- Persist original model response and score, assisted response and score, any model revision and score, and the exact input-only binding audit. **Only raw model PASS contributes to automatic diagnostic acceptance** in Business Assessment.
+- Keep Fresh Blind unmodified first-pass model answers; show raw and harness-assisted results separately, without revision feedback. The old blind samples inspected during development are regression examples, NOT a new independent generalization result.
+- Reduce unnecessary Ollama revision calls when the *only* failure is a safely bindable evidence reference. Errors in classification still require a model revision and can remain HOLD.
+- 7 new tests for independent auditing, unknown/ambiguous evidence, LLM failures, raw-vs-assisted PASS, and Fresh Blind separation. Existing functionality retained.
+
 # Change log
 
 ## v0.21.1 — 00b feature selection / validation guidance (2026-11-21)

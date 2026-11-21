@@ -1,0 +1,135 @@
+{
+  "case_id": "deadline_business_mismatch",
+  "model_role": "finance",
+  "model_id": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+  "input_sha256": "0285f8b1bc2d75cf7e803cc89be604776c6d75f02574e692c12752ce4e594122",
+  "revision_allowed": false,
+  "status": "COMPLETED",
+  "observable_fact_sheet": {
+    "independent_test_reported_status": "PASS",
+    "independent_test_verbatim": "PASS: deterministic reviewer/day checks confirm the code conforms to every listed FIFO constraint.",
+    "original_contract": "R0: process intake cases by arrival_order, qualified earliest available reviewer.",
+    "business_goal_verbatim": "Improve deadline adherence at fixed planned reviewer-hours.",
+    "synthetic_comparison_verbatim": "FIFO missed 7 deadline targets; alternative due-date ordering missed 1 in matched synthetic data with equal hours.",
+    "available_evidence": [
+      {
+        "id": "SYN-BLIND-SLA-6849",
+        "provenance": "synthetic",
+        "observation": "A later-arriving urgent task is delayed behind an earlier, nonurgent task under the pinned FIFO rule."
+      }
+    ],
+    "customer_interview_count": 0,
+    "note": "These fields restate the public INPUT facts; infer diagnoses independently."
+  },
+  "diagnosis": {
+    "classification": "requirement_mismatch",
+    "implementation_assessment": "incorrect",
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_validity": "unverified",
+    "supporting_evidence_ids": [
+      "SYN-BLIND-SLA-6849",
+      "synthetic_dev_observation"
+    ],
+    "root_cause": "The specified FIFO contract violates the measurable business objective of deadline adherence by prioritizing arrival_order over due_date",
+    "suggested_requirement_change": "Replace strict FIFO with due_date-first ordering; use arrival_order only as tie-breaker for identical due_dates",
+    "scheduling_precedence": "none",
+    "change_required": true,
+    "remaining_uncertainty": "No real customer validation exists to confirm synthetic data's relevance to actual business needs"
+  },
+  "rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": true,
+      "implementation_correctness": false,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": false,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": false
+    },
+    "passed": false,
+    "score": 0.625,
+    "failure_codes": [
+      "IMPLEMENTATION_CORRECTNESS",
+      "EVIDENCE_TRACEABILITY",
+      "REVISION_TARGETS_REQUIREMENT"
+    ],
+    "expected_classification": "requirement_mismatch",
+    "real_customer_business_validity": "UNVERIFIED"
+  },
+  "grounding": {
+    "version": "EVIDENCE-BINDER-v0.21.2",
+    "applied": false,
+    "reason": "MODEL_ALREADY_CITED",
+    "added_evidence_ids": [],
+    "raw_answer": {
+      "classification": "requirement_mismatch",
+      "implementation_assessment": "incorrect",
+      "synthetic_requirement_fit": "mismatch",
+      "real_customer_validity": "unverified",
+      "supporting_evidence_ids": [
+        "SYN-BLIND-SLA-6849",
+        "synthetic_dev_observation"
+      ],
+      "root_cause": "The specified FIFO contract violates the measurable business objective of deadline adherence by prioritizing arrival_order over due_date",
+      "suggested_requirement_change": "Replace strict FIFO with due_date-first ordering; use arrival_order only as tie-breaker for identical due_dates",
+      "scheduling_precedence": "none",
+      "change_required": true,
+      "remaining_uncertainty": "No real customer validation exists to confirm synthetic data's relevance to actual business needs"
+    },
+    "assisted_answer": {
+      "classification": "requirement_mismatch",
+      "implementation_assessment": "incorrect",
+      "synthetic_requirement_fit": "mismatch",
+      "real_customer_validity": "unverified",
+      "supporting_evidence_ids": [
+        "SYN-BLIND-SLA-6849",
+        "synthetic_dev_observation"
+      ],
+      "root_cause": "The specified FIFO contract violates the measurable business objective of deadline adherence by prioritizing arrival_order over due_date",
+      "suggested_requirement_change": "Replace strict FIFO with due_date-first ordering; use arrival_order only as tie-breaker for identical due_dates",
+      "scheduling_precedence": "none",
+      "change_required": true,
+      "remaining_uncertainty": "No real customer validation exists to confirm synthetic data's relevance to actual business needs"
+    },
+    "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+  },
+  "assisted_diagnosis": {
+    "classification": "requirement_mismatch",
+    "implementation_assessment": "incorrect",
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_validity": "unverified",
+    "supporting_evidence_ids": [
+      "SYN-BLIND-SLA-6849",
+      "synthetic_dev_observation"
+    ],
+    "root_cause": "The specified FIFO contract violates the measurable business objective of deadline adherence by prioritizing arrival_order over due_date",
+    "suggested_requirement_change": "Replace strict FIFO with due_date-first ordering; use arrival_order only as tie-breaker for identical due_dates",
+    "scheduling_precedence": "none",
+    "change_required": true,
+    "remaining_uncertainty": "No real customer validation exists to confirm synthetic data's relevance to actual business needs"
+  },
+  "assisted_rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": true,
+      "implementation_correctness": false,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": false,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": false
+    },
+    "passed": false,
+    "score": 0.625,
+    "failure_codes": [
+      "IMPLEMENTATION_CORRECTNESS",
+      "EVIDENCE_TRACEABILITY",
+      "REVISION_TARGETS_REQUIREMENT"
+    ],
+    "expected_classification": "requirement_mismatch",
+    "real_customer_business_validity": "UNVERIFIED"
+  }
+}

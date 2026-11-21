@@ -1,3 +1,7 @@
+> **v0.22 — 08b Artifact not found修正**：06のR1評価が途中失敗し、`evaluation_started.json`にIDだけ残って`experiment.json`が存在しない場合、08b・08f・09は二次的な404を起こさず **SKIPPED** にします。原発エラーを`06_r1_failure.json`に保存し、PARTIAL ZIPに原因・未実施工程・欠落成果物を保持します。08cの担当者割当契約も未完成のR1をPASS扱いしません。詳細：`docs/v022-resilient-artifact-lineage.md`。**この修正は06自体のE2B/LLM失敗を自動修復するものではありません。**
+
+> **v0.21.2 — LLM要件診断の二層評価（v0.21系改訂）**：Qwen/ODAに元入力だけから作ったFact Sheetを与え、独立実装テストと合成KPIを順に判断させます。証拠IDを落とした場合は、**単一の原文根拠が診断と整合するときだけ**決定的なID補助を行います。**生回答のPASS率と補助込みのPASS率は厳密に分離**し、事業評価の自動診断PASSには生回答の成績だけを使用します。04の既存診断・一括実行・Domain Skillと08f厳密比較は維持しています。モデル実機でのPASS率は未検証です。`docs/v0212-diagnostic-two-layer.md` を参照。
+
 > **v0.21.1 — 00b review UX fix:** 00bの対象機能を未選択から開始し、手入力要件と選択機能の不一致・混在・担当者割当の期限文脈不足を送信前に表示します。Qwenの候補を選んだ場合は文章から機能を提案し、判断不能なら未選択とします。APIの422にも日本語の修正案を追加。**証拠・要件の品質ゲートは緩めていません。** `docs/v0211-evidence-review-ui.md`を参照。
 
 > **v0.21 — 診断精度と厳密最適化比較:** 04のQwen/ODA診断と08の診断ベンチマークに、入力事実のみを使う一度限りの再診断を追加しました。**初回PASS・修復後PASS・新規ケース初回PASSを分けて保存**し、固定の8項目ルーブリックは変更しません。08fではDEV候補選択後にランダム化した小規模案件を生成し、独立E2BでLLM/Skill/固定参照を比較します。小規模全探索、またはオプションのOR-Tools CP-SATが `OPTIMAL` を返したときだけ最適性ギャップを確定します。**LLMが必ずPASSする保証はありません**。詳細: `docs/v021-diagnostic-calibration-and-exact.md`。
@@ -26,7 +30,7 @@
 
 > **v0.10:** 要件診断の多軸独立採点・Qwen/ODAの合成ベンチマーク・過去ログ再採点を追加。詳細は `docs/v010-requirement-diagnostic-benchmark.md`。
 
-# Claims Operations Planner — AI Venture Feasibility Studio v0.21.1
+# Claims Operations Planner — AI Venture Feasibility Studio v0.22
 
 ドイツの保険業務SaaS企業（**架空**）の事業開発PoC。**Qwen3-Coder 30B** はサービス設計・Pythonコード生成、**OpenDataArena/ODA-Fin-RL-8B** は金融ドメイン要件診断を担当。E2Bは生成コードを隔離して実行し、独立した決定的評価器で審査割当・期限・資格・稼働上限を検証します。v0.8にあったMarkdown結果保存を維持し、生成コード・差分・各試行のE2B実行証跡・履歴取得を拡張しました。
 
