@@ -1,0 +1,20 @@
+{
+  "classification": "insufficient_evidence",
+  "r0_implementation_assessment": "incorrect",
+  "business_requirement_assessment": "mismatch",
+  "synthetic_requirement_fit": null,
+  "real_customer_validity": "unverified",
+  "scheduling_precedence": "none",
+  "supporting_evidence_ids": [
+    "SIM-SLA-001"
+  ],
+  "root_cause": "contradiction between synthetic evidence and contract rule",
+  "suggested_requirement_change": "Remove strict FIFO; prioritize deadlines with arrival-order tiebreak for FIFO",
+  "business_tradeoffs": [
+    "deadline_misses_reduced_without_additional_hours"
+  ],
+  "compliance_questions": [
+    "unknown"
+  ],
+  "remaining_uncertainty": "real_customer_validity_unverified"
+}

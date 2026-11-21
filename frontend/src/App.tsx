@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import './styles.css';
 
 type Dict = Record<string, any>;
-type HistoryKind = 'runs' | 'experiments' | 'proposals' | 'benchmarks' | 'assessments';
+type HistoryKind = 'runs' | 'experiments' | 'proposals' | 'benchmarks' | 'assessments' | 'policy_validations' | 'exports' | 'workflows';
 const BACKEND = '/api';
 const BENCHMARK_CASES: {id:string;label:string}[] = [
   {id:'fifo_sla_conflict', label:'R0が正しくても事業要件と不一致'},
@@ -64,6 +64,11 @@ export default function App() {
   const [rescore, setRescore] = useState<Dict | null>(null);
   const [assessmentExperimentId, setAssessmentExperimentId] = useState('');
   const [assessment, setAssessment] = useState<Dict | null>(null);
+  const [pipelineExport, setPipelineExport] = useState<Dict | null>(null);
+  const [policyValidation, setPolicyValidation] = useState<Dict | null>(null);
+  const [fullRun, setFullRun] = useState<Dict | null>(null);
+  const [fullRunId, setFullRunId] = useState('');
+  const [explicitReview, setExplicitReview] = useState(false);
   async function refreshHistory(kind: HistoryKind) {
     const result = await call<{items: Dict[]}>(`/history/${kind}`);
     setHistory(result.items);
@@ -74,6 +79,34 @@ export default function App() {
     call<Dict>('/health').then(setHealth).catch(e => setError(String(e)));
     refreshHistory('experiments').catch(e => setError(String(e)));
   }, []);
+  // Long-running 01–09 work happens server-side. Poll persisted state so the
+  // user can leave/reopen the page, and never infer success from a button click.
+  useEffect(() => {
+    if (!fullRun?.workflow_id || fullRun.status !== 'RUNNING') return;
+    let live = true;
+    const timer = window.setInterval(async () => {
+      try {
+        const next = await call<Dict>(`/full-run/${fullRun.workflow_id}`);
+        if (!live) return;
+        setFullRun(next);
+        if (next.status !== 'RUNNING') {
+          if (next.linked_ids?.runs) setR0(await call<Dict>(`/artifacts/runs/${next.linked_ids.runs}`));
+          if (next.linked_ids?.proposals) setProposal(await call<Dict>(`/artifacts/proposals/${next.linked_ids.proposals}`));
+          if (next.linked_ids?.approvals) setApproval(await call<Dict>(`/artifacts/approvals/${next.linked_ids.approvals}`));
+          if (next.linked_ids?.experiments) {
+            const e=await call<Dict>(`/artifacts/experiments/${next.linked_ids.experiments}`);
+            setExperiment(e);setAssessmentExperimentId(e.experiment_id);
+          }
+          if (next.linked_ids?.benchmarks) setBenchmark(await call<Dict>(`/artifacts/benchmarks/${next.linked_ids.benchmarks}`));
+          if (next.linked_ids?.assessments) setAssessment(await call<Dict>(`/artifacts/assessments/${next.linked_ids.assessments}`));
+          if (next.linked_ids?.policy_validations) setPolicyValidation(await call<Dict>(`/artifacts/policy_validations/${next.linked_ids.policy_validations}`));
+          if (next.service_design) setService(next.service_design);
+          await refreshHistory('workflows');
+        }
+      } catch (e) { if (live) setError(e instanceof Error ? e.message : String(e)); }
+    }, 1500);
+    return () => { live=false;window.clearInterval(timer);};
+  }, [fullRun?.workflow_id, fullRun?.status]);
   async function action(name: string, fn: () => Promise<void>) {
     setBusy(name); setError('');
     try { await fn(); } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
@@ -89,7 +122,7 @@ export default function App() {
 
   return <div className="app-shell">
     <header className="masthead">
-      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.13</div>
+      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.15</div>
       <h1>Claims Operations <span>Planner</span></h1>
       <p className="lead">German InsurTech事業開発：審査人員を増やさず、保険金請求の期限超過を減らせるか。</p>
       <div className="tags"><span>架空顧客 / 合成請求データ</span><span>Qwen3-Coder + ODA-Fin-RL-8B · Ollama / Metal</span><span>E2B isolated execution</span><span>R0 → R1 requirement refinement</span></div>
@@ -109,7 +142,8 @@ export default function App() {
         <li><span className="feature-index">06</span><div><strong>R1の生成・修復・HOLDOUT評価</strong><p>制約を保ったコードを生成し、DEV修復後、非開示データで比較します。</p></div></li>
         <li><span className="feature-index">07</span><div><strong>履歴・監査証跡</strong><p>コード、ログ、採点結果、承認記録を参照・ZIP取得できます。</p></div></li>
         <li><span className="feature-index">08</span><div><strong>診断品質ベンチマーク</strong><p>合成ケースを用い、原因分類・証拠参照・説明の整合性を比較します。</p></div></li>
-        <li><span className="feature-index">09</span><div><strong>事業価値 × AIデリバリー評価</strong><p>R0/R1の保存済み結果から意思決定レポートを生成し、Markdownと証跡ZIPを取得します。</p></div></li>
+        <li><span className="feature-index">09</span><div><strong>事業価値 × AIデリバリー評価</strong><p>KPI改善とR1仕様適合を区別し、診断品質・本番未検証事項を保守的に評価します。</p></div></li>
+        <li><span className="feature-index">10</span><div><strong>01〜09を一括実行してZIP保存</strong><p>最初から全工程を連続実行し、05の人間承認だけ一時停止。承認後に再開し、失敗も含めた証跡を1つのZIPへ保存します。</p></div></li>
       </ol>
       <div className="evidence-explainer" aria-labelledby="evidence-title">
         <div className="evidence-heading">
@@ -163,7 +197,7 @@ export default function App() {
     <Group no={3} title="R0 — FIFOをE2Bで実行" desc="現在の仕様が正しく実装されていることを先に確かめます。FIFOと期限優先の固定参照方式を同一データで比較します。">
       <div className="button-row">{button('R0を実行（E2B）', 'r0', async ()=> {const x=await call<Dict>('/run-r0',{brief,seed,service_design:service});setR0(x);setProposal(null);setApproval(null);setGenerated(null);setCode('');setExperiment(null);setAssessment(null);setAssessmentExperimentId('');})}</div>
       {r0 && <>
-        <div className="top-stats"><Metric caption="R0 / DEV 期限超過" value={devR0?.missed_total ?? '—'}/><Metric caption="期限優先 / DEV 期限超過" value={refR0?.missed_total ?? '—'}/><Metric caption="R0 / DEV 実働時間" value={devR0?.worked_hours_total ?? '—'}/><Metric caption="実装の正しさ" value={r0.implementation_validity}/></div>
+        <div className="top-stats"><Metric caption="R0 / DEV 期限超過" value={devR0?.missed_total ?? '—'}/><Metric caption="期限優先 / DEV 期限超過" value={refR0?.missed_total ?? '—'}/><Metric caption="R0 / DEV 割当予定時間" value={devR0?.worked_hours_total ?? '—'}/><Metric caption="実装の正しさ" value={r0.implementation_validity}/></div>
         <Status good={r0.implementation_validity === 'PASS'}>{r0.implementation_validity === 'PASS' ? 'FIFO specification PASS' : 'FAIL'}</Status>
         <a href={`${BACKEND}/runs/${r0.run_id}/report`} target="_blank" rel="noreferrer">R0技術レポート（Markdown）</a>
         <a className="download-link" href={`${BACKEND}/artifacts/runs/${r0.run_id}/bundle`}>R0の全証跡 ZIP</a>
@@ -227,7 +261,7 @@ export default function App() {
         <div className="button-row">{button('E2BでR1を独立評価する', 'evaluate-r1', async()=>{const x=await call<Dict>('/evaluate-r1',{approval_id:approval.approval_id,python_code:code,max_repairs:2});setExperiment(x);setAssessmentExperimentId(x.experiment_id);setAssessment(null);}, !code || !!experiment)}</div>
       </>}
       {experiment && <>
-        <div className="result-head"><Status good={experiment.technical_closed_loop_demonstrated || experiment.human_adjudicated_r1_kpi_improvement_demonstrated}>{experiment.technical_closed_loop_demonstrated ? 'AUTOMATED DIAGNOSIS + TECHNICAL PASS' : experiment.human_adjudicated_r1_kpi_improvement_demonstrated ? 'HUMAN REVIEW + KPI PASS (ODA HOLD)' : 'TECHNICAL HOLD / NO-GO'}</Status><Status good={false}>REAL-WORLD REQUIREMENTS UNVERIFIED</Status></div>
+        <div className="result-head"><Status good={experiment.technical_closed_loop_demonstrated || experiment.human_adjudicated_r1_kpi_improvement_demonstrated}>{experiment.technical_closed_loop_demonstrated ? 'KPI PASS (Policy probes in 10 required)' : experiment.human_adjudicated_r1_kpi_improvement_demonstrated ? 'HUMAN REVIEW + KPI PASS (ODA HOLD; policy check pending)' : 'TECHNICAL HOLD / NO-GO'}</Status><Status good={false}>REAL-WORLD REQUIREMENTS UNVERIFIED</Status></div>
         <div className="top-stats"><Metric caption="R1独立HOLDOUT" value={experiment.holdout_executed?'Executed':'Not executed'} subtle/>
           <Metric caption="FIFO 期限超過" value={experiment.holdout?.fifo?.reduce((s:number,m:Dict)=>s+(m.missed_deadlines??0),0)??'—'}/>
           <Metric caption="生成R1 期限超過" value={experiment.holdout?.generated?.reduce((s:number,m:Dict)=>s+(m.missed_deadlines??0),0)??'—'}/>
@@ -242,7 +276,7 @@ export default function App() {
     <Group no={7} title="保存した実験と監査証跡" desc="Docker bind mount: ./artifacts に保存。ブラウザから過去の結果を再表示・ZIP保存できます。">
       <div className="button-row">
         <select aria-label="履歴の種類" value={historyKind} onChange={e => { const k=e.target.value as HistoryKind; setHistoryKind(k); action('history',()=>refreshHistory(k)); }}>
-          <option value="experiments">R1比較実験</option><option value="runs">R0実行</option><option value="proposals">Qwen / ODA診断</option><option value="benchmarks">診断比較ベンチマーク</option><option value="assessments">事業・デリバリー評価</option>
+          <option value="experiments">R1比較実験</option><option value="runs">R0実行</option><option value="proposals">Qwen / ODA診断</option><option value="benchmarks">診断比較ベンチマーク</option><option value="assessments">事業・デリバリー評価</option><option value="policy_validations">R1仕様・ストレス評価</option><option value="exports">旧・追加検証ZIPの履歴</option><option value="workflows">01〜09一括実行の履歴</option>
         </select>
         {button('保存履歴を更新', 'history', ()=>refreshHistory(historyKind))}
       </div>
@@ -250,9 +284,9 @@ export default function App() {
         <span><b>{h.id.substring(0,8)}</b> <small>{h.created_at}</small> <small>({h.files} files)</small></span>
         <span className="button-row"><button type="button" className="secondary" disabled={!!busy} onClick={()=>action('load-artifact',async()=>{
           const obj=await call<Dict>(`/artifacts/${historyKind}/${h.id}`);
-          if(historyKind==='experiments'){setExperiment(obj);setAssessmentExperimentId(obj.experiment_id);setAssessment(null);}else if(historyKind==='assessments'){setAssessment(obj);setAssessmentExperimentId(obj.experiment_id);}else if(historyKind==='runs')setR0(obj);else if(historyKind==='benchmarks')setBenchmark(obj);else setProposal(obj);
+          if(historyKind==='experiments'){setExperiment(obj);setAssessmentExperimentId(obj.experiment_id);setAssessment(null);}else if(historyKind==='assessments'){setAssessment(obj);setAssessmentExperimentId(obj.experiment_id);}else if(historyKind==='runs')setR0(obj);else if(historyKind==='benchmarks')setBenchmark(obj);else if(historyKind==='policy_validations')setPolicyValidation(obj);else if(historyKind==='exports')setPipelineExport({export_id:obj.export_id,status:obj.status,manifest:obj,bundle_url:`/api/exports/${obj.export_id}/bundle`});else if(historyKind==='workflows'){setFullRun(await call<Dict>(`/full-run/${h.id}`));setFullRunId(h.id);setExplicitReview(false);}else setProposal(obj);
         })}>結果を見る</button>
-        <a className="download-link" href={`${BACKEND}/artifacts/${historyKind}/${h.id}/bundle`}>証跡ZIP</a></span>
+        <a className="download-link" href={historyKind==='workflows'?`${BACKEND}/full-run/${h.id}/bundle`:historyKind==='exports'?`${BACKEND}/exports/${h.id}/bundle`:`${BACKEND}/artifacts/${historyKind}/${h.id}/bundle`}>証跡ZIP</a></span>
       </div>) : <p className="muted">保存された実験はまだありません。</p>}</div>
     </Group>
 
@@ -319,7 +353,7 @@ export default function App() {
           <Metric caption="合成FIFO期限超過" value={assessment.summary_metrics?.fifo?.missed ?? '—'}/>
           <Metric caption="合成R1期限超過" value={assessment.summary_metrics?.generated?.missed ?? '—'}/>
           <Metric caption="同一稼働で改善" value={assessment.summary_metrics?.fixed_hours_and_deadline_improvement ? 'YES' : 'NO'} subtle/>
-          <Metric caption="ODA 診断品質" value={assessment.summary_metrics?.diagnosis_oda_rubric_pass ? 'Rubric PASS' : 'HOLD'} subtle/>
+          <Metric caption="R1行動プローブ" value={assessment.summary_metrics?.behavioral_contract_pass ? 'PASS' : 'HOLD'} subtle/>
         </div>
         {assessment.axes?.map((axis:Dict)=><div className="assessment-axis" key={axis.id}>
           <h4>{axis.title}</h4>
@@ -328,13 +362,85 @@ export default function App() {
             <p>{item.finding}</p><p className="muted"><strong>根拠:</strong> {item.evidence_refs?.join(', ')} ／ <strong>次の検証:</strong> {item.next_action}</p>
           </article>)}</div>
         </div>)}
+        <div className="notice"><strong>診断比較の実験数と合格数を区別:</strong> Qwen/ODAの単発判定と独立ベンチマークの総合PASSは別です。
+          <p className="muted">{JSON.stringify(assessment.summary_metrics?.benchmark_by_model || {})}</p>
+        </div>
         <h4>Evidence register / 証拠の出所</h4>
         <div className="evidence-register">{assessment.source_register?.map((item:Dict)=><div key={item.id}><strong>{item.id} · {item.provenance}</strong><p>{item.description}</p><small>{item.source} — {item.validity}</small></div>)}</div>
         <h4>Next validation actions</h4>
         <ul className="assessment-actions">{assessment.next_actions?.map((item:Dict,i:number)=><li key={i}><strong>{item.priority}</strong> {item.action} <span className="muted">（{item.owner_role}）</span></li>)}</ul>
         <div className="button-row"><a className="download-link" href={`${BACKEND}/business-assessment/${assessment.assessment_id}/report`} target="_blank" rel="noreferrer">意思決定レポート（Markdown）</a><a className="download-link" href={`${BACKEND}/artifacts/assessments/${assessment.assessment_id}/bundle`}>レポート＋関連実験証跡 ZIP</a></div>
         <Disclosure title="独立評価・ソースハッシュ・判断結果（JSON）" data={assessment}/>
-        <p className="muted">証拠IDの正確性 ≠ 証拠の妥当性 ≠ 診断の正しさ。E01–E05はこのレポート内の参照番号であり、外部資料の引用ではありません。</p>
+        <p className="muted">証拠IDの正確性 ≠ 証拠の妥当性 ≠ 診断の正しさ。E01–E07はこのレポート内の参照番号であり、外部資料の引用ではありません。</p>
+      </section>}
+    </Group>
+
+
+    <Group no={10} title="01〜09 一括実行＋保存 — Full Workflow" desc="顧客ブリーフを入力して01から順番に実行。05のみ人間の明示的な承認を待ち、承認後に06〜09と仕様・ストレス検証を実行し、結果・失敗・ログを単一ZIPへ保存します。">
+      <div className="notice"><strong>05の人間承認は自動化しません。</strong>「01〜04開始」→診断の確認→「承認して続行」の2段階です。実顧客の価値と法規制はUNVERIFIED。実行時のE2B・Mac Ollamaが必要です。</div>
+      <div className="button-row">
+        {button('01〜09 一括実行を開始（05で一時停止）', 'full-run-start', async()=>{
+          setExplicitReview(false);setFullRun(null);
+          const r=await call<Dict>('/full-run/start',{
+            brief,seed,evidence_condition:condition,case_ids:benchmarkCases,repetitions:benchmarkRepetitions
+          });setFullRun(r);setFullRunId(r.workflow_id);
+        },!brief.trim() || benchmarkCases.length===0)}
+      </div>
+      <p className="muted">現在の01の顧客ブリーフ・seed、04の模擬反例／対照条件、08の診断ケースと回数を使用します。02の設計はQwenで新規生成し、03のR0はE2B実行します。個別画面を先に実行する必要はありません。</p>
+      <label htmlFor="full-run-id">再表示・復旧用のWorkflow ID</label>
+      <div className="button-row">
+        <input id="full-run-id" value={fullRunId} placeholder="実行中/保存済みのworkflow UUID" onChange={e=>setFullRunId(e.target.value)}/>
+        {button('実行状態を読み込む', 'full-run-load', async()=>{
+          const r=await call<Dict>(`/full-run/${fullRunId.trim()}`);setFullRun(r);setExplicitReview(false);
+        },!fullRunId.trim(),'secondary')}
+      </div>
+      {fullRun && <section className="assessment-report" aria-label="01〜09 一括実行状況">
+        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.15</span><h3>01–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
+          <Status good={fullRun.status==='COMPLETE'}>{fullRun.status}</Status></div>
+        <p className="muted">現在の段階: {fullRun.phase}　／　各工程はDockerの<code>artifacts/</code>に逐次保存します。</p>
+        <ol className="workflow-progress">
+          {fullRun.stages?.map((x:Dict)=><li key={x.name}><span className="step-label">{x.name}</span><span className={'assessment-state '+(x.status==='FAILED'?'hold':x.status==='COMPLETED'?'supported_synthetic':'demo_controlled')}>{x.status}</span><small>{x.detail}</small></li>)}
+        </ol>
+        {fullRun.status==='AWAITING_APPROVAL' && <div className="notice">
+          <h4>05 — 人間の承認が必要です</h4>
+          <p>04の診断と、元のR0実装PASSを確認してください。モデルがHOLDなら診断を修正・隠蔽せず、人間による検証継続の根拠を記録します。</p>
+          <p><strong>Qwen診断:</strong> {fullRun.review?.qwen_rubric_pass?'PASS':'HOLD'}　<strong>ODA診断:</strong> {fullRun.review?.oda_rubric_pass?'PASS':'HOLD'}</p>
+          {fullRun.review?.oda_failures?.length>0 && <p className="muted">ODA失敗コード: {fullRun.review.oda_failures.join(', ')}</p>}
+          <div className="button-row">
+            {fullRun.linked_ids?.runs && <a href={`${BACKEND}/artifacts/runs/${fullRun.linked_ids.runs}/bundle`}>R0証跡</a>}
+            {fullRun.linked_ids?.proposals && <a href={`${BACKEND}/artifacts/proposals/${fullRun.linked_ids.proposals}/bundle`}>診断・提案の証跡</a>}
+          </div>
+          <label htmlFor="full-actor">承認担当者</label><input id="full-actor" value={actor} onChange={e=>setActor(e.target.value)}/>
+          <label htmlFor="full-rationale">判断理由</label><textarea id="full-rationale" rows={3} value={rationale} onChange={e=>setRationale(e.target.value)}/>
+          {!fullRun.review?.oda_rubric_pass && <>
+            <label htmlFor="full-override-rationale">ODA HOLDの理由を確認したうえで継続する根拠（20文字以上）</label>
+            <textarea id="full-override-rationale" rows={4} value={overrideRationale} onChange={e=>setOverrideRationale(e.target.value)}/>
+            <label className="radio"><input type="checkbox" checked={acknowledgeOverride} onChange={e=>setAcknowledgeOverride(e.target.checked)}/>
+              R0の独立評価PASSと模擬反例を確認しました。ODAのHOLDを保存し、人間の判断として続行します。</label>
+          </>}
+          <label className="radio"><input type="checkbox" checked={explicitReview} onChange={e=>setExplicitReview(e.target.checked)}/>
+            提案・診断・制約を確認し、合成技術実験に限定して承認することを明示します。</label>
+          <div className="button-row">
+            {button('05を承認して06〜09を自動実行・ZIP保存', 'full-run-approve', async()=>{
+              const r=await call<Dict>('/full-run/approve-and-continue',{workflow_id:fullRun.workflow_id,
+                approval:{proposal_id:fullRun.review.proposal_id,decision:'approved',actor,rationale,
+                  domain_review_override:!fullRun.review.oda_rubric_pass,
+                  override_rationale:!fullRun.review.oda_rubric_pass?overrideRationale:null,
+                  acknowledges_independent_r0_pass:!fullRun.review.oda_rubric_pass?acknowledgeOverride:false}});
+              setFullRun(r);
+            },!explicitReview || fullRun.review?.condition!=='counterexample' || !actor.trim() || rationale.trim().length<5 || (!fullRun.review?.oda_rubric_pass && (!acknowledgeOverride || overrideRationale.trim().length<20)))}
+            {button('改訂を却下し、ここまでの結果をZIP保存', 'full-run-reject', async()=>{
+              const r=await call<Dict>('/full-run/approve-and-continue',{workflow_id:fullRun.workflow_id,
+                approval:{proposal_id:fullRun.review.proposal_id,decision:'rejected',actor,rationale}});
+              setFullRun(r);
+            },!actor.trim() || rationale.trim().length<5,'secondary')}
+          </div>
+        </div>}
+        {fullRun.error && <div className="error" role="alert">処理が完了できませんでした: {fullRun.error}</div>}
+        {fullRun.bundle_url && <div className="notice"><strong>一括ZIPが保存されました。</strong> 現在の状態は{fullRun.status}です。途中停止時のZIPはPARTIALで、未完了・失敗工程をマニフェストに残します。
+          <p><a className="download-link" href={fullRun.bundle_url}>01〜09の証跡を1つのZIPでダウンロード</a></p>
+        </div>}
+        {fullRun.status==='RUNNING' && <p className="muted">実行中です。画面は約1.5秒ごとに保存済みの工程状況を更新します。Workflow IDで再表示できます。</p>}
       </section>}
     </Group>
 

@@ -1,0 +1,60 @@
+{
+  "service_design": {
+    "product_scope": "保険業務SaaSのサービス設計",
+    "actors": [
+      "顧客（ドイツ国内実績、欧州展開検討）",
+      "審査担当者（固定人員・勤務時間）",
+      "システム（案件処理・優先順位決定）"
+    ],
+    "use_cases": [
+      "案件受付",
+      "審査担当者選定（FIFO）",
+      "期限超過判定",
+      "人間による保険金請求判断"
+    ],
+    "domain_entities": [
+      "案件情報（審査所要時間、期限、請求額、必要資格）",
+      "審査担当者情報（資格、勤務時間）",
+      "優先順位ルール（FIFO）"
+    ],
+    "service_flow": [
+      "案件到着",
+      "FIFOに基づく担当者選定",
+      "審査実施",
+      "期限超過判定",
+      "人間判断による支払い可否決定"
+    ],
+    "hard_constraints": [
+      "固定の審査人員・勤務時間",
+      "先着順（FIFO）のみを適用",
+      "期限超過を減らすことを目的としない",
+      "人間が保険金請求判断"
+    ],
+    "objectives": [
+      "FIFOルールを正確に実装",
+      "期限超過の保証は行わない",
+      "顧客固有のEU法規制適合は検証しない"
+    ],
+    "interfaces": [
+      "案件受付インターフェース",
+      "審査担当者選定インターフェース",
+      "人間判断インターフェース"
+    ],
+    "acceptance_tests": [
+      "FIFOルールが正しく適用されること",
+      "期限超過の保証は不要",
+      "人間判断が正常に実行されること"
+    ],
+    "alternatives": [
+      "期限超過を減らすための優先順位ルール導入（本実験では不可）",
+      "法規制適合検証（本実験では不可）"
+    ],
+    "external_validation_needed": [
+      "EU法規制適合性",
+      "実際の業務影響評価"
+    ],
+    "design_source": "qwen_draft_unapproved"
+  },
+  "approved": false,
+  "warning": "LLM-generated service design is a draft; the independent acceptance contract is pinned."
+}

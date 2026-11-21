@@ -1,4 +1,4 @@
-"""Claims Operations Planner v0.13: E2B + local Qwen + auditable two-level verification."""
+"""Claims Operations Planner v0.15: E2B + local Qwen + auditable two-level verification."""
 from __future__ import annotations
 
 import asyncio
@@ -27,6 +27,8 @@ from .e2b_runner import run_in_e2b
 from . import llm
 from . import diagnostic_quality as dq
 from . import business_assessment as ba
+from . import policy_validation as pv
+from . import export_bundle as ex
 from .diagnostic_benchmark import FIXTURES, FIXTURE_VERSION, public_cases
 
 ARTIFACT_DIR = Path(os.getenv("ARTIFACT_DIR", "/app/artifacts"))
@@ -66,7 +68,7 @@ def store(kind: str, id_: str, filename: str, data: object):
     return target
 
 
-app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.13.0")
+app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.15.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                    allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
@@ -96,12 +98,12 @@ def store_failure(eid: str, phase: str, exc: Exception):
 
 def _artifact_index(kind: str):
     """Demonstration-only: local artifact index, no auth / multi-tenancy."""
-    if kind not in {"runs", "proposals", "approvals", "experiments", "benchmarks", "assessments"}:
+    if kind not in {"runs", "proposals", "approvals", "experiments", "benchmarks", "assessments", "policy_validations", "exports", "workflows"}:
         raise HTTPException(404, "Unknown artifact type")
     base = ARTIFACT_DIR / kind
     results = []
     if base.exists():
-        primary = {"runs":"run.json", "proposals":"proposal.json", "approvals":"approval.json", "experiments":"experiment.json", "benchmarks":"benchmark.json", "assessments":"assessment.json"}[kind]
+        primary = {"runs":"run.json", "proposals":"proposal.json", "approvals":"approval.json", "experiments":"experiment.json", "benchmarks":"benchmark.json", "assessments":"assessment.json", "policy_validations":"validation.json", "exports":"manifest.json", "workflows":"workflow.json"}[kind]
         for folder in base.iterdir():
             if not folder.is_dir():
                 continue
@@ -127,11 +129,19 @@ def history(kind: str):
 
 @app.get("/api/artifacts/{kind}/{artifact_id}/bundle")
 def artifact_bundle(kind: str, artifact_id: str):
-    if kind not in {"runs", "proposals", "approvals", "experiments", "benchmarks", "assessments"}:
+    if kind not in {"runs", "proposals", "approvals", "experiments", "benchmarks", "assessments", "policy_validations", "exports", "workflows"}:
         raise HTTPException(404, "Unknown artifact kind")
     p = path_for(kind, artifact_id)
     if not p.is_dir():
         raise HTTPException(404, "Artifact not found")
+    if kind == "exports":
+        return download_pipeline_bundle(artifact_id)
+    if kind == "workflows":
+        state = load("workflows", artifact_id, "workflow.json")
+        f = path_for("exports", state["export_id"]) / "complete_audit_package.zip"
+        if not f.is_file():
+            raise HTTPException(409, "Full-run ZIP not ready")
+        return FileResponse(f, filename=f"claims_full_run_v015_{artifact_id}.zip", media_type="application/zip")
     data = io.BytesIO()
     with zipfile.ZipFile(data, mode="w", compression=zipfile.ZIP_DEFLATED) as z:
         # Export related records too so the R0 -> evidence -> approval -> experiment chain can be audited offline.
@@ -146,6 +156,11 @@ def artifact_bundle(kind: str, artifact_id: str):
         if kind == "experiments" and (p / "experiment.json").exists():
             exp = json.loads((p / "experiment.json").read_text())
             folders += [("runs", exp["r0_run_id"]), ("proposals", exp["proposal_id"]), ("approvals", exp["approval_id"])]
+        if kind == "assessments" and (p / "assessment.json").exists():
+            if ass.get("policy_validation_id"):
+                folders.append(("policy_validations", ass["policy_validation_id"]))
+            if ass.get("benchmark_id"):
+                folders.append(("benchmarks", ass["benchmark_id"]))
         for k, identifier in folders:
             fp = path_for(k, identifier)
             if fp.is_dir():
@@ -159,9 +174,9 @@ def artifact_bundle(kind: str, artifact_id: str):
 
 @app.get("/api/artifacts/{kind}/{artifact_id}")
 def artifact_detail(kind: str, artifact_id: str):
-    if kind not in {"runs", "proposals", "approvals", "experiments", "benchmarks", "assessments"}:
+    if kind not in {"runs", "proposals", "approvals", "experiments", "benchmarks", "assessments", "policy_validations", "exports", "workflows"}:
         raise HTTPException(404, "Unknown artifact kind")
-    filename={"runs":"run.json", "proposals":"proposal.json", "approvals":"approval.json", "experiments":"experiment.json", "benchmarks":"benchmark.json", "assessments":"assessment.json"}[kind]
+    filename={"runs":"run.json", "proposals":"proposal.json", "approvals":"approval.json", "experiments":"experiment.json", "benchmarks":"benchmark.json", "assessments":"assessment.json", "policy_validations":"validation.json", "exports":"manifest.json", "workflows":"workflow.json"}[kind]
     return load(kind, artifact_id, filename)
 
 
@@ -183,11 +198,13 @@ class R0Request(BaseModel):
     seed: int = Field(42, ge=0, le=9999)
     brief: str = Field(default=BRIEF, min_length=20, max_length=5000)
     service_design: dict | None = None
+    workflow_id: str | None = None  # link failed R0 to batch audit
 
 
 class ProposeRequest(BaseModel):
     r0_run_id: str
     evidence_condition: Literal["counterexample", "control"] = "counterexample"
+    workflow_id: str | None = None
 
 
 class ApprovalRequest(BaseModel):
@@ -249,7 +266,7 @@ def _aggregate(rows: list[dict]) -> dict:
 
 @app.get("/api/sample")
 def sample():
-    return {"title": "Claims Operations Planner", "version": "0.13.0", "customer_profile": "German InsurTech SaaS (fictional)",
+    return {"title": "Claims Operations Planner", "version": "0.15.0", "customer_profile": "German InsurTech SaaS (fictional)",
             "brief": BRIEF, "contract_r0": CONTRACT_R0, "contract_r1": CONTRACT_R1,
             "service_design_r0": SERVICE_R0, "service_design_r1": SERVICE_R1,
             "synthetic_counterexample": SIMULATED_EVIDENCE,
@@ -262,7 +279,7 @@ def sample():
 
 @app.get("/api/health")
 async def health():
-    return {"app": "ok", "version": "0.13.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
+    return {"app": "ok", "version": "0.15.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
             "ollama": await llm.status()}
 
 
@@ -276,6 +293,8 @@ async def design(body: DesignRequest):
 @app.post("/api/run-r0")
 async def run_r0(body: R0Request):
     rid = fresh_id()
+    if body.workflow_id:
+        store("workflows", body.workflow_id, "03_r0_started.json", {"run_id":rid,"created_at":now()})
     dev = [body.seed, body.seed+1, body.seed+2]
     holdout = [body.seed+10000, body.seed+10001]
     datasets = {seed: make_dataset(seed) for seed in dev + holdout}
@@ -294,7 +313,7 @@ async def run_r0(body: R0Request):
     held_metrics = {name: _aggregate([m for m in metrics if m["seed"] in holdout]) for name, metrics in results.items()}
     if not dev_metrics["fifo"]["valid"] or not held_metrics["fifo"]["valid"]:
         raise HTTPException(502, "R0 FIFOの独立評価が失敗しました。")
-    data = {"run_id": rid, "created_at": now(), "version": "0.13.0", "contract": CONTRACT_R0,
+    data = {"run_id": rid, "created_at": now(), "version": "0.15.0", "contract": CONTRACT_R0,
             "service_design": body.service_design or SERVICE_R0, "brief": body.brief,
             "seed": body.seed, "dev_seeds": dev, "holdout_seeds": holdout,
             "development": dev_metrics, "holdout": held_metrics,
@@ -316,6 +335,8 @@ async def propose(body: ProposeRequest):
     if parent["implementation_validity"] != "PASS":
         raise HTTPException(422, "R0 implementation must pass before proposing a revision")
     pid = fresh_id()
+    if body.workflow_id:
+        store("workflows", body.workflow_id, "04_proposal_started.json", {"proposal_id":pid,"created_at":now()})
     store("proposals", pid, "request.json", {"parent_run_id": body.r0_run_id,
           "evidence_condition": body.evidence_condition, "created_at": now(),
           "coding_model": llm.MODEL, "finance_model": llm.FINANCE_MODEL})
@@ -606,7 +627,7 @@ def report_r0(run: dict) -> str:
     def row(name: str, partition: str) -> str:
         m = run[partition][name]
         return f"|{partition} / {name}|{m['missed_total']}|{m['worked_hours_total']}|{m['deadline_hit_rate']}|{m['valid']}|"
-    return f"""# Claims Operations Planner v0.13 — R0 実装検証
+    return f"""# Claims Operations Planner v0.14 — R0 実装検証
 
 > **架空のドイツInsurTech顧客／合成請求データ**。期限超過KPIは実顧客実測ではありません。保険金支払判断・個人情報処理は対象外です。
 
@@ -649,7 +670,7 @@ def report_r1(result: dict, parent: dict, proposal: dict) -> str:
         rows.append(f"|{name}|{ag['missed_total']}|{ag['worked_hours_total']}|{ag['deadline_hit_rate']}|{ag['valid']}|")
     changes = "\n".join(f"- {x}" for x in proposal["contract_delta"])
     attempt_rows = "\n".join(f"|{a['attempt']}|`{a['code_sha256'][:16]}`|{a['evaluation']['valid']}|{a['evaluation']['missed_total']}|" for a in result["attempts"])
-    return f"""# Claims Operations Planner v0.13 — Requirement Refinement監査レポート
+    return f"""# Claims Operations Planner v0.14 — Requirement Refinement監査レポート
 
 > **合成案件・模擬顧客の反例に基づく技術検証のみ**。顧客要件の現実的妥当性と実業務効果は未確認。
 
@@ -660,7 +681,7 @@ def report_r1(result: dict, parent: dict, proposal: dict) -> str:
 | R0実装の正しさ | PASS | FIFO独立評価／E2B |
 | Qwen-Coder 要件診断（比較用） | {'PASS' if result['llm_diagnosis_pass'] else 'HOLD'} | R0 DEVと模擬証拠のみ |
 | ODA-Fin-RL-8B 独立要件診断 | {'PASS' if result['finance_diagnosis_pass'] else 'HOLD'} | R0 DEVと模擬証拠のみ・独立ルーブリック |
-| R1コードの独立技術評価 | {'PASS' if result['r1_independent_kpi_improvement_pass'] else 'HOLD/NO-GO'} | 新HOLDOUTでの共通KPIと制約 |
+| R1独立KPI評価（仕様の完全適合とは別） | {'PASS' if result['r1_independent_kpi_improvement_pass'] else 'HOLD/NO-GO'} | 新HOLDOUTの合成KPI・制約のみ。期限/希少資格の優先順位は追加の行動プローブで検査 |
 | 自動診断を含む外側ループ | {'PASS' if result['technical_closed_loop_demonstrated'] else 'HOLD'} | 要件診断品質ゲートとR1技術評価を分離 |
 | 顧客要件の事業妥当性 | **UNVERIFIED** | 実顧客の承認・作業実測なし |
 
@@ -732,15 +753,15 @@ def report_r1(result: dict, parent: dict, proposal: dict) -> str:
 
 ## 6. 同じHOLDOUT・共通KPIによるR0/R1比較
 
-| 方式 | 期限超過合計 | 実働時間合計h | 期限内率 | 制約PASS |
+| 方式 | 期限超過合計 | 割当予定時間合計h | 期限内率 | 制約PASS |
 |---|---:|---:|---:|---|
 {chr(10).join(rows) or '|未実行|—|—|—|—|'}
 
 - 期限優先の固定参照実装はヒューリスティックであり厳密最適化とは呼ばない。
-- 生成候補が欠損案件を隠す行為は制約違反。実働時間が減るだけでも『同一稼働で改善』とは判定しない。
+- 未割当案件も期限超過に算入。割当予定時間が減るだけでは『同一稼働で改善』と判定しない。
 - 自動診断を含む外側ループ技術実証: **{result['technical_closed_loop_demonstrated']}**
 - 人間のHOLD審査を経たR1技術KPI改善: **{result.get('human_adjudicated_r1_kpi_improvement_demonstrated', False)}**
-- R1独立KPI改善（診断の適否とは別）: **{result.get('r1_independent_kpi_improvement_pass', False)}**
+- R1独立KPI改善（診断の適否とは別）: **{result.get('r1_independent_kpi_improvement_pass', False)}**\n- R1の期限優先・希少資格の行動プローブは手順10の追加検証が必要です。ここでのKPI PASSはR1の意味的適合を証明しません。
 - 市場受容・価格受容・法務/GDPR・現地業務手順: **UNVERIFIED**
 
 ## 7. 事業開発の収益仮説（すべて未検証）
@@ -785,6 +806,8 @@ def download_r1(experiment_id: str):
 
 class BusinessAssessmentRequest(BaseModel):
     experiment_id: str
+    policy_validation_id: str | None = None
+    benchmark_id: str | None = None
 
 
 @app.post("/api/business-assessment/run")
@@ -807,8 +830,24 @@ def generate_business_assessment(body: BusinessAssessmentRequest):
     selected_path = path_for("experiments", body.experiment_id) / "selected_r1.py"
     code_integrity = bool(exp.get("selected_code_sha256") and selected_path.is_file()
                           and sha256(selected_path.read_text(encoding="utf-8")) == exp["selected_code_sha256"])
-    assessment = ba.assess(exp, run, prop, approval, code_integrity=code_integrity)
+    policy = None
+    if body.policy_validation_id:
+        policy = load("policy_validations", body.policy_validation_id, "validation.json")
+        if policy.get("experiment_id") != body.experiment_id:
+            raise HTTPException(409, "Policy validation belongs to another experiment")
+        if policy.get("selected_code_sha256") != exp.get("selected_code_sha256"):
+            raise HTTPException(409, "Policy validation source hash mismatch")
+        if not policy.get("results"):
+            raise HTTPException(422, "Policy validation is incomplete")
+    benchmark = None
+    if body.benchmark_id:
+        benchmark = load("benchmarks", body.benchmark_id, "benchmark.json")
+        if benchmark.get("status") not in ("COMPLETED", "COMPLETED_WITH_ERRORS"):
+            raise HTTPException(422, "Benchmark not completed")
+    assessment = ba.assess(exp, run, prop, approval, code_integrity=code_integrity,
+                           policy=policy, benchmark=benchmark)
     assessment.update({"assessment_id": fresh_id(), "created_at": now(),
+                       "policy_validation_id": body.policy_validation_id, "benchmark_id": body.benchmark_id,
                        "source_sha256": {"experiment.json": sha256(exp), "run.json": sha256(run),
                                          "proposal.json": sha256(prop), "approval.json": sha256(approval)}})
     store("assessments", assessment["assessment_id"], "assessment.json", assessment)
@@ -829,6 +868,7 @@ class BenchmarkRequest(BaseModel):
                            "actual_fifo_implementation_bug", "conflicting_stakeholder_notes"]] = Field(
             default_factory=lambda:["fifo_sla_conflict", "actual_fifo_implementation_bug"], min_length=1, max_length=4)
     repetitions: int = Field(default=1, ge=1, le=3)
+    workflow_id: str | None = None
 
 
 @app.get("/api/diagnostic-benchmark/fixtures")
@@ -838,7 +878,7 @@ def benchmark_fixtures():
 
 
 def _benchmark_report(record: dict) -> str:
-    lines = ["# Claims Operations Planner v0.13 — Diagnostic Benchmark", "",
+    lines = ["# Claims Operations Planner v0.14 — Diagnostic Benchmark", "",
         "> **合成フィクスチャの独立採点です。実顧客要件の正しさ・EU規制適合性を検証しません。**", "",
         f"- Benchmark ID: `{record['benchmark_id']}`", f"- Date: {record['created_at']}",
         f"- Fixtures: `{record['fixture_version']}` / Rubric: `{record['rubric_version']}`",
@@ -866,6 +906,8 @@ def _benchmark_report(record: dict) -> str:
 async def run_benchmark(body: BenchmarkRequest):
     """Bounded, reproducible synthetic benchmark; no live E2B, no external customer evidence."""
     bid=fresh_id()
+    if body.workflow_id:
+        store("workflows", body.workflow_id,"08_benchmark_started.json", {"benchmark_id":bid,"created_at":now()})
     cases=list(dict.fromkeys(body.case_ids))
     versions={"coding":llm.MODEL, "finance":llm.FINANCE_MODEL}
     meta={"benchmark_id":bid,"created_at":now(),"fixture_version":FIXTURE_VERSION,
@@ -932,3 +974,144 @@ def rescore_existing_proposal(proposal_id:str):
             "oda":dq.legacy_diagnostic_score(p['finance_diagnosis'],condition=condition,is_vertical=True),
             "original_oda_rubric_pass":p.get('finance_diagnosis_matches_rubric'),
             "historical_record_modified":False,"real_customer_business_validity":"UNVERIFIED"}
+
+
+class PolicyValidationRequest(BaseModel):
+    experiment_id: str
+    workflow_id: str | None = None
+
+
+@app.post("/api/policy-validation/run")
+async def run_policy_validation(body: PolicyValidationRequest):
+    """Revalidate selected historical R1 *without* changing its original result."""
+    exp = load("experiments", body.experiment_id, "experiment.json")
+    candidate = path_for("experiments", body.experiment_id) / "selected_r1.py"
+    if not candidate.is_file() or not exp.get("selected_code_sha256"):
+        raise HTTPException(422, "Selected R1 code not available")
+    code = candidate.read_text(encoding="utf-8")
+    if sha256(code) != exp["selected_code_sha256"]:
+        raise HTTPException(409, "Selected code hash does not match recorded experiment")
+    vid = fresh_id()
+    if body.workflow_id:
+        store("workflows", body.workflow_id, "08b_policy_started.json", {"validation_id":vid,"created_at":now()})
+    rec = {"validation_id":vid, "experiment_id":body.experiment_id,
+           "created_at":now(), "selected_code_sha256":sha256(code),
+           "status":"RUNNING", "policy_version":pv.VERSION,
+           "stress_version":pv.STRESS_VERSION, "real_customer_validity":"UNVERIFIED"}
+    store("policy_validations",vid,"started.json",rec)
+    probes=pv.policy_probes()
+    stresses=pv.stress_scenarios()
+    for label,datasets in (("behavior",probes),("stress",stresses)):
+        for sd,ds in datasets.items():
+            store("policy_validations",vid,f"{label}_input_{sd}.json",ds)
+    try:
+        raw_probe = await asyncio.to_thread(run_in_e2b,probes,{"generated":code})
+        store_raw_e2b("policy_validations",vid,"behavior",raw_probe)
+        fifo, deadline=get_reference_sources()
+        raw_stress=await asyncio.to_thread(run_in_e2b,stresses,
+                            {"fifo":fifo,"deadline":deadline,"generated":code})
+        store_raw_e2b("policy_validations",vid,"stress",raw_stress)
+        rec["results"]=pv.compile_results(probes,raw_probe["generated"],stresses,raw_stress)
+        rec["status"]="COMPLETED"
+        store("policy_validations",vid,"validation.json",rec)
+        store("policy_validations",vid,"report.md",pv.markdown(rec))
+    except Exception as exc:
+        rec["status"]="FAILED"
+        rec["error"] = f"{type(exc).__name__}: {str(exc)[:300]}"
+        store("policy_validations",vid,"validation.json",rec)
+        store("policy_validations",vid,"report.md", "# Policy Validation FAILED\n\n"+rec["error"]+"\n")
+    return rec
+
+
+@app.get("/api/policy-validation/{validation_id}/report")
+def download_policy_validation(validation_id: str):
+    load("policy_validations", validation_id, "validation.json")
+    return FileResponse(path_for("policy_validations",validation_id)/"report.md",
+                        filename=f"claims_policy_validation_{validation_id}.md", media_type="text/markdown")
+
+
+class RunAndSaveRequest(BaseModel):
+    # The approval boundary is deliberately not bypassed: a saved R1 is required.
+    experiment_id: str
+    case_ids: list[Literal["fifo_sla_conflict", "correct_fifo_no_customer_evidence",
+                           "actual_fifo_implementation_bug", "conflicting_stakeholder_notes"]] = Field(
+        default_factory=lambda: ["fifo_sla_conflict", "correct_fifo_no_customer_evidence",
+                                 "actual_fifo_implementation_bug", "conflicting_stakeholder_notes"],
+        min_length=1, max_length=4)
+    repetitions: int = Field(default=1, ge=1, le=3)
+
+
+@app.post("/api/pipeline/run-and-save")
+async def pipeline_run_and_save(body: RunAndSaveRequest):
+    """One-click policy probe -> benchmark -> assessment -> complete/partial ZIP.
+
+    Does NOT generate R0/R1, change requirements, auto-approve, or select a new
+    candidate from holdout. Each stage is saved independently. A failed stage
+    cannot be accidentally reported as COMPLETE.
+    """
+    exp = load("experiments",body.experiment_id,"experiment.json")
+    if not all(exp.get(k) for k in ("r0_run_id","proposal_id","approval_id")):
+        raise HTTPException(422, "Complete approved R1 experiment required")
+    appr = load("approvals", exp["approval_id"], "approval.json")
+    if appr.get("decision") != "approved":
+        raise HTTPException(422, "Human-approved R1 experiment is required")
+    export_id = fresh_id()
+    ids = {"runs":exp["r0_run_id"],"proposals":exp["proposal_id"],
+           "approvals":exp["approval_id"],"experiments":body.experiment_id,
+           "policy_validations":None,"benchmarks":None,"assessments":None}
+    stages = []
+    store("exports",export_id,"started.json",{"export_id":export_id,"created_at":now(),
+          "experiment_id":body.experiment_id,"status":"RUNNING"})
+    def stage(name,status,detail=None):
+        stages.append({"name":name,"status":status,**({"detail":str(detail)[:400]} if detail else {})})
+    policy = None
+    try:
+        policy=await run_policy_validation(PolicyValidationRequest(experiment_id=body.experiment_id))
+        ids["policy_validations"]=policy["validation_id"]
+        stage("policy_and_stress", "COMPLETED_WITH_FINDINGS" if policy["status"]=="COMPLETED" else "FAILED",
+              "Behavioral pass="+str((policy.get('results') or {}).get('behavior_pass')))
+    except Exception as exc:
+        stage("policy_and_stress","FAILED",str(exc))
+    bench=None
+    try:
+        bench=await run_benchmark(BenchmarkRequest(case_ids=body.case_ids,repetitions=body.repetitions))
+        ids["benchmarks"]=bench["benchmark_id"]
+        stage("diagnostic_benchmark", "COMPLETED_WITH_FINDINGS" if bench["status"]=="COMPLETED" else "FAILED",
+              "PASS counts="+str({k:v['passed'] for k,v in bench['summary'].items()}))
+    except Exception as exc:
+        stage("diagnostic_benchmark","FAILED",str(exc))
+    assess=None
+    try:
+        assess=generate_business_assessment(BusinessAssessmentRequest(
+            experiment_id=body.experiment_id,
+            policy_validation_id=ids["policy_validations"] if policy and policy.get('status')=='COMPLETED' else None,
+            benchmark_id=ids["benchmarks"] if bench and bench.get('status') in ("COMPLETED","COMPLETED_WITH_ERRORS") else None))
+        ids["assessments"]=assess["assessment_id"]
+        stage("business_delivery_assessment","COMPLETED_WITH_FINDINGS",assess['decision']['status'])
+    except Exception as exc:
+        stage("business_delivery_assessment","FAILED",str(exc))
+    manifest=ex.make_manifest(ARTIFACT_DIR,export_id,ids,stages,now())
+    store("exports",export_id,"manifest.json",manifest)
+    store("exports",export_id,"summary.md",ex.make_intro(manifest,assess))
+    archive=path_for("exports",export_id)/"complete_audit_package.zip"
+    ex.package(ARTIFACT_DIR,archive,manifest,assess)
+    return {"export_id":export_id,"status":manifest['status'],
+            "manifest":manifest,"assessment":assess,"policy_validation":policy,
+            "benchmark": {"benchmark_id":bench["benchmark_id"],"status":bench['status'],
+                           "summary":bench['summary']} if bench else None,
+            "bundle_url":f"/api/exports/{export_id}/bundle"}
+
+
+@app.get("/api/exports/{export_id}/bundle")
+def download_pipeline_bundle(export_id:str):
+    load("exports",export_id,"manifest.json")
+    f=path_for("exports",export_id)/"complete_audit_package.zip"
+    if not f.is_file():
+        raise HTTPException(404,"Export archive incomplete")
+    return FileResponse(f,filename=f"claims_complete_v014_{export_id}.zip",media_type="application/zip")
+
+
+# Register 01–09 two-phase batch after the individual step handlers exist.
+import sys as _sys
+from . import full_run as _full_run
+_full_run.register(app, _sys.modules[__name__])

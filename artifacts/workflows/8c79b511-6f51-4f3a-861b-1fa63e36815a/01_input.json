@@ -1,0 +1,10 @@
+{
+  "brief": "想定顧客：ドイツ国内で実績があり欧州の複数国への展開を検討する保険業務SaaS企業（架空）。案件ごとに審査所要時間、期限、保険金請求額、必要資格が異なる。固定の審査人員・勤務時間で、先着順よりも期限超過を減らしたい。支払可否は人間が判断する。顧客固有のEU法規制適合は未検証。サービス設計→コード生成→E2B評価→要件改訂を再現可能な実験にする。",
+  "seed": 42,
+  "evidence_condition": "counterexample",
+  "case_ids": [
+    "fifo_sla_conflict",
+    "actual_fifo_implementation_bug"
+  ],
+  "repetitions": 1
+}

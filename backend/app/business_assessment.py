@@ -1,4 +1,4 @@
-"""v0.13 deterministic presales decision support.
+"""v0.14 deterministic presales decision support.
 
 The rubric uses ONLY locally persisted synthetic experiment records. It never
 converts an evidence ID, LLM opinion, or a synthetic metric into customer proof.
@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-RUBRIC_VERSION = "PRESALES-ASSESSMENT-v0.13.0"
+RUBRIC_VERSION = "PRESALES-ASSESSMENT-v0.14.0"
 SYNTHETIC = "SUPPORTED_SYNTHETIC"
 CONTROL = "DEMO_CONTROLLED"
 HOLD = "HOLD"
@@ -36,7 +36,7 @@ def _metrics(rows: Any) -> dict[str, Any] | None:
                            "worked_hours": row["assigned_hours"]} for row in rows}}
 
 
-def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: bool = False) -> dict:
+def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: bool = False, policy: dict | None = None, benchmark: dict | None = None) -> dict:
     """Return a conservative, deterministic two-axis rubric (no external claims)."""
     held = exp.get("holdout") or {}
     fifo = _metrics(held.get("fifo"))
@@ -63,6 +63,24 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
     code_selected = bool(exp.get("selected_code_sha256") and code_integrity)
     dev_holdout = bool(exp.get("dev_seeds") and exp.get("holdout_seeds")
                        and set(exp["dev_seeds"]).isdisjoint(set(exp["holdout_seeds"])))
+    # Separate favorable synthetic KPI from actual behavioral contract checks.
+    policy_results = (policy or {}).get("results") or {}
+    behavioral = bool(policy and policy.get("status") == "COMPLETED"
+                      and policy_results.get("behavior_pass") is True)
+    stress_valid = bool(policy and policy.get("status") == "COMPLETED"
+                        and policy_results.get("stress_all_constraints_valid") is True)
+    stress_regressions = policy_results.get("stress_regressions_vs_reference")
+    stress_no_regression = bool(stress_valid and stress_regressions == 0)
+    benchmark_summary = (benchmark or {}).get("summary") or {}
+    benchmark_counts = {role: {"planned": x.get("planned",0),"completed":x.get("completed",0),
+                        "passed":x.get("passed",0),"mean_score":x.get("mean_score")}
+                        for role,x in benchmark_summary.items()}
+    benchmark_complete = bool(benchmark and benchmark.get("status") == "COMPLETED" and
+                              {"coding","finance"}.issubset(benchmark_counts) and
+                              all(x["completed"] == x["planned"] and x["planned"] > 0
+                                  for x in benchmark_counts.values()))
+    benchmark_all_pass = bool(benchmark_complete and all(
+                        x["passed"] == x["planned"] for x in benchmark_counts.values()))
     # This is a LOCAL audit pointer, not an independent real-world evidence source.
     register = [
         {"id": "E01", "source": f"runs/{run['run_id']}/run.json", "provenance": "SYNTHETIC",
@@ -80,6 +98,14 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
         {"id": "E05", "source": "No external/customer evidence attached", "provenance": "UNVERIFIED",
          "description": "Customer demand, actual productivity, costs, legal and operating constraints",
          "validity": "No independent external verification"},
+        {"id": "E06", "source": (f"policy_validations/{policy['validation_id']}/validation.json" if policy else "No policy validation attached"),
+         "provenance": "SYNTHETIC" if policy else "UNVERIFIED",
+         "description": "Fixed behavioral policy probes and E2B synthetic stress tests",
+         "validity": "Selected synthetic behaviors only; not formal specification proof"},
+        {"id": "E07", "source": (f"benchmarks/{benchmark['benchmark_id']}/benchmark.json" if benchmark else "No diagnostic benchmark attached"),
+         "provenance": "SYNTHETIC" if benchmark else "UNVERIFIED",
+         "description": "Separate same-input Qwen/ODA diagnostic quality benchmark",
+         "validity": "Limited artificial cases; do not infer population-level model accuracy"},
     ]
     value = [
         _criterion("BV-01", "顧客課題と業務KPIの整合（合成ケース）", SYNTHETIC if technical else HOLD,
@@ -110,9 +136,9 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
                    "異なるseedでDEV/非開示HOLDOUTを分離しコードハッシュを記録" if technical and dev_holdout and code_selected else
                    "独立HOLDOUT・コード選択の証跡が不足", ["E04"],
                    "seed追加・顧客分布の変動・回帰テストで頑健性を測る"),
-        _criterion("AI-03", "LLM要件診断の品質", CONTROL if diagnostics_ok else HOLD,
-                   "両診断が現行の固定ルーブリックを満たす。ただし意味的正しさは未保証" if diagnostics_ok else
-                   "少なくとも一方が独立ルーブリックでHOLD。承認履歴でHOLDは解消されない", ["E02"],
+        _criterion("AI-03", "LLM要件診断の品質", CONTROL if diagnostics_ok and benchmark_all_pass else HOLD,
+                   "単発診断と同一条件のベンチマーク全試行が固定ルーブリックを通過（意味的な正しさは未保証）" if diagnostics_ok and benchmark_all_pass else
+                   "単発診断PASSは十分でない。独立ベンチマークの未実施・HOLD・未完了を含めてレビューが必要", ["E02","E07"],
                    "多ケース・複数回の独立診断ベンチマークと誤判定分析を実施する"),
         _criterion("AI-04", "人間の関与と監査可能性", CONTROL if proper_approval else HOLD,
                    ("モデル診断HOLDを保持したままデモ上の人間審査で技術検証を継続" if human_override else
@@ -125,12 +151,22 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
         _criterion("AI-06", "法務・個人情報・規制", UNKNOWN,
                    "実顧客のデータ処理、GDPR、保険規制との適合を検証していない", ["E05"],
                    "適用法令、データ保護、委託契約、保険金判断の人間関与を専門家と確認する"),
+        _criterion("AI-07", "R1契約の振る舞い（期限と希少資格）", SYNTHETIC if behavioral else HOLD,
+                   "固定の期限優先・希少資格プローブで期待される割当を確認" if behavioral else
+                   "KPI改善と独立に検証するR1の行動プローブが未実施または不合格", ["E06"],
+                   "追加の業務反例・プロパティテスト・顧客受入条件へ拡張する"),
+        _criterion("AI-08", "高負荷・資格偏在・短納期への頑健性", SYNTHETIC if stress_no_regression else HOLD,
+                   "固定した合成ストレスケースで制約を守り参照ヒューリスティックからの悪化は検出されず" if stress_no_regression else
+                   "ストレステストが未実施、制約違反、または固定参照より期限超過/未割当が多いケースあり", ["E06"],
+                   "到着時刻・ピーク負荷・実顧客分布を使って再検証する"),
     ]
-    verdict = "CUSTOMER_DISCOVERY_ONLY" if technical and proper_approval else "HOLD_TECHNICAL"
+    verdict = ("HOLD_TECHNICAL" if not technical or not proper_approval
+               else "HOLD_POLICY" if not behavioral or not stress_no_regression
+               else "CUSTOMER_DISCOVERY_ONLY")
     explanation = ("合成HOLDOUTの技術結果は有望。ただし事業価値と本番提供は未検証。"
                    "人間の技術審査を前提とした顧客ディスカバリーへの移行のみ検討可能。"
                    if verdict == "CUSTOMER_DISCOVERY_ONLY" else
-                   "独立技術評価または改訂承認の根拠が不足。顧客提案の前に技術HOLDを解消する。")
+                   "独立KPI評価・承認・仕様の振る舞い・ストレス評価のいずれかが不足。顧客提案前にHOLDを確認する。")
     return {"rubric_version": RUBRIC_VERSION, "experiment_id": exp["experiment_id"],
             "scope": "SYNTHETIC_DEMONSTRATION_ONLY", "real_customer_validity": UNKNOWN,
             "source_register": register,
@@ -140,7 +176,14 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
                                 "diagnosis_oda_rubric_pass": diagnostic_oda,
                                 "human_override": human_override,
                                 "holdout_executed": bool(exp.get("holdout_executed")),
-                                "selected_code_integrity": code_integrity},
+                                "selected_code_integrity": code_integrity,
+                                "behavioral_contract_pass": behavioral,
+                                "stress_all_constraints_valid": stress_valid,
+                                "stress_no_regression_vs_reference":stress_no_regression,
+                                "stress_regressions_vs_reference":stress_regressions,
+                                "benchmark_complete":benchmark_complete,
+                                "benchmark_all_trials_pass":benchmark_all_pass,
+                                "benchmark_by_model":benchmark_counts},
             "axes": [{"id": "BUSINESS", "title": "Business Value & Feasibility", "criteria": value},
                      {"id": "DELIVERY", "title": "AI Delivery & Operational Readiness", "criteria": delivery}],
             "decision": {"code": verdict, "description": explanation,
@@ -148,9 +191,10 @@ def assess(exp: dict, run: dict, prop: dict, approval: dict, *, code_integrity: 
                          "stage": "CUSTOMER_DISCOVERY" if verdict == "CUSTOMER_DISCOVERY_ONLY" else "TECHNICAL_VALIDATION",
                          "production_status": "NO_GO",
                          "production_go": False, "customer_business_go": False,
-                         "automatic_diagnosis_accepted": diagnostics_ok},
+                         "automatic_diagnosis_accepted": diagnostics_ok and benchmark_all_pass},
             "next_actions": [{"priority": "P1", "action": "顧客の業務SLA・分布・処理時間・資格・例外を実測で確認", "owner_role": "Customer / product owner"},
-                             {"priority": "P1", "action": "モデル診断HOLDの誤判定を再現し、独立レビューを継続", "owner_role": "AI technical reviewer"},
+                             {"priority": "P1", "action": "R1の期限・希少資格の行動プローブとストレス試験の不合格を修正/再評価", "owner_role": "AI technical reviewer"},
+                             {"priority": "P1", "action": "単発診断と診断ベンチマークを分離して誤判定を検証", "owner_role": "AI technical reviewer"},
                              {"priority": "P2", "action": "実顧客ROI、PoC費用、採算、支払意思を検証", "owner_role": "Business development"},
                              {"priority": "P2", "action": "本番ワークフロー、認証、監査・規制・データ保護を精査", "owner_role": "Delivery / compliance"}],
             "disclaimer": "Evidence ID correctness != evidence validity != diagnostic correctness. "
@@ -165,7 +209,7 @@ def markdown(record: dict) -> str:
 
     d = record["decision"]
     m = record["summary_metrics"]
-    lines = ["# Project Feasibility Assessment — v0.13", "",
+    lines = ["# Project Feasibility Assessment — v0.14", "",
              "> 合成・架空顧客に限定した技術プリセールス用の判断支援。実顧客・市場・法令・本番運用の適合を保証しません。", "",
              f"- Assessment ID: `{record['assessment_id']}`",
              f"- Experiment ID: `{record['experiment_id']}`",
@@ -177,12 +221,21 @@ def markdown(record: dict) -> str:
              "## 技術実験の要約", "",
              "| 合成HOLDOUT | FIFO | 生成R1 | 期限優先参照（ヒューリスティック） |",
              "|---|---:|---:|---:|"]
-    for key, label in (("missed", "期限超過件数"), ("worked_hours", "実働時間（時間）")):
+    for key, label in (("missed", "期限超過件数"), ("worked_hours", "割当予定時間（時間）")):
         values = [m.get(k, {}).get(key, "—") if isinstance(m.get(k), dict) else "—" for k in ("fifo", "generated", "deadline_heuristic")]
         lines.append("| " + label + " | " + " | ".join(map(cell, values)) + " |")
     lines += ["", "- 参照方式は数学的な最適解ではありません。HOLDOUTの合成結果を実業務効果へ外挿できません。",
               f"- 要件診断ルーブリック Qwen: **{'PASS' if m['diagnosis_qwen_rubric_pass'] else 'HOLD'}** / ODA: **{'PASS' if m['diagnosis_oda_rubric_pass'] else 'HOLD'}**",
-              f"- 人間のデモ上書き承認: **{'YES' if m['human_override'] else 'NO'}**。上書き承認は元の診断HOLDをPASSに変更しません。", ""]
+              f"- 人間のデモ上書き承認: **{'YES' if m['human_override'] else 'NO'}**。上書き承認は元の診断HOLDをPASSに変更しません。",
+              f"- R1 behavioral contract: **{'PASS' if m['behavioral_contract_pass'] else 'HOLD'}** / stress: **{'NO_REGRESSION_DETECTED' if m['stress_no_regression_vs_reference'] else 'REVIEW_REQUIRED'}**",
+              f"- 診断ベンチマーク 全試行PASS: **{m['benchmark_all_trials_pass']}** （単発診断との混同禁止）", "",
+              "## Diagnostic benchmark summary", "",
+              "| Model | Completed | PASS | Planned | Mean score |", "|---|---:|---:|---:|---:|"]
+    for role, vals in m['benchmark_by_model'].items():
+        lines.append(f"| {cell(role)} | {vals['completed']} | {vals['passed']} | {vals['planned']} | {vals['mean_score']} |")
+    if not m['benchmark_by_model']:
+        lines.append("| — | — | — | — | No benchmark linked |")
+    lines.append("")
     for axis in record["axes"]:
         lines += [f"## {axis['title']}", "", "| 評価項目 | 状態 | 根拠 | 次の検証 |", "|---|---|---|---|"]
         for c in axis["criteria"]:

@@ -1,0 +1,211 @@
+{
+  "schema_version": "claims-0.8",
+  "seed": 910003,
+  "days": 4,
+  "cases": [
+    {
+      "case_id": "C001",
+      "arrival_order": 18,
+      "required_skill": "motor",
+      "duration_hours": 3,
+      "deadline_day": 3,
+      "amount_eur": 4900,
+      "business_priority": 5
+    },
+    {
+      "case_id": "C002",
+      "arrival_order": 17,
+      "required_skill": "property",
+      "duration_hours": 3,
+      "deadline_day": 3,
+      "amount_eur": 26700,
+      "business_priority": 5
+    },
+    {
+      "case_id": "C003",
+      "arrival_order": 16,
+      "required_skill": "liability",
+      "duration_hours": 3,
+      "deadline_day": 3,
+      "amount_eur": 21300,
+      "business_priority": 2
+    },
+    {
+      "case_id": "C004",
+      "arrival_order": 15,
+      "required_skill": "motor",
+      "duration_hours": 1,
+      "deadline_day": 3,
+      "amount_eur": 20200,
+      "business_priority": 5
+    },
+    {
+      "case_id": "C005",
+      "arrival_order": 14,
+      "required_skill": "property",
+      "duration_hours": 2,
+      "deadline_day": 2,
+      "amount_eur": 6500,
+      "business_priority": 4
+    },
+    {
+      "case_id": "C006",
+      "arrival_order": 13,
+      "required_skill": "liability",
+      "duration_hours": 2,
+      "deadline_day": 3,
+      "amount_eur": 21400,
+      "business_priority": 3
+    },
+    {
+      "case_id": "C007",
+      "arrival_order": 12,
+      "required_skill": "motor",
+      "duration_hours": 2,
+      "deadline_day": 0,
+      "amount_eur": 17400,
+      "business_priority": 2
+    },
+    {
+      "case_id": "C008",
+      "arrival_order": 11,
+      "required_skill": "property",
+      "duration_hours": 1,
+      "deadline_day": 1,
+      "amount_eur": 15200,
+      "business_priority": 1
+    },
+    {
+      "case_id": "C009",
+      "arrival_order": 10,
+      "required_skill": "liability",
+      "duration_hours": 2,
+      "deadline_day": 0,
+      "amount_eur": 22800,
+      "business_priority": 4
+    },
+    {
+      "case_id": "C010",
+      "arrival_order": 9,
+      "required_skill": "motor",
+      "duration_hours": 2,
+      "deadline_day": 0,
+      "amount_eur": 7700,
+      "business_priority": 1
+    },
+    {
+      "case_id": "C011",
+      "arrival_order": 8,
+      "required_skill": "property",
+      "duration_hours": 1,
+      "deadline_day": 1,
+      "amount_eur": 7500,
+      "business_priority": 1
+    },
+    {
+      "case_id": "C012",
+      "arrival_order": 7,
+      "required_skill": "liability",
+      "duration_hours": 1,
+      "deadline_day": 1,
+      "amount_eur": 17900,
+      "business_priority": 4
+    },
+    {
+      "case_id": "C013",
+      "arrival_order": 6,
+      "required_skill": "motor",
+      "duration_hours": 2,
+      "deadline_day": 1,
+      "amount_eur": 7700,
+      "business_priority": 4
+    },
+    {
+      "case_id": "C014",
+      "arrival_order": 5,
+      "required_skill": "property",
+      "duration_hours": 3,
+      "deadline_day": 2,
+      "amount_eur": 2800,
+      "business_priority": 5
+    },
+    {
+      "case_id": "C015",
+      "arrival_order": 4,
+      "required_skill": "liability",
+      "duration_hours": 1,
+      "deadline_day": 2,
+      "amount_eur": 17700,
+      "business_priority": 5
+    },
+    {
+      "case_id": "C016",
+      "arrival_order": 3,
+      "required_skill": "motor",
+      "duration_hours": 1,
+      "deadline_day": 1,
+      "amount_eur": 25700,
+      "business_priority": 4
+    },
+    {
+      "case_id": "C017",
+      "arrival_order": 2,
+      "required_skill": "property",
+      "duration_hours": 1,
+      "deadline_day": 1,
+      "amount_eur": 13800,
+      "business_priority": 5
+    },
+    {
+      "case_id": "C018",
+      "arrival_order": 1,
+      "required_skill": "liability",
+      "duration_hours": 1,
+      "deadline_day": 0,
+      "amount_eur": 7100,
+      "business_priority": 3
+    }
+  ],
+  "reviewers": [
+    {
+      "reviewer_id": "R-A",
+      "skills": [
+        "motor",
+        "property"
+      ],
+      "daily_capacity_hours": [
+        5,
+        5,
+        5,
+        5
+      ]
+    },
+    {
+      "reviewer_id": "R-B",
+      "skills": [
+        "motor"
+      ],
+      "daily_capacity_hours": [
+        5,
+        5,
+        5,
+        5
+      ]
+    },
+    {
+      "reviewer_id": "R-C",
+      "skills": [
+        "liability",
+        "property"
+      ],
+      "daily_capacity_hours": [
+        5,
+        5,
+        5,
+        5
+      ]
+    }
+  ],
+  "scenario": "arrival_reordering",
+  "currency": "EUR"
+}

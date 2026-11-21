@@ -1,0 +1,38 @@
+{
+  "seed": 900001,
+  "scenario": "deadline_risk_probe",
+  "schema_version": "claims-0.8",
+  "days": 2,
+  "reviewers": [
+    {
+      "reviewer_id": "R-A",
+      "skills": [
+        "motor"
+      ],
+      "daily_capacity_hours": [
+        1,
+        1
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "FLEX",
+      "required_skill": "motor",
+      "duration_hours": 1,
+      "deadline_day": 1,
+      "arrival_order": 1,
+      "amount_eur": 1000,
+      "business_priority": 1
+    },
+    {
+      "case_id": "URGENT",
+      "required_skill": "motor",
+      "duration_hours": 1,
+      "deadline_day": 0,
+      "arrival_order": 2,
+      "amount_eur": 1000,
+      "business_priority": 1
+    }
+  ]
+}

@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.15 — 01–09 full-run workflow with explicit human review and single ZIP
+
+- Replace UI step 10 with a complete 01–09 execution path, starting from a new brief and seed rather than requiring a preexisting R1 experiment.
+- Save 01 input and 02 generated service design, R0 E2B, proposal diagnosis, explicit 05 human decision, R1 generation/evaluation, history snapshot, model diagnostic benchmark, behavior/stress verification and two-axis business assessment.
+- Pause at 05 for manual review; ODA HOLD requires existing signed-off override safeguards. Never auto-approve or relabel HOLD as PASS.
+- FastAPI background tasks plus polling and saved Workflow ID; export a partial ZIP even on rejection or stage errors. The final ZIP contains a manifest, raw-byte SHA256 for included files and clear missing/pending stages.
+- Keep the v0.14 pipeline API for backward compatibility, but the step 10 UI uses the new full workflow.
+- Add offline integration tests for human gate, rejection, manual HOLD override, failed R0 and archive checksum integrity.
+
+
+## v0.14 — Behavioral policy checks, stress coverage, one-click complete export
+
+- Add independent, predeclared R1 contract behavioral probes for deadline priority and scarce-qualified-reviewer preservation, executed **after** the original R1 candidate selection with E2B. The old KPI result is preserved and not relabeled as semantic PASS.
+- Add four synthetic stress cases: capacity pressure, skill bottleneck, deadline compression, and arrival reorder; always report missed (including unassigned), unassigned and allocated scheduled hours. A fixed heuristic is a comparator, not an optimizer/proof.
+- Update two-axis assessment with AI-07/AI-08, E06/E07, separate single-case diagnosis from completed Qwen/ODA benchmark, and require behavioral+stress evidence for limited customer discovery GO. Never return production GO.
+- Add step 10 **Run & Save**: runs policy/stress, Qwen/ODA diagnosis benchmark, assessment, exports one single complete/partial evidence ZIP with `00_START_HERE.md` and `manifest.json`, raw-byte SHA256, explicit missing/excluded/stage-failure records. Does not auto-approve R1 or rewrite historical source records.
+- Includes six new offline tests (including full archive checksum verification and failed-E2B partial export); old presales tests updated for stricter v0.14 decisions. All operations are based on synthetic data and/or mock E2B/LLM in tests.
+
+
 ## v0.13 — Evidence-linked two-axis presales decision report
 
 - Add fixed **Business Value & Feasibility** (5 criteria) and **AI Delivery & Operational Readiness** (6 criteria) rubric for stored R1 experiments.

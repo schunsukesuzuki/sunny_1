@@ -1,4 +1,4 @@
-"""v0.13 deterministic presales assessment; no internet / real LLM / E2B required."""
+"""v0.14 backward-compatible plus stricter policy gate for v0.13 experiments presales assessment; no internet / real LLM / E2B required."""
 import io
 import json
 import zipfile
@@ -34,16 +34,16 @@ def test_complete_assessment_and_bundle(client):
     assert response.status_code == 200, response.text
     data = response.json()
     assert data['scope'] == 'SYNTHETIC_DEMONSTRATION_ONLY'
-    assert data['decision']['code'] == 'CUSTOMER_DISCOVERY_ONLY'
+    assert data['decision']['code'] == 'HOLD_POLICY'
     assert data['decision']['production_go'] is False
     assert data['decision']['customer_business_go'] is False
     assert len(data['axes']) == 2
     assert len(data['axes'][0]['criteria']) == 5
-    assert len(data['axes'][1]['criteria']) == 6
+    assert len(data['axes'][1]['criteria']) == 8
     assert data['summary_metrics']['selected_code_integrity'] is True
     assert data['summary_metrics']['fixed_hours_and_deadline_improvement'] is True
     assert all(x['status'] == 'UNVERIFIED' for x in data['axes'][0]['criteria'][-2:])
-    assert all(x['status'] == 'UNVERIFIED' for x in data['axes'][1]['criteria'][-2:])
+    assert all(x['status'] == 'UNVERIFIED' for x in data['axes'][1]['criteria'][4:6])
     assert data['source_register'][0]['provenance'] == 'SYNTHETIC'
     assert data['source_register'][-1]['provenance'] == 'UNVERIFIED'
     aid = data['assessment_id']
@@ -52,7 +52,7 @@ def test_complete_assessment_and_bundle(client):
     text = report.text
     for required in ('Business Value & Feasibility', 'AI Delivery & Operational Readiness',
                      '証拠IDの正確性 ≠ 証拠の妥当性 ≠ 診断の正しさ', 'UNVERIFIED',
-                     'E01', 'E05', 'production GO: **NO**', 'PRESALES-ASSESSMENT-v0.13.0'):
+                     'E01', 'E05', 'production GO: **NO**', 'PRESALES-ASSESSMENT-v0.14.0'):
         assert required in text
     assert 'Private Reviewer Name' not in text
     assert '役員' not in text
@@ -117,7 +117,7 @@ def test_held_llm_diagnosis_cannot_be_hidden():
                        'generated': [{'valid': True, 'seed': 2, 'assigned_hours': 6, 'missed_deadlines': 0,
                                       'sandbox_id': 'synthetic-sandbox'}]}}
     result = assess(exp, run, prop, approval, code_integrity=True)
-    assert result['decision']['code'] == 'CUSTOMER_DISCOVERY_ONLY'
+    assert result['decision']['code'] == 'HOLD_POLICY'
     assert result['axes'][1]['criteria'][2]['status'] == 'HOLD'
     assert result['summary_metrics']['human_override'] is True
     assert result['decision']['automatic_diagnosis_accepted'] is False

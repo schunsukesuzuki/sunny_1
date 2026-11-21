@@ -1,10 +1,14 @@
+> **v0.15 — 01〜09 Full Workflow:** 画面10から、顧客入力 → Qwen設計 → R0 E2B → Qwen/ODA独立診断 → **人間承認待ち** → R1生成/評価 → 履歴インデックス → 診断ベンチマーク＋R1仕様/ストレス → 二軸事業評価をまとめて実行し、失敗も含めて1つのZIPへ保存します。承認/却下は必ず人間が明示します。詳細は `docs/v015-full-workflow.md`。
+
+> **v0.14（旧方式の説明） — R1 Policy / Stress Validation + One-Click Audit Export:** 既存R1の候補コードを再実行し、期限優先・希少資格を巡る行動プローブ、合成ストレス4シナリオ、Qwen/ODAの固定診断ベンチマーク、二軸事業評価を一度に実行し、完全な証跡を単一ZIPへ保存します。旧API `/api/pipeline/run-and-save` で利用できます。v0.15の画面10は新しい01〜09一括方式に置き換わっています。**元のR0/R1実験・人間承認は改変せず、取得失敗時はPARTIAL ZIPと欠落理由を保存します。** 仕様：`docs/v014-complete-audit-pipeline.md`。
+
 > **v0.13 — Business & Delivery Assessment:** 新しい手順09で、保存したR1実験を「Business Value & Feasibility」と「AI Delivery & Operational Readiness」の2軸で根拠付き評価。Markdown/証跡ZIPを出力できます。**合成の技術PASSは実顧客・本番のGOではありません。** 評価にはLLMを使わず、特定個人の氏名・所属は評価基準やレポートに含めません。仕様：`docs/v013-business-assessment.md`。
 
 > **v0.12 UI refresh:** 画面冒頭に「このアプリの目的・8ステップの機能案内」と「証拠IDの正確性 ≠ 証拠の妥当性 ≠ 診断の正しさ」の説明を追加。低コントラストのダークUIを落ち着いたライト配色に変更しました。v0.10のバックエンドAPI・検証ロジック・監査保存を維持しています。詳細は `docs/v012-ui-guide.md`。
 
 > **v0.10:** 要件診断の多軸独立採点・Qwen/ODAの合成ベンチマーク・過去ログ再採点を追加。詳細は `docs/v010-requirement-diagnostic-benchmark.md`。
 
-# Claims Operations Planner — AI Venture Feasibility Studio v0.13
+# Claims Operations Planner — AI Venture Feasibility Studio v0.15
 
 ドイツの保険業務SaaS企業（**架空**）の事業開発PoC。**Qwen3-Coder 30B** はサービス設計・Pythonコード生成、**OpenDataArena/ODA-Fin-RL-8B** は金融ドメイン要件診断を担当。E2Bは生成コードを隔離して実行し、独立した決定的評価器で審査割当・期限・資格・稼働上限を検証します。v0.8にあったMarkdown結果保存を維持し、生成コード・差分・各試行のE2B実行証跡・履歴取得を拡張しました。
 
@@ -57,7 +61,7 @@ docker compose up --build
 
 既にOllamaアプリが常駐している場合、別途 `ollama serve` は不要です。`bash scripts/preflight-mac.sh` で接続とモデル有無を確認できます。
 
-### 3. UI操作（v0.13）
+### 3. UI操作（v0.15）
 
 1. **顧客課題とR0サービス設計**：架空ブリーフ・seedを選択。
 2. **R0をE2B実行**：FIFO実装の仕様適合とDEV指標を確認。
@@ -66,7 +70,8 @@ docker compose up --build
 5. **R1生成・E2B検証**：ODAの診断を参考情報としてQwenへ渡し、独立評価器で資格・日別容量・期限超過・同一審査時間を評価。
 6. **レポートと全証跡ZIP**：成功・失敗の記録をMac側 `./artifacts/` へ保存。「保存した実験と監査証跡」から過去の結果を読み直せます。
 7. **08診断品質ベンチマーク**：QwenとODAへ同じ合成ケース・同じschemaを与えて独立採点。過去のproposal IDを再採点可能（非破壊）。
-8. **09 Business & Delivery Assessment**：R1実験IDを入力（06から自動入力、または07の履歴から選択）、二軸評価を生成、Markdownと関連証跡ZIPを取得。
+8. **09 Business & Delivery Assessment**：R1実験IDを入力（06から自動入力、または07の履歴から選択）、二軸評価を生成。**v0.14の新しい仕様・ストレス・ベンチマークをまだ紐づけていない場合、HOLD_POLICY**となります。
+9. **10 一括実行＋保存**：承認済みR1の実験IDを選択し、08で指定した診断ベンチマークのケース/回数を利用して、行動プローブ・ストレス・診断・事業評価を連続実行。ブラウザが単一の完成ZIPをダウンロードし、Mac側 `artifacts/exports/<uuid>/complete_audit_package.zip` にも保存。PARTIALでも欠落一覧が入ります。
 
 ## 保存・監査
 
@@ -88,6 +93,16 @@ artifacts/
     started.json, trial_*.json, benchmark.json, report.md  # v0.10新規
   assessments/<uuid>/
     assessment.json, report.md              # v0.13新規・入力4文書のハッシュを記録
+  policy_validations/<uuid>/
+    started.json, validation.json, report.md
+    behavior_input_*.json, behavior_generated_seed_*.json
+    stress_input_*.json, stress_{fifo,deadline,generated}_seed_*.json
+  workflows/<uuid>/
+    workflow.json, 01_input.json, 02_service_design.json, 07_history_snapshot.json
+    03_r0_started.json, 04_proposal_started.json, 08_benchmark_started.json, 08b_policy_started.json
+  exports/<uuid>/
+    manifest.json, complete_audit_package.zip  # 01〜09フル実行中は随時更新
+    started.json, summary.md                   # 旧v0.14 APIの場合
   experiments/<uuid>/
     started.json, experiment.json, report.md, input_candidate.py, selected_r1.py
     attempt_00.py, attempt_00.json, attempt_00.diff, ...
@@ -115,7 +130,14 @@ E2B stdout/stderrはSDK側で**末尾3000文字に制限して保存**します�
 - `POST /api/approve`：承認・却下（ODA HOLD時は承認拒否）
 - `POST /api/generate-r1`：ODA診断を参考情報として渡しQwenで生成、生成コード保存
 - `POST /api/evaluate-r1`：DEV修正→単回HOLDOUT、全試行保存
-- `GET /api/history/{runs|proposals|approvals|experiments|benchmarks}`：履歴一覧
+- `POST /api/policy-validation/run`：保存済みR1選択コードをE2Bで追加検証（非破壊）
+- `POST /api/full-run/start`：01〜04を開始（非同期）、05で停止
+- `POST /api/full-run/approve-and-continue`：人間の明示的な承認/却下。承認なら06〜09＋検証を非同期実行
+- `GET /api/full-run/{uuid}` / `GET /api/full-run/{uuid}/bundle`：進捗・状態と完全/部分ZIPの取得
+- `GET /api/history/workflows`：01〜09の一括実行履歴
+- `POST /api/pipeline/run-and-save`：旧v0.14互換。承認済みR1から追加検証してZIP化（新UIでは未使用）
+- `GET /api/exports/{uuid}/bundle`：完成/一部失敗を記録した全証跡 ZIP（manifest.json / SHA256付き）
+- `GET /api/history/{runs|proposals|approvals|experiments|benchmarks|assessments|policy_validations|exports|workflows}`：履歴一覧
 - `GET /api/artifacts/{kind}/{uuid}`：保存JSON再取得
 - `GET /api/artifacts/{kind}/{uuid}/bundle`：関連親実験含む証跡ZIP
 - `GET /api/runs/{uuid}/report`、`GET /api/experiments/{uuid}/report`
@@ -123,7 +145,8 @@ E2B stdout/stderrはSDK側で**末尾3000文字に制限して保存**します�
 
 ## 独立の検証規則
 
-- R0契約：FIFO参照割当への完全一致。R1契約：資格、日別稼働上限、重複・欠損・過剰勤務なし。期限超過、実働時間、期限内率を別々に集計。
+- R0契約：FIFO参照割当への完全一致。R1の旧評価：資格、日別稼働上限、重複・欠損・過剰勤務なし。期限超過、**割当予定時間**、期限内率を別々に集計。
+- **v0.14追加：R1の期限優先・希少資格の行動プローブを固定合成反例で独立検査。** KPIのPASSは契約振る舞いのPASSを意味しません。さらに容量圧迫・技能ボトルネック・期限短縮・到着順変化を試験し、未割当も期限超過に含めます。これは形式証明ではありません。
 - ODA要件診断の固定ルーブリック：分類が `requirement_mismatch`、R0実装が `correct`、ビジネス要件が `mismatch`、証拠IDが `SIM-SLA-001`、改訂提案に期限が反映され、根本原因を誤って「software bug」と呼ばないこと。**単純な独立ルールであり、推論の意味的正しさを保証するものではありません。**
 - HOLDOUTは生成・選定後に1回だけ使用し、両モデルへプロンプトとして渡さない。
 - 技術PASSはあくまで合成データについて。R1契約は実験用の固定ルールであって、ODAの自由生成要件が直接テストされたわけではありません。
@@ -136,7 +159,7 @@ python -m pip install -r requirements-dev.txt
 PYTHONPATH=. pytest -q
 ```
 
-E2BとOllamaをモックしたバックエンドテストのみをローカルで実施しました。v0.13の二軸評価はモデル推論を呼びません。実Mac Studio上のQwen/ODA推論、E2Bクラウド、フロントエンドの本番ビルドはこの環境では未検証です。
+E2BとOllamaをモックしたバックエンドテストのみをローカルで実施しました。v0.14の二軸評価自体はモデル推論を呼びませんが、手順10の一括実行ではE2BとOllamaを実際に呼び出します。v0.15の追加統合テストは承認待ち・承認後・却下・エラー保存・ZIPハッシュをモックで検証しました。実Mac Studio上のQwen/ODA推論、E2Bクラウド、フロントエンドの本番ビルドはこの環境では未検証です。
 
 ## 対照条件と限界
 
@@ -155,6 +178,17 @@ E2BとOllamaをモックしたバックエンドテストのみをローカル�
 - `GET /api/diagnostic-benchmark/{benchmark_id}/report` — Markdown.
 - `GET /api/diagnostic-benchmark/rescore/{proposal_id}` — non-mutating regrade of stored v0.9.1 outputs.
 - `GET /api/history/benchmarks`, `GET /api/artifacts/benchmarks/{uuid}/bundle` — audit history and evidence ZIP.
+
+### v0.14 legacy additional export example (not used by step 10)
+
+```bash
+curl -X POST http://localhost:18000/api/pipeline/run-and-save \
+  -H 'Content-Type: application/json' \
+  -d '{"experiment_id":"<approved-r1-experiment-uuid>","case_ids":["fifo_sla_conflict","actual_fifo_implementation_bug"],"repetitions":1}'
+# Returns {export_id, bundle_url, manifest, assessment, status}; use frontend 10 for automatic ZIP download.
+```
+
+**人間の改訂承認を省略する自動実行ではありません。** 手順01–06を先に実施してください。ZIP内の`00_START_HERE.md`が読み順、`manifest.json`が収録一覧と生バイトSHA256・欠落/失敗の完全な一覧です。承認者名はレポート・AI採点プロンプトには入りませんが、根拠となる `approval.json` に入力した承認者名が保持されます。外部共有前に確認してください。
 
 ### Local tests
 
