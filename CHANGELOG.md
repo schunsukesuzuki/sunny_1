@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.13 — Evidence-linked two-axis presales decision report
+
+- Add fixed **Business Value & Feasibility** (5 criteria) and **AI Delivery & Operational Readiness** (6 criteria) rubric for stored R1 experiments.
+- Add a new step **09** to the calm-light React UI: generate/inspect business assessment; download Markdown and linked evidence ZIP; support archived R1 experiment IDs and saved assessments.
+- Keep Qwen/ODA diagnoses and human-override states separate: no LLM re-scoring or third-party customer claims are invented.
+- Decision policy: limited **GO for customer discovery** if synthetic constraints and code hash pass; otherwise technical **HOLD**. Always **NO-GO for production** without independent customer, operations and regulatory evidence.
+- Persist `assessment.json` / `report.md`, source hashes, evidence registry E01–E05, uncertainties and next verification actions. Extend history/artifact APIs to `assessments` and bundle the linked R0/proposal/approval/experiment records.
+- Preserve all v0.12 functionality; add six automated tests and a new documentation guide.
+- Interviewer names or affiliations are absent from the assessment report and there is no assessment LLM prompt.
+
+## v0.12 — Guided light UI and evidence-evaluation transparency
+
+- Add a read-first Japanese app overview and feature map for existing steps 01–08.
+- Explicitly separate evidence-ID traceability, evidence validity, and diagnostic correctness, with `SIM-SLA-001` identified as a synthetic app-defined ID.
+- Replace all frontend dark colors with a muted, eye-friendly light palette, including buttons, inputs, code blocks, status chips, notices, and responsive layout.
+- Keep all v0.10 backend logic, API endpoints, model routes, evaluation contracts, history, and ZIP exports unchanged.
+- Make the default human-HOLD review note neutral rather than presupposing a missing ODA evidence ID; human reviewer still enters/approves the actual rationale.
+- Update frontend version/title and document the UI changes.
+
 ## v0.10 — Diagnostic quality & independent multi-case benchmark
 
 - Preserve v0.9.1 Claims Operations Planner R0→R1 with human HOLD review, E2B, generated code and audit ZIP.

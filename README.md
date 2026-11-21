@@ -1,6 +1,10 @@
+> **v0.13 — Business & Delivery Assessment:** 新しい手順09で、保存したR1実験を「Business Value & Feasibility」と「AI Delivery & Operational Readiness」の2軸で根拠付き評価。Markdown/証跡ZIPを出力できます。**合成の技術PASSは実顧客・本番のGOではありません。** 評価にはLLMを使わず、特定個人の氏名・所属は評価基準やレポートに含めません。仕様：`docs/v013-business-assessment.md`。
+
+> **v0.12 UI refresh:** 画面冒頭に「このアプリの目的・8ステップの機能案内」と「証拠IDの正確性 ≠ 証拠の妥当性 ≠ 診断の正しさ」の説明を追加。低コントラストのダークUIを落ち着いたライト配色に変更しました。v0.10のバックエンドAPI・検証ロジック・監査保存を維持しています。詳細は `docs/v012-ui-guide.md`。
+
 > **v0.10:** 要件診断の多軸独立採点・Qwen/ODAの合成ベンチマーク・過去ログ再採点を追加。詳細は `docs/v010-requirement-diagnostic-benchmark.md`。
 
-# Claims Operations Planner — AI Venture Feasibility Studio v0.10
+# Claims Operations Planner — AI Venture Feasibility Studio v0.13
 
 ドイツの保険業務SaaS企業（**架空**）の事業開発PoC。**Qwen3-Coder 30B** はサービス設計・Pythonコード生成、**OpenDataArena/ODA-Fin-RL-8B** は金融ドメイン要件診断を担当。E2Bは生成コードを隔離して実行し、独立した決定的評価器で審査割当・期限・資格・稼働上限を検証します。v0.8にあったMarkdown結果保存を維持し、生成コード・差分・各試行のE2B実行証跡・履歴取得を拡張しました。
 
@@ -53,7 +57,7 @@ docker compose up --build
 
 既にOllamaアプリが常駐している場合、別途 `ollama serve` は不要です。`bash scripts/preflight-mac.sh` で接続とモデル有無を確認できます。
 
-### 3. UI操作（v0.10）
+### 3. UI操作（v0.13）
 
 1. **顧客課題とR0サービス設計**：架空ブリーフ・seedを選択。
 2. **R0をE2B実行**：FIFO実装の仕様適合とDEV指標を確認。
@@ -62,6 +66,7 @@ docker compose up --build
 5. **R1生成・E2B検証**：ODAの診断を参考情報としてQwenへ渡し、独立評価器で資格・日別容量・期限超過・同一審査時間を評価。
 6. **レポートと全証跡ZIP**：成功・失敗の記録をMac側 `./artifacts/` へ保存。「保存した実験と監査証跡」から過去の結果を読み直せます。
 7. **08診断品質ベンチマーク**：QwenとODAへ同じ合成ケース・同じschemaを与えて独立採点。過去のproposal IDを再採点可能（非破壊）。
+8. **09 Business & Delivery Assessment**：R1実験IDを入力（06から自動入力、または07の履歴から選択）、二軸評価を生成、Markdownと関連証跡ZIPを取得。
 
 ## 保存・監査
 
@@ -81,6 +86,8 @@ artifacts/
     generated_<uuid>.py, generated_<uuid>.json
   benchmarks/<uuid>/
     started.json, trial_*.json, benchmark.json, report.md  # v0.10新規
+  assessments/<uuid>/
+    assessment.json, report.md              # v0.13新規・入力4文書のハッシュを記録
   experiments/<uuid>/
     started.json, experiment.json, report.md, input_candidate.py, selected_r1.py
     attempt_00.py, attempt_00.json, attempt_00.diff, ...
@@ -112,6 +119,7 @@ E2B stdout/stderrはSDK側で**末尾3000文字に制限して保存**します�
 - `GET /api/artifacts/{kind}/{uuid}`：保存JSON再取得
 - `GET /api/artifacts/{kind}/{uuid}/bundle`：関連親実験含む証跡ZIP
 - `GET /api/runs/{uuid}/report`、`GET /api/experiments/{uuid}/report`
+- `POST /api/business-assessment/run`、`GET /api/business-assessment/{uuid}/report`、`GET /api/history/assessments`
 
 ## 独立の検証規則
 
@@ -128,7 +136,7 @@ python -m pip install -r requirements-dev.txt
 PYTHONPATH=. pytest -q
 ```
 
-E2BとOllamaをモックしたバックエンドテストのみをローカルで実施しました。実Mac Studio上のQwen/ODA推論、E2Bクラウド、フロントエンドの本番ビルドはこの環境では未検証です。
+E2BとOllamaをモックしたバックエンドテストのみをローカルで実施しました。v0.13の二軸評価はモデル推論を呼びません。実Mac Studio上のQwen/ODA推論、E2Bクラウド、フロントエンドの本番ビルドはこの環境では未検証です。
 
 ## 対照条件と限界
 

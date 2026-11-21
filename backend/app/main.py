@@ -1,4 +1,4 @@
-"""Claims Operations Planner v0.10: E2B + local Qwen + auditable two-level verification."""
+"""Claims Operations Planner v0.13: E2B + local Qwen + auditable two-level verification."""
 from __future__ import annotations
 
 import asyncio
@@ -26,6 +26,7 @@ from .domain import (CONTRACT_R0, CONTRACT_R1, SERVICE_R0, SERVICE_R1,
 from .e2b_runner import run_in_e2b
 from . import llm
 from . import diagnostic_quality as dq
+from . import business_assessment as ba
 from .diagnostic_benchmark import FIXTURES, FIXTURE_VERSION, public_cases
 
 ARTIFACT_DIR = Path(os.getenv("ARTIFACT_DIR", "/app/artifacts"))
@@ -65,7 +66,7 @@ def store(kind: str, id_: str, filename: str, data: object):
     return target
 
 
-app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.10.0")
+app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.13.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                    allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
@@ -95,12 +96,12 @@ def store_failure(eid: str, phase: str, exc: Exception):
 
 def _artifact_index(kind: str):
     """Demonstration-only: local artifact index, no auth / multi-tenancy."""
-    if kind not in {"runs", "proposals", "approvals", "experiments", "benchmarks"}:
+    if kind not in {"runs", "proposals", "approvals", "experiments", "benchmarks", "assessments"}:
         raise HTTPException(404, "Unknown artifact type")
     base = ARTIFACT_DIR / kind
     results = []
     if base.exists():
-        primary = {"runs":"run.json", "proposals":"proposal.json", "approvals":"approval.json", "experiments":"experiment.json", "benchmarks":"benchmark.json"}[kind]
+        primary = {"runs":"run.json", "proposals":"proposal.json", "approvals":"approval.json", "experiments":"experiment.json", "benchmarks":"benchmark.json", "assessments":"assessment.json"}[kind]
         for folder in base.iterdir():
             if not folder.is_dir():
                 continue
@@ -126,7 +127,7 @@ def history(kind: str):
 
 @app.get("/api/artifacts/{kind}/{artifact_id}/bundle")
 def artifact_bundle(kind: str, artifact_id: str):
-    if kind not in {"runs", "proposals", "approvals", "experiments", "benchmarks"}:
+    if kind not in {"runs", "proposals", "approvals", "experiments", "benchmarks", "assessments"}:
         raise HTTPException(404, "Unknown artifact kind")
     p = path_for(kind, artifact_id)
     if not p.is_dir():
@@ -135,6 +136,13 @@ def artifact_bundle(kind: str, artifact_id: str):
     with zipfile.ZipFile(data, mode="w", compression=zipfile.ZIP_DEFLATED) as z:
         # Export related records too so the R0 -> evidence -> approval -> experiment chain can be audited offline.
         folders = [(kind, artifact_id)]
+        if kind == "assessments" and (p / "assessment.json").exists():
+            ass = json.loads((p / "assessment.json").read_text())
+            folders.append(("experiments", ass["experiment_id"]))
+            ep = path_for("experiments", ass["experiment_id"]) / "experiment.json"
+            if ep.exists():
+                exp = json.loads(ep.read_text(encoding="utf-8"))
+                folders += [("runs", exp["r0_run_id"]), ("proposals", exp["proposal_id"]), ("approvals", exp["approval_id"])]
         if kind == "experiments" and (p / "experiment.json").exists():
             exp = json.loads((p / "experiment.json").read_text())
             folders += [("runs", exp["r0_run_id"]), ("proposals", exp["proposal_id"]), ("approvals", exp["approval_id"])]
@@ -151,9 +159,9 @@ def artifact_bundle(kind: str, artifact_id: str):
 
 @app.get("/api/artifacts/{kind}/{artifact_id}")
 def artifact_detail(kind: str, artifact_id: str):
-    if kind not in {"runs", "proposals", "approvals", "experiments", "benchmarks"}:
+    if kind not in {"runs", "proposals", "approvals", "experiments", "benchmarks", "assessments"}:
         raise HTTPException(404, "Unknown artifact kind")
-    filename={"runs":"run.json", "proposals":"proposal.json", "approvals":"approval.json", "experiments":"experiment.json", "benchmarks":"benchmark.json"}[kind]
+    filename={"runs":"run.json", "proposals":"proposal.json", "approvals":"approval.json", "experiments":"experiment.json", "benchmarks":"benchmark.json", "assessments":"assessment.json"}[kind]
     return load(kind, artifact_id, filename)
 
 
@@ -241,7 +249,7 @@ def _aggregate(rows: list[dict]) -> dict:
 
 @app.get("/api/sample")
 def sample():
-    return {"title": "Claims Operations Planner", "version": "0.10.0", "customer_profile": "German InsurTech SaaS (fictional)",
+    return {"title": "Claims Operations Planner", "version": "0.13.0", "customer_profile": "German InsurTech SaaS (fictional)",
             "brief": BRIEF, "contract_r0": CONTRACT_R0, "contract_r1": CONTRACT_R1,
             "service_design_r0": SERVICE_R0, "service_design_r1": SERVICE_R1,
             "synthetic_counterexample": SIMULATED_EVIDENCE,
@@ -254,7 +262,7 @@ def sample():
 
 @app.get("/api/health")
 async def health():
-    return {"app": "ok", "version": "0.10.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
+    return {"app": "ok", "version": "0.13.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
             "ollama": await llm.status()}
 
 
@@ -286,7 +294,7 @@ async def run_r0(body: R0Request):
     held_metrics = {name: _aggregate([m for m in metrics if m["seed"] in holdout]) for name, metrics in results.items()}
     if not dev_metrics["fifo"]["valid"] or not held_metrics["fifo"]["valid"]:
         raise HTTPException(502, "R0 FIFOの独立評価が失敗しました。")
-    data = {"run_id": rid, "created_at": now(), "version": "0.10.0", "contract": CONTRACT_R0,
+    data = {"run_id": rid, "created_at": now(), "version": "0.13.0", "contract": CONTRACT_R0,
             "service_design": body.service_design or SERVICE_R0, "brief": body.brief,
             "seed": body.seed, "dev_seeds": dev, "holdout_seeds": holdout,
             "development": dev_metrics, "holdout": held_metrics,
@@ -598,7 +606,7 @@ def report_r0(run: dict) -> str:
     def row(name: str, partition: str) -> str:
         m = run[partition][name]
         return f"|{partition} / {name}|{m['missed_total']}|{m['worked_hours_total']}|{m['deadline_hit_rate']}|{m['valid']}|"
-    return f"""# Claims Operations Planner v0.10 — R0 実装検証
+    return f"""# Claims Operations Planner v0.13 — R0 実装検証
 
 > **架空のドイツInsurTech顧客／合成請求データ**。期限超過KPIは実顧客実測ではありません。保険金支払判断・個人情報処理は対象外です。
 
@@ -641,7 +649,7 @@ def report_r1(result: dict, parent: dict, proposal: dict) -> str:
         rows.append(f"|{name}|{ag['missed_total']}|{ag['worked_hours_total']}|{ag['deadline_hit_rate']}|{ag['valid']}|")
     changes = "\n".join(f"- {x}" for x in proposal["contract_delta"])
     attempt_rows = "\n".join(f"|{a['attempt']}|`{a['code_sha256'][:16]}`|{a['evaluation']['valid']}|{a['evaluation']['missed_total']}|" for a in result["attempts"])
-    return f"""# Claims Operations Planner v0.10 — Requirement Refinement監査レポート
+    return f"""# Claims Operations Planner v0.13 — Requirement Refinement監査レポート
 
 > **合成案件・模擬顧客の反例に基づく技術検証のみ**。顧客要件の現実的妥当性と実業務効果は未確認。
 
@@ -773,6 +781,49 @@ def download_r1(experiment_id: str):
     return FileResponse(path_for("experiments", experiment_id)/"report.md", filename=f"claims_r1_{experiment_id}.md", media_type="text/markdown")
 
 
+
+
+class BusinessAssessmentRequest(BaseModel):
+    experiment_id: str
+
+
+@app.post("/api/business-assessment/run")
+def generate_business_assessment(body: BusinessAssessmentRequest):
+    """Read existing artifacts; deterministic rubric. No external data, LLM, or E2B calls."""
+    exp = load("experiments", body.experiment_id, "experiment.json")
+    for field in ("experiment_id", "r0_run_id", "proposal_id", "approval_id"):
+        if field not in exp:
+            raise HTTPException(422, "Complete R1 experiment required; missing " + field)
+    if exp["experiment_id"] != body.experiment_id:
+        raise HTTPException(409, "Experiment ID does not match stored artifact")
+    run = load("runs", exp["r0_run_id"], "run.json")
+    prop = load("proposals", exp["proposal_id"], "proposal.json")
+    approval = load("approvals", exp["approval_id"], "approval.json")
+    if (prop.get("parent_run_id") != run.get("run_id")
+            or approval.get("parent_run_id") != run.get("run_id")
+            or approval.get("proposal_id") != prop.get("proposal_id")
+            or approval.get("approval_id") != exp["approval_id"]):
+        raise HTTPException(409, "Audit chain ID mismatch; cannot generate assessment")
+    selected_path = path_for("experiments", body.experiment_id) / "selected_r1.py"
+    code_integrity = bool(exp.get("selected_code_sha256") and selected_path.is_file()
+                          and sha256(selected_path.read_text(encoding="utf-8")) == exp["selected_code_sha256"])
+    assessment = ba.assess(exp, run, prop, approval, code_integrity=code_integrity)
+    assessment.update({"assessment_id": fresh_id(), "created_at": now(),
+                       "source_sha256": {"experiment.json": sha256(exp), "run.json": sha256(run),
+                                         "proposal.json": sha256(prop), "approval.json": sha256(approval)}})
+    store("assessments", assessment["assessment_id"], "assessment.json", assessment)
+    store("assessments", assessment["assessment_id"], "report.md", ba.markdown(assessment))
+    return {**assessment, "report_url": f"/api/business-assessment/{assessment['assessment_id']}/report",
+            "bundle_url": f"/api/artifacts/assessments/{assessment['assessment_id']}/bundle"}
+
+
+@app.get("/api/business-assessment/{assessment_id}/report")
+def download_business_assessment(assessment_id: str):
+    load("assessments", assessment_id, "assessment.json")
+    return FileResponse(path_for("assessments", assessment_id) / "report.md",
+                        filename=f"claims_business_assessment_{assessment_id}.md", media_type="text/markdown")
+
+
 class BenchmarkRequest(BaseModel):
     case_ids: list[Literal["fifo_sla_conflict", "correct_fifo_no_customer_evidence",
                            "actual_fifo_implementation_bug", "conflicting_stakeholder_notes"]] = Field(
@@ -787,7 +838,7 @@ def benchmark_fixtures():
 
 
 def _benchmark_report(record: dict) -> str:
-    lines = ["# Claims Operations Planner v0.10 — Diagnostic Benchmark", "",
+    lines = ["# Claims Operations Planner v0.13 — Diagnostic Benchmark", "",
         "> **合成フィクスチャの独立採点です。実顧客要件の正しさ・EU規制適合性を検証しません。**", "",
         f"- Benchmark ID: `{record['benchmark_id']}`", f"- Date: {record['created_at']}",
         f"- Fixtures: `{record['fixture_version']}` / Rubric: `{record['rubric_version']}`",
