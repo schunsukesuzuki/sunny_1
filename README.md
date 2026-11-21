@@ -1,185 +1,158 @@
-# AI Venture Feasibility Studio — v0.6
+> **v0.10:** 要件診断の多軸独立採点・Qwen/ODAの合成ベンチマーク・過去ログ再採点を追加。詳細は `docs/v010-requirement-diagnostic-benchmark.md`。
 
-**事業仮説 → 要件ドラフト → サービス設計（新規） → コード生成 → E2B実証 → 実装・要件の二軸審査 → 改訂案 → 監査可能なレポート**を、React + FastAPI + macOS上のOllamaで一貫して実行する、**非公式の独立開発サンプル**です。Sun Asteriskの公式サービス・実顧客案件ではありません。
+# Claims Operations Planner — AI Venture Feasibility Studio v0.10
 
-題材は架空の**教育SaaS企業による週次学習計画の自動生成サービス**です。三橋さんのような新規事業支援担当者が検証のための証拠をそろえ、事業責任者・技術責任者が人間として判断するシナリオを想定しています。
+ドイツの保険業務SaaS企業（**架空**）の事業開発PoC。**Qwen3-Coder 30B** はサービス設計・Pythonコード生成、**OpenDataArena/ODA-Fin-RL-8B** は金融ドメイン要件診断を担当。E2Bは生成コードを隔離して実行し、独立した決定的評価器で審査割当・期限・資格・稼働上限を検証します。v0.8にあったMarkdown結果保存を維持し、生成コード・差分・各試行のE2B実行証跡・履歴取得を拡張しました。
 
-## v0.6 の追加機能（v0.5の検証契約・改訂ループを維持）
+> **技術デモです**：実顧客データもEU法令検索もありません。ODA-Fin-RL-8Bは金融推論モデルであり、EU保険規制への専門適合が実証されたモデルではありません。請求の支払可否・不正判定や法的判断は自動化しません。モデルの評価は合成データと模擬顧客証拠に限定されます。
 
-**最大の変更：コードの正しさと要件自体の妥当性を別々に判定**します。合成データ上でのCONDITIONAL GOは、顧客価値の証明になりません。
+## 新規事業仮説
 
-1. `/api/analyze`で要件ドラフトを生成し、人間が編集。`AC-01`等の受入基準を定義。
-2. **`/api/design`でサービス設計をJSON中間表現として生成**し、人間がActor、ユースケース、業務フロー、ハード制約、代替案、受入テストを確認・編集。
-3. `/api/generate`へサービス設計を渡しQwen3-Coderが候補を生成。v0.5と同じ固定Greedy・厳密DP・生成候補をE2Bで比較。コード修正の内側ループ、DEV/HOLDOUT分離、機能不合格時のHOLDOUTスキップは保持。
-4. **顧客証拠台帳**：`AC-01`等の要件に対して、`synthetic` / `real_customer` / `stakeholder` / `desk_research` の出典、観測、支持/反証、参照ID、人間の確認状況を記録。実顧客由来と申告され出典・人間の確認がある証拠だけから、**暫定的な**要件判定を作成（`UNVERIFIED`、`SUPPORTED_PRELIMINARY`、`REJECTED_PRELIMINARY`、`CONFLICTED`）。いずれも最終承認はしない。
-5. **`/api/refine`が要件改訂を提案**。Qwenに送るのはDEV側の診断・集計結果と明示的な顧客証拠だけで、HOLDOUT結果は送らない。提案を自動適用せず、UI上の採用操作が必要。
-6. 採用時に要件改訂番号を上げ、サービス設計を作り直す。**改訂ごとに別のHOLDOUT seed群**を使う（初回`seed+10000`、改訂1回目`seed+20000`）。DEVは同じseedを使って仮説修正を継続できるが、評価器の仕様は改訂前後で独立に固定。
-7. 新しい成果物：`service_design.json`、`customer_evidence.json`、`requirement_assessment.json`、`requirement_change_log.json`、`project.json`。既存の試行コード・差分・Sandboxログ・Markdown/JSONレポートも保持。
+想定顧客：ドイツ国内の保険業務SaaSベンダー（架空）。欧州複数国展開は事業仮説。Claims Operations Plannerを追加し、固定審査人員・総審査時間のもとで期限超過件数を減らす。
 
-**スコープに関する重要事項：** 現在E2Bで実行可能な数理最適化ベンチマークはv0.5から引き継いだ**教育SaaSの整数時間配分**のみです。ドイツ/欧州のInsurTech向け`Claims Operations Planner`は `docs/eu-insurtech-concept.md` に**設計検討用ケース**として収録しました。顧客の審査資格・期限・担当者の個別稼働制約を満たす実行可能な保険システムではなく、実証済みと表示しません。
+- **R0**：到着順FIFOで担当者を割り当てる。独立評価器で「R0の仕様を正確に実装した」と確認。
+- **模擬反証** `SIM-SLA-001`：正しく動くFIFOでも後着の短納期案件を遅延させ得る。
+- **診断比較**：Qwen-CoderとODA-Fin-RL-8Bが、同じ**DEV結果と模擬証拠**を独立に診断。R0実装の正しさと事業要件の妥当性を明示的に区別。
+- **独立ゲート**：ODAが「実装バグではない」と理解できたかをルールで確認。理由と分類に矛盾があればHOLD。利用不可ならエラーとして保存し、Qwenへ黙って代替しない。
+- **人間の承認**：R1はアプリ側で定義した実験用契約。ODAの提案そのものを自動承認・評価基準へ採用しない。承認前にコード生成へ進まない。
+- **R1生成**：承認後、ODAの構造化診断を**参考情報としてQwenのプロンプトへ追加**し、固定R1契約に基づいてコードを生成。
+- **R1評価**：E2BでDEV修正最大2回。新しいHOLDOUTは選択後一度だけ。FIFO/固定期限優先/生成コードを同じ合成データで比較。
+- **事業妥当性**：**UNVERIFIED**。合成KPIは顧客価値や規制適合の証拠になりません。
 
-**AI生成設計とアプリ内の固定評価器を分離**：UIからハード制約を記述し直しても、固定されたE2B教育ベンチマークのテストが自動で変更されるわけではありません。要件変更がベンチマークの入出力契約・目的関数まで変える場合は、独立評価器を人間が更新して再検証する必要があります。
+## Mac Studioでの実行環境
 
-## v0.5の重要な改修
+- macOSでネイティブのOllamaを実行（利用可能ならMetal加速）。Dockerコンテナから `host.docker.internal:11434` に接続。
+- Docker Compose：FastAPI + React/Vite。E2B Python SDKには `E2B_API_KEY` 必須。
+- **2モデルが必要**。ODAだけの評価に置換してQwenの生成処理を削除したものではありません。
 
-v0.4で**Qwenが全ての試行において科目重複・時間不一致でNO-GOになったにもかかわらず、最後の試行が「採用」に選ばれてHOLDOUTを実行した**問題を修正しました。
-
-- **全DEV試行NO-GOなら採用候補なし**：`selected_attempt_index = null`、`holdout_executed = false`、`generated = null`。`generated.py`は保存しません。DEVの不合格コードとログは`attempts/`にすべて保存します。
-- **HOLDOUTの実行を省略**：無効な候補に対して最終Sandboxを起動しないため、無駄なE2B消費を防ぎます。UIとレポートの学習計画表示はDEVの固定Greedy・厳密DPのみの比較として明示し、Qwen配分はN/Aにします。
-- **段階的なエラー診断**：最初の修正では独立評価器のエラーをカテゴリ別に集約（重複科目・時間不一致など）、代表例とJSON入出力契約をフィードバックします。2回目以降の機能修正では不変条件（制約値を変更しない・累積配分時間を管理・限界効用を正しく計算・科目を1回のみ出力）と静的ASTのヒューリスティック警告を追加します。
-- **関数単位の修正**：2回目以降の機能修正は`allocate_hours`の関数定義だけをQwenに生成させ、ASTの行範囲で元の関数を置換します。周辺コードの全体再生成を避けます。対象関数がない／パッチが不正な場合はエラーとして記録し、成功を偽装しません。
-- **監査可能な修正履歴**：各試行の`repair_strategy`、エラー分類、前回試行との差分、SandboxログをJSONとMarkdownに保存。`attempt_XX.diff`も出力します。差分は表示上の長さを制限し、完全な各試行コードを別途保存します。
-- **品質HOLDでも改善**：v0.4の機能は維持。Functional PASS候補だけからDEV代理効用で選び、HOLDOUTで1回のみ評価。最終結果をLLMへフィードバックしません。
-
-**注意**：実装は架空教育SaaSの評価契約に特化しています。静的コード診断は根本原因の証明ではなく改善のヒントです。利用者が任意の顧客案件を貼るだけで安全かつ正確に実験が自動生成される汎用製品ではありません。
-
-## 動作環境・アーキテクチャ
-
-| コンポーネント | 実装 | 実行場所 |
-|---|---|---|
-| UI | React 19 / TypeScript / Vite | Docker Compose |
-| API・要件・技術審査・レポート | FastAPI / Pydantic | Docker Compose |
-| 基盤モデル | **Qwen3-Coder 30B**（オープンウェイト） | **macOSネイティブOllama／Apple Metal** |
-| Pythonコード実行 | E2B SDK | **E2Bクラウドの隔離Sandbox** |
-| 評価器 | コード非依存の決定的関数 | FastAPI（LLMから独立） |
-
-**Apple GPU上の推論を利用するため、OllamaをDocker内では起動しません。** Dockerからは`host.docker.internal:11434`を経由してMac側のOllamaを呼びます。生成されたPythonコードはMacやAPIコンテナ内で直接実行せず、E2B上で実行します。
-
-## セットアップ（Mac Studio）
-
-### 1. OllamaとMetalの確認
+### 1. Ollamaにモデルを準備
 
 ```bash
-curl -fsS http://127.0.0.1:11434/api/tags
+# 既存コード生成モデル
 ollama pull qwen3-coder:30b
-ollama run qwen3-coder:30b "Write a correct Python marginal-gain allocation function."
-ollama ps
+
+# ODA-Fin-RL-8Bのコミュニティ製Q4_K_M GGUF（Mac Studio向け簡便な経路）
+ollama pull hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M
+
+# 両モデルを確認
+ollama list
 ```
 
-Ollamaアプリがすでにポート11434を使用している場合、`ollama serve`を別途実行する必要はありません。`ollama ps`の`PROCESSOR`欄でGPU利用を確認してください。モデルの保存容量のみではMac Studioのメモリ容量は判断できません。
+ODAの**オリジナル**の公開元：<https://huggingface.co/OpenDataArena/ODA-Fin-RL-8B>（Qwen3-8B系、Apache-2.0、BF16）。上記のGGUFは**第三者の量子化版**です：<https://huggingface.co/alexsabaka/ODA-Fin-RL-8B-GGUF>。同じ重み・推論精度を保証しません。原版の忠実性を比較したい場合は公式Safetensorsを別途取得し、Ollama公式Import手順に従って読み込んで `ODA_FIN_MODEL` を変更してください。モデル自体の重みはZIPに含めません。
 
-### 2. `.env`の作成
+モデルIDがアプリに反映される設定は `.env.example` の `ODA_FIN_MODEL` です。量子化版が動作しない場合は利用環境・Ollamaバージョンの互換性を確認してください。
 
-ZIPに`.env.example`を同梱しています。APIキーを含んだ`.env`は**含まれていません**。
+### 2. Docker Compose
 
 ```bash
 bash scripts/setup-env.sh
-nano .env
+# .env に E2B_API_KEY=... を設定。鍵をGitへコミットしない。
+docker compose up --build
+# http://localhost:5173
 ```
 
-必要な設定例（キーは必ずご自身のものに差し替え）：
+既にOllamaアプリが常駐している場合、別途 `ollama serve` は不要です。`bash scripts/preflight-mac.sh` で接続とモデル有無を確認できます。
 
-```dotenv
-E2B_API_KEY=ここにご自身の実際のAPIキー
-OLLAMA_BASE_URL=http://host.docker.internal:11434
-OLLAMA_MODEL=qwen3-coder:30b
-OLLAMA_TIMEOUT_SECONDS=240
-E2B_SANDBOX_TIMEOUT_SECONDS=180
-E2B_COMMAND_TIMEOUT_SECONDS=45
-API_PORT=18000
-WEB_PORT=5173
-```
+### 3. UI操作（v0.10）
 
-`.env`内のURLはMarkdownリンクやバックスラッシュを付けず、そのまま記載してください。**APIキーをGitHubやチャットに公開しないでください。**
+1. **顧客課題とR0サービス設計**：架空ブリーフ・seedを選択。
+2. **R0をE2B実行**：FIFO実装の仕様適合とDEV指標を確認。
+3. **Qwen × ODAで独立診断**：`SIM-SLA-001` を与え、両モデルの分類・理由・改訂提案を比較。証拠なしの対照条件も試せます。
+4. **人間がR1を承認**：ODAが品質ゲートPASSなら通常承認。HOLDでも、模擬反証と独立R0 PASSを人間が確認し、HOLDを残して明示的な理由を記録すれば、技術デモのみ継続できます。
+5. **R1生成・E2B検証**：ODAの診断を参考情報としてQwenへ渡し、独立評価器で資格・日別容量・期限超過・同一審査時間を評価。
+6. **レポートと全証跡ZIP**：成功・失敗の記録をMac側 `./artifacts/` へ保存。「保存した実験と監査証跡」から過去の結果を読み直せます。
+7. **08診断品質ベンチマーク**：QwenとODAへ同じ合成ケース・同じschemaを与えて独立採点。過去のproposal IDを再採点可能（非破壊）。
 
-既存v0.3の`.env`はコピーして利用できます。v0.3が同じホストの5173番で動いている場合は、まず既存ディレクトリで`docker compose down`してください（もしくは新しい`.env`で`WEB_PORT=5174`等に変更。ただしVite開発サーバーの許可オリジンは5173番前提です）。
+## 保存・監査
 
-### 3. Docker Composeで起動
-
-```bash
-docker compose up --build -d
-docker compose ps
-bash scripts/preflight-mac.sh
-```
-
-- **Web:** http://127.0.0.1:5173
-- **FastAPI Docs:** http://127.0.0.1:18000/docs
-- **API health:** http://127.0.0.1:18000/api/health
-
-**以前のポート8000競合を回避**するため、公開設定は`127.0.0.1:${API_PORT:-18000}:8000`です。Viteの`/api`プロキシはDocker内部の`http://api:8000`を利用します。ホスト側のAPIポートを変更してもフロントエンドの接続先を変更する必要はありません。
-
-APIキー状態を表示せずに確認：
-
-```bash
-curl -fsS http://127.0.0.1:18000/api/health
-docker compose exec api python -c 'import os; print("E2B configured:", bool(os.getenv("E2B_API_KEY", "").strip()))'
-```
-
-## UIでの実行手順
-
-1. **顧客相談を入力**し、Qwenで要件ドラフトを作成。未確認事項を人間がレビュー・編集。
-2. **Qwenでサービス設計案を生成**。Actors、ユースケース、サービスフロー、制約、代替案、受入テストを編集。
-3. **Qwenが第三の方式をPythonで生成**。サービス設計を中間表現として渡し、コードを編集可能。
-4. `evaluation_seeds`（開発用、既定3）、`holdout_seeds`（最終評価、既定2）、`max_repair_attempts`（既定2）を確認。
-5. E2Bで静的Greedy・厳密DP・Qwenコードを開発用seedで実行。機能NO-GOならエラーログで修正、品質HOLDなら**代理効用と改善閾値の差**で改善。各改訂は新Sandboxで実行。
-6. 開発用データで最良の**制約充足**候補を選択。**全候補NO-GOなら選択せず、HOLDOUTを省略**。有効候補がある場合だけ別seedで最終評価を1回実行して判定。
-7. **科目別学習計画の比較例**、DEVと（実施した場合だけ）HOLDOUTのseed別スコア、改訂履歴・コード差分・NO-GOログ・架空の事業試算を確認し、MarkdownまたはJSONを出力。
-
-### レポート上の解釈に関する重要な注意
-
-- **NO-GO**：実行エラー・形式違反・時間制約違反など、機能上の失敗。
-- **HOLD**：機能的には動くが、設定した代理効用の品質閾値に未達。
-- **CONDITIONAL GO**：代理目的関数と合成データでは条件を満たす。**市場受容、実際の教育効果、事業化の判断を意味しない**。
-- **厳密DP**は、この実験用に定義した離散・分離可能な代理目的関数についてだけ最適です。
-- **Qwen生成コード**の品質は毎回変わり得ます。改善ループで必ずCONDITIONAL GOになる保証はありません。
-- 実行時間はE2B内コマンド時間の単発測定で、LLM推論・起動待ち・実際のE2B課金額を含みません。
-- 合成データのDEV/HOLDOUT分割は過適合リスクを下げるための仕組みであり、現実の顧客データでの汎化性能を保証しません。
-
-## 保存する証跡
+Mac側のDocker bind mount `./artifacts:/app/artifacts` を使用。主な保存構成：
 
 ```text
-artifacts/<run-id>/
-├── project.json
-├── requirements.json
-├── service_design.json
-├── customer_evidence.json
-├── requirement_assessment.json
-├── requirement_change_log.json
-├── proposal_*.json              # 外側ループの改訂提案を生成した場合
-├── datasets.json               # DEV / HOLDOUT分割
-├── baseline.py
-├── optimal.py
-├── generated.py                # Functional PASSがある場合のみ出力
-├── attempts/
-│   ├── attempt_00.py
-│   ├── attempt_00.json
-│   ├── attempt_01.py
-│   ├── attempt_01.json
-│   └── attempt_01.diff
-├── run.json                    # DEV/HOLDOUT評価・実行証跡・計画例
-└── report.md                  # NO-GOログ・HOLD履歴・審査結果
+artifacts/
+  runs/<uuid>/
+    run.json, report.md, fifo.py, deadline_reference.py, dataset_hashes.json
+    e2b_{fifo,deadline}_seed_*.json       # sandbox ID / stdout / stderr / output / hashes
+  proposals/<uuid>/
+    request.json, proposal.json           # QwenとODAの構造化診断・ルーブリック
+    diagnostic_error.json                 # モデル接続・応答失敗時のみ
+    decision.json
+  approvals/<uuid>/
+    approval.json, evaluation_started.json
+    generated_<uuid>.py, generated_<uuid>.json
+  benchmarks/<uuid>/
+    started.json, trial_*.json, benchmark.json, report.md  # v0.10新規
+  experiments/<uuid>/
+    started.json, experiment.json, report.md, input_candidate.py, selected_r1.py
+    attempt_00.py, attempt_00.json, attempt_00.diff, ...
+    dev_reference_*_seed_*.json, dev_attempt_*_seed_*.json, holdout_*_seed_*.json
+    error.json                             # 実行初期化失敗時
 ```
 
-APIキーは保存しません。実際に試した改訂回数によって`attempt_XX`の数は変わります。
+E2B stdout/stderrはSDK側で**末尾3000文字に制限して保存**します。プロンプト文全文・モデル内部の非公開推論過程は保存しませんが、モデルID、構造化診断、改訂根拠、コードハッシュ、評価結果、実行証跡を保存します。APIキーは出力物に書きません。実験コードを直接変更する場合は機密情報を含めないでください。
 
-### 自動テスト
+### v0.10：モデル診断の独立評価
+
+- Qwen・ODAの両方について**原因分類の正しさと説明の整合性を別々に採点**します。品質PASSとHOLDはR1の技術的KPIとは独立です。
+- 合成反例での「要件・事業目的不一致」と、実顧客の要件妥当性（常に`UNVERIFIED`）を分離します。
+- モデルの改訂案が「厳密FIFOを維持しながら期限を第一優先」とする矛盾や、根拠IDの欠落を検出します（ヒューリスティックであり形式検証ではありません）。
+- ODAの回答を利用して生成コードを改善したかという**因果効果**は現時点では証明していません。R1契約は依然として事前定義です。
+- 過去v0.9.1の`artifacts/`を新フォルダへコピーすれば旧proposal IDを再採点できます。旧ログを上書きしません。
+
+詳細な試験シナリオ・実行方法・評価限界：`docs/v010-requirement-diagnostic-benchmark.md`
+
+### API（主要）
+
+- `GET /api/sample`、`GET /api/health`、`POST /api/design`
+- `POST /api/run-r0`：R0参照実装をE2Bで評価
+- `POST /api/propose`：Qwen / ODAの**独立**要件診断
+- `POST /api/approve`：承認・却下（ODA HOLD時は承認拒否）
+- `POST /api/generate-r1`：ODA診断を参考情報として渡しQwenで生成、生成コード保存
+- `POST /api/evaluate-r1`：DEV修正→単回HOLDOUT、全試行保存
+- `GET /api/history/{runs|proposals|approvals|experiments|benchmarks}`：履歴一覧
+- `GET /api/artifacts/{kind}/{uuid}`：保存JSON再取得
+- `GET /api/artifacts/{kind}/{uuid}/bundle`：関連親実験含む証跡ZIP
+- `GET /api/runs/{uuid}/report`、`GET /api/experiments/{uuid}/report`
+
+## 独立の検証規則
+
+- R0契約：FIFO参照割当への完全一致。R1契約：資格、日別稼働上限、重複・欠損・過剰勤務なし。期限超過、実働時間、期限内率を別々に集計。
+- ODA要件診断の固定ルーブリック：分類が `requirement_mismatch`、R0実装が `correct`、ビジネス要件が `mismatch`、証拠IDが `SIM-SLA-001`、改訂提案に期限が反映され、根本原因を誤って「software bug」と呼ばないこと。**単純な独立ルールであり、推論の意味的正しさを保証するものではありません。**
+- HOLDOUTは生成・選定後に1回だけ使用し、両モデルへプロンプトとして渡さない。
+- 技術PASSはあくまで合成データについて。R1契約は実験用の固定ルールであって、ODAの自由生成要件が直接テストされたわけではありません。
+
+## テスト
 
 ```bash
 cd backend
-python -m pip install -r requirements.txt pytest
-PYTHONPATH=. python -m pytest -q
+python -m pip install -r requirements-dev.txt
+PYTHONPATH=. pytest -q
 ```
 
-本配布版は**バックエンドのモック付き自動テスト（選択ロジック、部分修正、HOLDOUT非実行を含む）**を実施しています。実Mac StudioのMetal推論、E2B実接続およびフロントエンドの完全ビルドは、この環境では検証できませんでした。
+E2BとOllamaをモックしたバックエンドテストのみをローカルで実施しました。実Mac Studio上のQwen/ODA推論、E2Bクラウド、フロントエンドの本番ビルドはこの環境では未検証です。
 
-詳細仕様： [Architecture](docs/architecture.md) · [I/O Contract](docs/io-contract.md) · [CHANGELOG](CHANGELOG.md)
+## 対照条件と限界
 
-### v0.6 JSON応答の重要フィールド
+- 同じ条件でQwenのみとODA併用の違いを比較可能ですが、今回のPoCは**複数seed・複数独立ドメイン事例にわたるモデル優位性の証明ではありません**。
+- 顧客のSLA、BaFin/EIOPA等の規制資料、GDPR、データ委託の根拠はモデルに与えていません。法令準拠の判定をしてはいけません。
+- 欧州複数市場への横展開、商品化・価格受容、ドイツ居住体制も未検証の事業仮説です。
+- APIは**単一ユーザーのローカルデモ**用で認証・レート制限がありません。外部に公開しないでください。
+- 参照「期限優先」アルゴリズムはヒューリスティックで、数学的な大域最適性は主張しません。
 
-- `selected_attempt_index: null` / `generated: null`: **有効な生成候補なし**。最終採用コードは存在しません。
-- `holdout_executed: false`: 最終評価のSandboxは一切呼び出していません。`baseline` / `optimal`も最終評価についてはnull、`development_*`のみ取得済みです。
-- `plan_comparisons_source: "development"`: 表示中の学習計画はDEVデータです。最終評価データではありません。
-- `repair_attempts[].error_summary`, `code_diff`, `repair_strategy`: 検証器の種類別件数、前回との差分と修正段階です。診断は推定のため誤検出があり得ます。
+詳細：`docs/v09-vertical-fm-experiment.md`、`docs/v08-claims-experiment-protocol.md`、`docs/io-contract.md`。
 
-**キーを公開しないこと**：`.env` をGit管理に追加しないでください。Docker Composeのホスト公開ポートは既定18000番、UIは5173番です。`API_PORT`と`WEB_PORT`で変更できます。
+### v0.10 API additions
 
-### 新規フィールドとエンドポイント
+- `GET /api/diagnostic-benchmark/fixtures` — Synthetic public inputs without oracles.
+- `POST /api/diagnostic-benchmark/run` — body `{"case_ids":["fifo_sla_conflict","actual_fifo_implementation_bug"],"repetitions":1}`. Runs both Ollama models sequentially.
+- `GET /api/diagnostic-benchmark/{benchmark_id}/report` — Markdown.
+- `GET /api/diagnostic-benchmark/rescore/{proposal_id}` — non-mutating regrade of stored v0.9.1 outputs.
+- `GET /api/history/benchmarks`, `GET /api/artifacts/benchmarks/{uuid}/bundle` — audit history and evidence ZIP.
 
-- `POST /api/design` `{project, requirements}` → `ServiceDesign`
-- `POST /api/generate` に `service_design`（省略可／旧API互換）を追加
-- `POST /api/run` に `service_design`, `customer_evidence`, `requirements_revision`, `parent_run_id` を追加
-- `POST /api/refine` `{run_id, evidence}` → `RequirementRefinementProposal`（提案のみ、旧要件は変更しない）
-- `RunResponse.requirement_assessment`：Implementation Validity と Requirement Validity の別判定。
-- `RunResponse.requirements_sha256`, `service_design_sha256`, `parent_run_id`：追跡用。
+### Local tests
 
-**検証済み範囲：** バックエンドのモック付き単体・APIテストを実行。E2Bクラウド実行、Mac MetalのQwen推論、React依存導入後のフロントエンド完全ビルドはこの実行環境では検証していません。
+```bash
+cd backend
+PYTHONPATH=. pytest -q tests
+```
+
+The tests use mocked E2B/LLM calls and separately check the deterministic scenario grader. They do not prove real Mac Ollama/GGUF inference, production claims processes, EU compliance, or frontend dependency installation.

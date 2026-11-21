@@ -1,0 +1,159 @@
+--- previous.py
++++ attempt_01.py
+@@ -1,4 +1,5 @@
+ import json
++from collections import defaultdict
+ 
+ def load_input(input_path):
+     with open(input_path, 'r') as f:
+@@ -11,90 +12,85 @@
+ def is_skill_match(case, reviewer):
+     return case['required_skill'] in reviewer['skills']
+ 
+-def can_assign_case(case, reviewer, day):
+-    # Check if reviewer has capacity for this day
+-    if day >= len(reviewer['daily_capacity_hours']):
++def can_assign_case(case, reviewer, day, assignments_by_reviewer, assignments_by_day):
++    # Check if reviewer has skill
++    if not is_skill_match(case, reviewer):
+         return False
+     
+-    capacity = reviewer['daily_capacity_hours'][day]
+-    if capacity < case['duration_hours']:
++    # Check if reviewer has capacity
++    current_hours = sum(assignments_by_reviewer[reviewer['reviewer_id']][day] for day in range(len(reviewer['daily_capacity_hours'])))
++    if current_hours + case['duration_hours'] > reviewer['daily_capacity_hours'][day]:
+         return False
++    
++    # Check if case is already assigned
++    for assignment in assignments_by_reviewer[reviewer['reviewer_id']].values():
++        if any(a['case_id'] == case['case_id'] for a in assignment):
++            return False
+     
+     return True
+ 
+-def assign_case_to_reviewer(case, reviewer, day):
+-    # Check if we can assign this case to this reviewer on this day
+-    if not is_skill_match(case, reviewer):
+-        return None
+-    
+-    if not can_assign_case(case, reviewer, day):
+-        return None
+-    
+-    return {
+-        'case_id': case['case_id'],
+-        'reviewer_id': reviewer['reviewer_id'],
+-        'day': day,
+-        'hours': case['duration_hours']
+-    }
+-
+-def find_best_assignment(case, reviewers, days):
+-    # Find the best reviewer for this case based on deadline priority
+-    # and skill scarcity
+-    
+-    # First, we need to check which reviewers are qualified
+-    qualified_reviewers = [r for r in reviewers if is_skill_match(case, r)]
+-    
+-    if not qualified_reviewers:
+-        return None
+-    
+-    # Sort by deadline priority (earlier deadlines first)
+-    qualified_reviewers.sort(key=lambda r: sum(1 for d in range(days) if can_assign_case(case, r, d)))
+-    
+-    # Try to assign to the best reviewer
+-    for day in range(days):
+-        for reviewer in qualified_reviewers:
+-            assignment = assign_case_to_reviewer(case, reviewer, day)
+-            if assignment:
+-                return assignment
+-    
+-    return None
+-
+-def solve(input_data):
++def assign_cases(input_data):
+     days = input_data['days']
+     cases = input_data['cases']
+     reviewers = input_data['reviewers']
+     
+-    assignments = []
+-    unassigned_case_ids = []
++    # Initialize data structures
++    assignments_by_reviewer = defaultdict(lambda: defaultdict(list))
++    assignments_by_day = defaultdict(list)
++    unassigned_cases = []
+     
+-    # Keep track of reviewer capacity
+-    reviewer_capacity = {}
+-    for reviewer in reviewers:
+-        reviewer_capacity[reviewer['reviewer_id']] = [h for h in reviewer['daily_capacity_hours']]
+-    
+-    # Sort cases by deadline priority (earlier deadlines first)
+-    sorted_cases = sorted(cases, key=lambda c: c['deadline_day'])
++    # Sort cases by deadline day (earlier deadlines first) and then by arrival order
++    sorted_cases = sorted(cases, key=lambda x: (x['deadline_day'], x['arrival_order']))
+     
+     for case in sorted_cases:
+-        best_assignment = find_best_assignment(case, reviewers, days)
++        assigned = False
++        best_reviewer = None
++        best_day = None
+         
+-        if best_assignment:
+-            # Update reviewer capacity
+-            reviewer_id = best_assignment['reviewer_id']
+-            day = best_assignment['day']
+-            hours = best_assignment['hours']
++        # Find the best reviewer for this case
++        for reviewer in reviewers:
++            if not is_skill_match(case, reviewer):
++                continue
+             
+-            reviewer_capacity[reviewer_id][day] -= hours
+-            assignments.append(best_assignment)
++            # Try to assign to earliest possible day
++            for day in range(days):
++                if can_assign_case(case, reviewer, day, assignments_by_reviewer, assignments_by_day):
++                    if best_reviewer is None or (day < best_day) or (day == best_day and 
++                        (not best_reviewer or 
++                         len(reviewer['skills']) > len(best_reviewer['skills']))):
++                        best_reviewer = reviewer
++                        best_day = day
++                        assigned = True
++        
++        if assigned:
++            # Assign the case
++            assignment = {
++                'case_id': case['case_id'],
++                'reviewer_id': best_reviewer['reviewer_id'],
++                'day': best_day,
++                'hours': case['duration_hours']
++            }
++            
++            assignments_by_reviewer[best_reviewer['reviewer_id']][best_day].append(assignment)
++            assignments_by_day[best_day].append(assignment)
+         else:
+-            unassigned_case_ids.append(case['case_id'])
++            unassigned_cases.append(case['case_id'])
++    
++    # Flatten assignments
++    all_assignments = []
++    for reviewer_id, days_assignments in assignments_by_reviewer.items():
++        for day, assignments in days_assignments.items():
++            all_assignments.extend(assignments)
+     
+     return {
+-        'assignments': assignments,
+-        'unassigned_case_ids': unassigned_case_ids
++        'assignments': all_assignments,
++        'unassigned_case_ids': unassigned_cases
+     }
+ 
++def main():
++    input_data = load_input('/home/user/input.json')
++    output_data = assign_cases(input_data)
++    save_output('/home/user/output.json', output_data)
++
+ if __name__ == '__main__':
+-    input_data = load_input('/home/user/input.json')
+-    result = solve(input_data)
+-    save_output('/home/user/output.json', result)+    main()

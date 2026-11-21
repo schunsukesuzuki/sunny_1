@@ -1,0 +1,45 @@
+{
+  "case_id": "correct_fifo_no_customer_evidence",
+  "repetition": 0,
+  "model_role": "coding",
+  "model_id": "qwen3-coder:30b",
+  "fixture_version": "CLAIMS-DIAG-FIXTURES-v0.10.1",
+  "prompt_input_sha256": "4431cd2fd836a56f00228bbeca45aca4498efc129f156c4bdf60da26f510567d",
+  "status": "COMPLETED",
+  "real_customer_validity": "UNVERIFIED",
+  "diagnosis": {
+    "classification": "requirement_mismatch",
+    "implementation_assessment": "correct",
+    "synthetic_requirement_fit": "unverified",
+    "real_customer_validity": "unverified",
+    "supporting_evidence_ids": [],
+    "root_cause": "No business goal was specified, making it impossible to determine if the requirement adequately addresses customer needs or priorities.",
+    "suggested_requirement_change": "The requirement should specify whether deadlines, costs, or fairness are prioritized to ensure alignment with business objectives.",
+    "scheduling_precedence": "none",
+    "change_required": true,
+    "remaining_uncertainty": "Without a defined business goal, it's impossible to assess whether the current implementation adequately serves customer needs or if the requirement itself is properly aligned with business priorities."
+  },
+  "rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": false,
+      "implementation_correctness": true,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": false
+    },
+    "passed": false,
+    "score": 0.75,
+    "failure_codes": [
+      "CAUSE_CLASSIFICATION",
+      "REVISION_TARGETS_REQUIREMENT"
+    ],
+    "expected_classification": "insufficient_evidence",
+    "real_customer_business_validity": "UNVERIFIED"
+  },
+  "elapsed_seconds": 3.3,
+  "created_at": "2026-11-21T02:02:24+00:00"
+}

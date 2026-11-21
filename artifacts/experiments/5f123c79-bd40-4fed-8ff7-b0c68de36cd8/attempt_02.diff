@@ -1,0 +1,158 @@
+--- previous.py
++++ attempt_02.py
+@@ -1,96 +1,81 @@
+ import json
+-from collections import defaultdict
+-
+-def load_input(input_path):
+-    with open(input_path, 'r') as f:
+-        return json.load(f)
+-
+-def save_output(output_path, output_data):
+-    with open(output_path, 'w') as f:
+-        json.dump(output_data, f, indent=2)
+-
+-def is_skill_match(case, reviewer):
+-    return case['required_skill'] in reviewer['skills']
+-
+-def can_assign_case(case, reviewer, day, assignments_by_reviewer, assignments_by_day):
+-    # Check if reviewer has skill
+-    if not is_skill_match(case, reviewer):
+-        return False
+-    
+-    # Check if reviewer has capacity
+-    current_hours = sum(assignments_by_reviewer[reviewer['reviewer_id']][day] for day in range(len(reviewer['daily_capacity_hours'])))
+-    if current_hours + case['duration_hours'] > reviewer['daily_capacity_hours'][day]:
+-        return False
+-    
+-    # Check if case is already assigned
+-    for assignment in assignments_by_reviewer[reviewer['reviewer_id']].values():
+-        if any(a['case_id'] == case['case_id'] for a in assignment):
+-            return False
+-    
+-    return True
+ 
+ def assign_cases(input_data):
+     days = input_data['days']
+     cases = input_data['cases']
+     reviewers = input_data['reviewers']
+-    
+-    # Initialize data structures
+-    assignments_by_reviewer = defaultdict(lambda: defaultdict(list))
+-    assignments_by_day = defaultdict(list)
+-    unassigned_cases = []
+-    
+-    # Sort cases by deadline day (earlier deadlines first) and then by arrival order
+-    sorted_cases = sorted(cases, key=lambda x: (x['deadline_day'], x['arrival_order']))
+-    
+-    for case in sorted_cases:
++
++    # Initialize assignments and unassigned cases
++    assignments = []
++    unassigned_case_ids = []
++
++    # Create a list of reviewers with their available capacity per day
++    reviewer_capacity = []
++    for reviewer in reviewers:
++        reviewer_id = reviewer['reviewer_id']
++        skills = reviewer['skills']
++        daily_capacity = reviewer['daily_capacity_hours']
++        reviewer_capacity.append({
++            'reviewer_id': reviewer_id,
++            'skills': skills,
++            'daily_capacity': daily_capacity,
++            'available_hours': [0] * days  # Track available hours per day
++        })
++
++    # Sort cases by deadline (earlier deadlines first) and then by business priority (higher first)
++    cases.sort(key=lambda x: (x['deadline_day'], -x['business_priority']))
++
++    # Assign each case
++    for case in cases:
++        case_id = case['case_id']
++        required_skill = case['required_skill']
++        duration_hours = case['duration_hours']
++        deadline_day = case['deadline_day']
++
+         assigned = False
+         best_reviewer = None
+         best_day = None
+-        
++
+         # Find the best reviewer for this case
+-        for reviewer in reviewers:
+-            if not is_skill_match(case, reviewer):
+-                continue
+-            
+-            # Try to assign to earliest possible day
+-            for day in range(days):
+-                if can_assign_case(case, reviewer, day, assignments_by_reviewer, assignments_by_day):
+-                    if best_reviewer is None or (day < best_day) or (day == best_day and 
+-                        (not best_reviewer or 
+-                         len(reviewer['skills']) > len(best_reviewer['skills']))):
+-                        best_reviewer = reviewer
+-                        best_day = day
+-                        assigned = True
+-        
++        for reviewer in reviewer_capacity:
++            if required_skill in reviewer['skills']:
++                # Check if reviewer has capacity on any day before or on deadline
++                for day in range(min(deadline_day + 1, days)):
++                    if reviewer['available_hours'][day] + duration_hours <= reviewer['daily_capacity'][day]:
++                        if best_reviewer is None or day < best_day:
++                            best_reviewer = reviewer
++                            best_day = day
++                            assigned = True
++
+         if assigned:
+-            # Assign the case
+-            assignment = {
+-                'case_id': case['case_id'],
++            # Assign the case to the reviewer
++            best_reviewer['available_hours'][best_day] += duration_hours
++            assignments.append({
++                'case_id': case_id,
+                 'reviewer_id': best_reviewer['reviewer_id'],
+                 'day': best_day,
+-                'hours': case['duration_hours']
+-            }
+-            
+-            assignments_by_reviewer[best_reviewer['reviewer_id']][best_day].append(assignment)
+-            assignments_by_day[best_day].append(assignment)
++                'hours': duration_hours
++            })
+         else:
+-            unassigned_cases.append(case['case_id'])
+-    
+-    # Flatten assignments
+-    all_assignments = []
+-    for reviewer_id, days_assignments in assignments_by_reviewer.items():
+-        for day, assignments in days_assignments.items():
+-            all_assignments.extend(assignments)
+-    
++            unassigned_case_ids.append(case_id)
++
+     return {
+-        'assignments': all_assignments,
+-        'unassigned_case_ids': unassigned_cases
++        'assignments': assignments,
++        'unassigned_case_ids': unassigned_case_ids
+     }
+ 
++
+ def main():
+-    input_data = load_input('/home/user/input.json')
++    # Read input file
++    with open('/home/user/input.json', 'r') as f:
++        input_data = json.load(f)
++
++    # Assign cases
+     output_data = assign_cases(input_data)
+-    save_output('/home/user/output.json', output_data)
++
++    # Write output file
++    with open('/home/user/output.json', 'w') as f:
++        json.dump(output_data, f, indent=2)
+ 
+ if __name__ == '__main__':
+     main()

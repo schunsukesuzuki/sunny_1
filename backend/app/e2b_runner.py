@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
-from .evaluator import sha256_string
+from .domain import sha256 as sha256_string
 
 
 @dataclass

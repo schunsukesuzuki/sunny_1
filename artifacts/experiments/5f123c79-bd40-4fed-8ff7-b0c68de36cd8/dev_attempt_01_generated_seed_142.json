@@ -1,0 +1,12 @@
+{
+  "name": "generated",
+  "seed": 142,
+  "source_sha256": "6119e5dff065d3c0725309446ce172a374695c976cb0068fcfd6c7d48242c0d5",
+  "sandbox_id": "ifrsy81huo7q27na85ixj",
+  "elapsed_seconds": 0.226,
+  "stdout": "",
+  "stderr": "Traceback (most recent call last):\n  File \"/home/user/solver.py\", line 96, in <module>\n    main()\n  File \"/home/user/solver.py\", line 92, in main\n    output_data = assign_cases(input_data)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/solver.py\", line 57, in assign_cases\n    if can_assign_case(case, reviewer, day, assignments_by_reviewer, assignments_by_day):\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/solver.py\", line 21, in can_assign_case\n    current_hours = sum(assignments_by_reviewer[reviewer['reviewer_id']][day] for day in range(len(reviewer['daily_capacity_hours'])))\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: unsupported operand type(s) for +: 'int' and 'list'\n",
+  "output": null,
+  "output_sha256": null,
+  "error": "CommandExitException: Command exited with code 1 and error:\nTraceback (most recent call last):\n  File \"/home/user/solver.py\", line 96, in <module>\n    main()\n  File \"/home/user/solver.py\", line 92, in main\n    output_data = assign_cases(input_data)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/solver.py\","
+}

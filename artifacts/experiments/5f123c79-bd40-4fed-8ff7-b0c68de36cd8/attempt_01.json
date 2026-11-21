@@ -1,0 +1,87 @@
+{
+  "attempt": 1,
+  "code_sha256": "6119e5dff065d3c0725309446ce172a374695c976cb0068fcfd6c7d48242c0d5",
+  "evaluation": {
+    "valid": false,
+    "missed_total": null,
+    "worked_hours_total": null,
+    "deadline_hit_rate": null,
+    "all_claims_completed": false,
+    "violations": [
+      "Expected assignments[] and unassigned_case_ids[]",
+      "CommandExitException: Command exited with code 1 and error:\nTraceback (most recent call last):\n  File \"/home/user/solver.py\", line 96, in <module>\n    main()\n  File \"/home/user/solver.py\", line 92, in main\n    output_data = assign_cases(input_data)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/solver.py\",",
+      "Expected assignments[] and unassigned_case_ids[]",
+      "CommandExitException: Command exited with code 1 and error:\nTraceback (most recent call last):\n  File \"/home/user/solver.py\", line 96, in <module>\n    main()\n  File \"/home/user/solver.py\", line 92, in main\n    output_data = assign_cases(input_data)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/solver.py\",",
+      "Expected assignments[] and unassigned_case_ids[]",
+      "CommandExitException: Command exited with code 1 and error:\nTraceback (most recent call last):\n  File \"/home/user/solver.py\", line 96, in <module>\n    main()\n  File \"/home/user/solver.py\", line 92, in main\n    output_data = assign_cases(input_data)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/solver.py\","
+    ],
+    "seeds": [
+      142,
+      143,
+      144
+    ]
+  },
+  "metrics": [
+    {
+      "valid": false,
+      "violations": [
+        "Expected assignments[] and unassigned_case_ids[]",
+        "CommandExitException: Command exited with code 1 and error:\nTraceback (most recent call last):\n  File \"/home/user/solver.py\", line 96, in <module>\n    main()\n  File \"/home/user/solver.py\", line 92, in main\n    output_data = assign_cases(input_data)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/solver.py\","
+      ],
+      "missed_deadlines": null,
+      "completed": null,
+      "assigned_hours": null,
+      "on_time": null,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "seed": 142,
+      "sandbox_id": "ifrsy81huo7q27na85ixj",
+      "source_sha256": "6119e5dff065d3c0725309446ce172a374695c976cb0068fcfd6c7d48242c0d5",
+      "output_sha256": null,
+      "dataset_sha256": "448d3ad7876d740e2756419cb8d45eb846cc5182cb9f0327ee95158cfc27cea4",
+      "elapsed_seconds": 0.226,
+      "stderr": "ay in range(len(reviewer['daily_capacity_hours'])))\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: unsupported operand type(s) for +: 'int' and 'list'\n"
+    },
+    {
+      "valid": false,
+      "violations": [
+        "Expected assignments[] and unassigned_case_ids[]",
+        "CommandExitException: Command exited with code 1 and error:\nTraceback (most recent call last):\n  File \"/home/user/solver.py\", line 96, in <module>\n    main()\n  File \"/home/user/solver.py\", line 92, in main\n    output_data = assign_cases(input_data)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/solver.py\","
+      ],
+      "missed_deadlines": null,
+      "completed": null,
+      "assigned_hours": null,
+      "on_time": null,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "seed": 143,
+      "sandbox_id": "ifrsy81huo7q27na85ixj",
+      "source_sha256": "6119e5dff065d3c0725309446ce172a374695c976cb0068fcfd6c7d48242c0d5",
+      "output_sha256": null,
+      "dataset_sha256": "6a62c88e044b7a09eb8633e38c07e9165f03370bc92620c15d0a05895be5d618",
+      "elapsed_seconds": 0.179,
+      "stderr": "ay in range(len(reviewer['daily_capacity_hours'])))\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: unsupported operand type(s) for +: 'int' and 'list'\n"
+    },
+    {
+      "valid": false,
+      "violations": [
+        "Expected assignments[] and unassigned_case_ids[]",
+        "CommandExitException: Command exited with code 1 and error:\nTraceback (most recent call last):\n  File \"/home/user/solver.py\", line 96, in <module>\n    main()\n  File \"/home/user/solver.py\", line 92, in main\n    output_data = assign_cases(input_data)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/user/solver.py\","
+      ],
+      "missed_deadlines": null,
+      "completed": null,
+      "assigned_hours": null,
+      "on_time": null,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "seed": 144,
+      "sandbox_id": "ifrsy81huo7q27na85ixj",
+      "source_sha256": "6119e5dff065d3c0725309446ce172a374695c976cb0068fcfd6c7d48242c0d5",
+      "output_sha256": null,
+      "dataset_sha256": "ce8763d22d707c696c13199c1518ec2f4fab33a89975bcbcd21a03e4f30bdd82",
+      "elapsed_seconds": 0.182,
+      "stderr": "ay in range(len(reviewer['daily_capacity_hours'])))\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: unsupported operand type(s) for +: 'int' and 'list'\n"
+    }
+  ],
+  "passes_fixed_hours_and_deadline": false
+}

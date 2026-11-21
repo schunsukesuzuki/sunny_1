@@ -8,6 +8,10 @@ if ! curl -fsS http://localhost:11434/api/tags >/dev/null; then
   echo 'Ollama cannot be reached: start native macOS Ollama app'; exit 1
 fi
 ollama list
+if ! ollama list | grep -Fq 'ODA-Fin-RL-8B-GGUF'; then
+  echo 'WARNING: ODA-Fin-RL-8B GGUF is not listed; /api/propose will not silently fall back.'
+  echo 'See README: ollama pull hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M'
+fi
 printf '\n[2/5] GPU process\n'
 echo 'The model must be loaded for ollama ps to show GPU usage.'
 ollama ps

@@ -1,0 +1,10 @@
+{
+  "source_sha256": "13687c955a5b771e2eed5c570912207711f4b93bcdcd89f58485b6d51f9c577e",
+  "rationale": "This solution implements a deadline-priority greedy algorithm that assigns cases to reviewers based on:\n\n1. **Deadline Priority**: Cases are sorted by their deadline day (earlier deadlines first)\n2. **Skill Matching**: Only reviewers with the required skill can be assigned\n3. **Capacity Constraints**: Each reviewer's daily capacity is respected\n4. **No Overtime**: No reviewer works beyond their daily capacity\n5. **No Duplicate Assignments**: Each case is assigned exactly once or remains unassigned\n\nThe algorithm works by:\n- Loading input data from input.json\n- Sorting cases by deadline priority\n- For each case, finding the best available reviewer who can handle it within their capacity\n- Updating reviewer capacity after assignment\n- Returning assignments and unassigned cases in the required output format\n\nThe solution handles all hard constraints including skill matching, daily capacity limits, and no overtime. It avoids hardcoding any specific IDs or values, making it generic for any input data that follows the specified schema.",
+  "created_at": "2026-11-21T02:00:05+00:00",
+  "coding_model": "qwen3-coder:30b",
+  "finance_model": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+  "domain_review_sha256": "960457797c1cd8cbcfb4a877cc6bf0487c47df4d7a0bfb2d489c4f1bd8e6a98c",
+  "domain_review_used_as_advisory": false,
+  "human_adjudication_used_instead": true
+}
