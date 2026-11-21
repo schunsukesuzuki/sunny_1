@@ -1,0 +1,65 @@
+{
+  "status": "OPTIMAL",
+  "solver": "PYTHON_EXHAUSTIVE",
+  "solution": {
+    "assignments": [
+      {
+        "case_id": "BL00-00",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "BL00-03",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "BL00-02",
+        "reviewer_id": "R-A",
+        "day": 1,
+        "hours": 1
+      },
+      {
+        "case_id": "BL00-01",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "BL00-04",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 1
+      },
+      {
+        "case_id": "BL00-05",
+        "reviewer_id": "R-B",
+        "day": 0,
+        "hours": 2
+      }
+    ],
+    "unassigned_case_ids": []
+  },
+  "nodes": 69,
+  "objective": [
+    5,
+    6
+  ],
+  "elapsed_seconds": 0.0001,
+  "metrics": {
+    "valid": true,
+    "violations": [],
+    "missed_deadlines": 1,
+    "on_time": 5,
+    "completed": 6,
+    "assigned_hours": 9,
+    "total_cases": 6,
+    "planned_capacity_hours": 10,
+    "unassigned_cases": 0,
+    "deadline_hit_rate": 0.83333
+  },
+  "cp_sat_status": "UNAVAILABLE_DEPENDENCY",
+  "input_sha256": "29b7f4f39b0b5c87b57a00747599a650f24075b25afcc3cec7535e355e547fe4"
+}

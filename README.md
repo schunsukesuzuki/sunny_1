@@ -1,3 +1,7 @@
+> **v0.24.1 build hotfix**: Rust API compile errors (`E0308`, `E0277`) were patched in `backend/dogwood_gate/src/main.rs`; authorization/audit contracts remain v0.24.0. Native Rust compilation still requires a Docker build on your machine. See `CHANGELOG.md`.
+
+> **v0.24 — Dogwood Temporal Approval Gate（小規模PoC）**：AWSが公開する実物のRust製`dogwood-local-engine`（v1.1）を用い、05の承認が06のR1生成・評価より先に成立したことをDogwoodの`permit`/`forbid`で検査します。Pythonの境界・証拠・業務KPI検査は残します。**標準DockerビルドはRustソースをコンパイルし、Rustのポリシー反例テストを実行**します。判定不能・DENY・タイムアウト時はR1を遮断し、PARTIAL監査ZIPに判定とポリシーSHA256を残します。`DOGWOOD_MODE=off`は既存Python単体テスト専用で、**認可は実行されません**。この実装は保存済み承認を毎回一時ストアへ再生する方式であり、長期間継続する監査イベントストリーム・認証済み本人確認・本番の認可サービスではありません。詳細：`docs/v024-dogwood-approval-gate.md`。
+
 > **v0.23 — EAIR-inspired Boundary Assurance（限定的な社会実装向け）**：00b→01では公開根拠・承認仮説・機能タイプの整合、05→06では明示的人間承認の保存とproposal ID、06→08b/08f/09では実験のWorkflow/Approval/R0/Proposal IDとコードのSHA256を検査。異常な引継ぎを次工程へ進めず、**Boundary Certificate（最初に検出した境界・証拠・遮断・修復案）**を監査ZIPに保存します。新しい08gは5件の**合成**境界反例と最小限の出所DAGを出力し、失敗検出と業務KPIを分けます。EAIRのマルチエージェント環境・GraphRAG・形式証明を導入したものではありません。詳細：`docs/v023-boundary-assurance-eair.md`。
 
 > **v0.22 — 08b Artifact not found修正**：06のR1評価が途中失敗し、`evaluation_started.json`にIDだけ残って`experiment.json`が存在しない場合、08b・08f・09は二次的な404を起こさず **SKIPPED** にします。原発エラーを`06_r1_failure.json`に保存し、PARTIAL ZIPに原因・未実施工程・欠落成果物を保持します。08cの担当者割当契約も未完成のR1をPASS扱いしません。詳細：`docs/v022-resilient-artifact-lineage.md`。**この修正は06自体のE2B/LLM失敗を自動修復するものではありません。**
@@ -32,7 +36,7 @@
 
 > **v0.10:** 要件診断の多軸独立採点・Qwen/ODAの合成ベンチマーク・過去ログ再採点を追加。詳細は `docs/v010-requirement-diagnostic-benchmark.md`。
 
-# Claims Operations Planner — AI Venture Feasibility Studio v0.23
+# Claims Operations Planner — AI Venture Feasibility Studio v0.24
 
 ドイツの保険業務SaaS企業（**架空**）の事業開発PoC。**Qwen3-Coder 30B** はサービス設計・Pythonコード生成、**OpenDataArena/ODA-Fin-RL-8B** は金融ドメイン要件診断を担当。E2Bは生成コードを隔離して実行し、独立した決定的評価器で審査割当・期限・資格・稼働上限を検証します。v0.8にあったMarkdown結果保存を維持し、生成コード・差分・各試行のE2B実行証跡・履歴取得を拡張しました。
 
@@ -54,7 +58,7 @@
 ## Mac Studioでの実行環境
 
 - macOSでネイティブのOllamaを実行（利用可能ならMetal加速）。Dockerコンテナから `host.docker.internal:11434` に接続。
-- Docker Compose：FastAPI + React/Vite。E2B Python SDKには `E2B_API_KEY` 必須。
+- Docker Compose：FastAPI + React/Vite。**v0.24は追加のRustビルドを必要としますが、Dogwoodの常駐サーバは追加しません**。E2B Python SDKには `E2B_API_KEY` 必須。
 - **2モデルが必要**。ODAだけの評価に置換してQwenの生成処理を削除したものではありません。
 
 ### 1. Ollamaにモデルを準備

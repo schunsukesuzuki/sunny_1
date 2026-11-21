@@ -1,0 +1,57 @@
+{
+  "suggestions": [
+    {
+      "problem_statement": "Insurance claim delays due to poor communication",
+      "requirement_hypothesis": "Insurers need to improve timeliness and communication in claims processing",
+      "supporting_evidence_ids": [
+        "PUB-001",
+        "PUB-003",
+        "PUB-004"
+      ],
+      "alternative_explanation": "The evidence indicates that consumers are dissatisfied with insurance claims handling, particularly regarding delays and communication. However, it's unclear whether these issues stem from systemic inefficiencies or specific firm practices. The FCA data also shows consumer satisfaction with claims handling, suggesting the problem may be localized rather than universal across the sector.",
+      "suggested_kpi": "Percentage of claims resolved within agreed timeframes",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    },
+    {
+      "problem_statement": "Customers left chasing for answers due to unclear claim status updates",
+      "requirement_hypothesis": "Insurers must provide clear and timely updates on claim progress",
+      "supporting_evidence_ids": [
+        "PUB-003",
+        "PUB-006"
+      ],
+      "alternative_explanation": "The evidence points to customers being left unsure about what happens next in the claims process. This could be due to either insufficient internal communication protocols or inadequate customer-facing information systems, but the specific root cause is not clearly identified.",
+      "suggested_kpi": "Customer satisfaction score for claim status updates",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    },
+    {
+      "problem_statement": "Limited control over outsourced claims handling arrangements",
+      "requirement_hypothesis": "Insurers need better oversight of third-party claims handlers",
+      "supporting_evidence_ids": [
+        "PUB-005"
+      ],
+      "alternative_explanation": "The evidence suggests that insurers operating as UK branches of overseas companies have limited control over outsourced arrangements. This could be due to regulatory differences or operational complexity, but it's unclear whether this is a systemic issue or specific to certain business models.",
+      "suggested_kpi": "Number of complaints related to third-party claims handling",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    },
+    {
+      "problem_statement": "Recurring issues with customers having to chase updates",
+      "requirement_hypothesis": "Insurers should implement systems to proactively communicate claim status",
+      "supporting_evidence_ids": [
+        "PUB-006"
+      ],
+      "alternative_explanation": "The evidence shows that customers frequently have to chase updates, indicating a gap in proactive communication. This could be due to insufficient automated notification systems or inadequate staff training on customer communication protocols, but the exact cause is not specified.",
+      "suggested_kpi": "Average time between claim submission and first status update",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    }
+  ],
+  "model": "Qwen configured Ollama model",
+  "status": "DRAFT_UNVERIFIED"
+}

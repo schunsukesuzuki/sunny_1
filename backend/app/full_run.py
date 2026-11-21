@@ -24,6 +24,7 @@ from . import notification_demo as nd
 from . import blind_optimality as bo
 from . import artifact_readiness as ar
 from . import boundary_assurance as ba
+from . import dogwood_authorization as da
 
 # The endpoints are registered by register(app, main_module) to keep the
 # existing 01..09 handlers as the single implementation of each operation.
@@ -120,6 +121,9 @@ def register(app, m) -> None:
         result = {key:state.get(key) for key in (
             "workflow_id", "export_id", "created_at", "updated_at", "status", "phase", "stages",
             "linked_ids", "error", "service_design", "evidence_mode", "r1_mode", "topic_alignment", "grounded_contract_status", "requirement_type", "requirement_trace_status", "boundary_status")}
+        dogwood_file=folder(state["workflow_id"])/"05_dogwood_authorization.json"
+        if dogwood_file.is_file():
+            result["dogwood_authorization"]=json.loads(dogwood_file.read_text(encoding="utf-8"))
         blind_file=folder(state['workflow_id'])/'08f_blind_optimality.json'
         if blind_file.exists():
             result['blind_optimality']=json.loads(blind_file.read_text(encoding='utf-8'))
@@ -273,8 +277,30 @@ def register(app, m) -> None:
             approval_gate=ba.approval_handoff(state,approval_record)
             approval_gate["certificates"]=ba.certificate(approval_gate, stopped_at="06")
             add_file(wid,"boundary_05_to_06.json",approval_gate)
-            if approval_gate["status"]=="HOLD":
-                state["error"]="Boundary 05→06: missing or mismatched human approval"
+            # Export policy source/schema corresponding to this decision for
+            # audit; deployment policy files are read-only inside the image.
+            for name, source in (("05_dogwood_policy.dw", da.POLICY_PATH),
+                                 ("05_dogwood_schema.cedarschema", da.SCHEMA_PATH)):
+                try:
+                    (folder(wid)/name).write_bytes(source.read_bytes())
+                except OSError:
+                    pass  # Missing source will fail closed in da.check.
+            # v0.24: independent Dogwood temporal permit/forbid verdict.
+            # Enforce only AFTER existing lineage check, but BEFORE LLM/E2B R1.
+            # If the existing gate failed, we do not forge a Dogwood approval event.
+            if approval_gate["status"] == "PASS":
+                dogwood_record=da.check(wid, state["linked_ids"].get("proposals"),
+                                        approval_id, approval_record)
+            else:
+                dogwood_record={"version":da.VERSION,"status":"DENY",
+                    "decision":"DENY","reason":"Python approval/lineage contract failed before Dogwood",
+                    "configured_mode":da.configured_mode(),"production_authorization":False}
+            add_file(wid,"05_dogwood_authorization.json",dogwood_record)
+            dogwood_gate=da.boundary_gate(dogwood_record)
+            dogwood_gate["certificates"]=ba.certificate(dogwood_gate,stopped_at="06")
+            add_file(wid,"boundary_05_to_06_dogwood.json",dogwood_gate)
+            if approval_gate["status"]=="HOLD" or not da.admitted(dogwood_record):
+                state["error"]="Boundary 05→06 / Dogwood: " + dogwood_record["reason"][:240]
                 step(state,current,"SKIPPED",state["error"])
             else:
               try:
@@ -460,6 +486,16 @@ def register(app, m) -> None:
                         checkpoints.append(data)
                 suite=ba.regression_scenarios()
                 audit=ba.report(state,checkpoints,suite)
+                dogwood_file=folder(wid)/"05_dogwood_authorization.json"
+                if dogwood_file.is_file():
+                    saved_auth=json.loads(dogwood_file.read_text(encoding="utf-8"))
+                    audit["dogwood_authorization"]={"status":saved_auth.get("status"),
+                        "engine":saved_auth.get("engine"),
+                        "policy_sha256":saved_auth.get("policy_sha256"),
+                        "continuous_history":False,
+                        "authentic_human_identity":False}
+                    if saved_auth.get("status")=="NOT_ENFORCED":
+                        audit["limits"].append("Dogwood deliberately NOT_ENFORCED in this run (offline test mode)")
                 add_file(wid,"08g_boundary_contracts.json",{"version":ba.VERSION,"contracts":ba.CONTRACTS})
                 add_file(wid,"08g_boundary_regression.json",suite)
                 add_file(wid,"08g_provenance_dag.json",ba.topology(state["linked_ids"],wid))
@@ -797,5 +833,5 @@ def register(app, m) -> None:
         file=m.path_for("exports",state["export_id"])/"complete_audit_package.zip"
         if not file.is_file():
             raise HTTPException(409,"ZIP is not ready; check workflow status")
-        return FileResponse(file,filename=f"claims_full_run_v023_{workflow_id}.zip",media_type="application/zip")
+        return FileResponse(file,filename=f"claims_full_run_v024_{workflow_id}.zip",media_type="application/zip")
 

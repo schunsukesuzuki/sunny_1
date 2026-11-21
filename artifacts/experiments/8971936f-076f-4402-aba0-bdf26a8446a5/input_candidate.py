@@ -1,0 +1,96 @@
+import json
+
+def load_input():
+    with open('/home/user/input.json', 'r') as f:
+        return json.load(f)
+
+def save_output(assignments, unassigned_case_ids):
+    output = {
+        "assignments": assignments,
+        "unassigned_case_ids": unassigned_case_ids
+    }
+    with open('/home/user/output.json', 'w') as f:
+        json.dump(output, f, indent=2)
+
+def is_skill_match(case, reviewer):
+    return case["required_skill"] in reviewer["skills"]
+
+def can_assign(case, reviewer, day):
+    # Check if reviewer has capacity for this day
+    if day >= len(reviewer["daily_capacity_hours"]):
+        return False
+    
+    capacity = reviewer["daily_capacity_hours"][day]
+    if capacity < case["duration_hours"]:
+        return False
+    
+    # Check if reviewer has the required skill
+    if not is_skill_match(case, reviewer):
+        return False
+    
+    return True
+
+def assign_case_to_reviewer(case, reviewers, day):
+    # Find a suitable reviewer for this case on the given day
+    for reviewer in reviewers:
+        if can_assign(case, reviewer, day):
+            # Check if reviewer has capacity for this day
+            if reviewer["daily_capacity_hours"][day] >= case["duration_hours"]:
+                return reviewer
+    return None
+
+def schedule_cases():
+    data = load_input()
+    
+    days = data["days"]
+    cases = data["cases"]
+    reviewers = data["reviewers"]
+    
+    # Sort cases by deadline (earlier deadlines first)
+    sorted_cases = sorted(cases, key=lambda x: x["deadline_day"])
+    
+    assignments = []
+    unassigned_case_ids = []
+    
+    # Initialize reviewer capacity tracking
+    reviewer_capacity = []
+    for reviewer in reviewers:
+        reviewer_capacity.append(reviewer["daily_capacity_hours"][:])  # Copy the capacity list
+    
+    # Process cases in deadline order
+    for case in sorted_cases:
+        assigned = False
+        
+        # Try to assign to a reviewer on each day up to the deadline
+        for day in range(min(case["deadline_day"] + 1, days)):
+            if assigned:
+                break
+            
+            # Find a reviewer who can handle this case on this day
+            suitable_reviewer = assign_case_to_reviewer(case, reviewers, day)
+            
+            if suitable_reviewer is not None:
+                # Check if we have already assigned this reviewer to a case on this day
+                reviewer_index = reviewers.index(suitable_reviewer)
+                
+                # Check if reviewer has capacity for this day
+                if reviewer_capacity[reviewer_index][day] >= case["duration_hours"]:
+                    # Assign the case
+                    assignments.append({
+                        "case_id": case["case_id"],
+                        "reviewer_id": suitable_reviewer["reviewer_id"],
+                        "day": day,
+                        "hours": case["duration_hours"]
+                    })
+                    
+                    # Update reviewer capacity
+                    reviewer_capacity[reviewer_index][day] -= case["duration_hours"]
+                    assigned = True
+                    
+        if not assigned:
+            unassigned_case_ids.append(case["case_id"])
+    
+    save_output(assignments, unassigned_case_ids)
+
+if __name__ == "__main__":
+    schedule_cases()

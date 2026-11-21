@@ -1,4 +1,4 @@
-"""Claims Operations Planner v0.23: auditable LLM and pinned Domain Skill comparison."""
+"""Claims Operations Planner v0.24: auditable LLM and pinned Domain Skill comparison."""
 from __future__ import annotations
 
 import asyncio
@@ -276,7 +276,7 @@ def claims_allocation_skill_manifest():
 
 @app.get("/api/sample")
 def sample():
-    return {"title": "Claims Operations Planner", "version": "0.21.0", "customer_profile": "German InsurTech SaaS (fictional)",
+    return {"title": "Claims Operations Planner", "version": "0.24.0", "customer_profile": "German InsurTech SaaS (fictional)",
             "brief": BRIEF, "contract_r0": CONTRACT_R0, "contract_r1": CONTRACT_R1,
             "service_design_r0": SERVICE_R0, "service_design_r1": SERVICE_R1,
             "synthetic_counterexample": SIMULATED_EVIDENCE,
@@ -289,7 +289,7 @@ def sample():
 
 @app.get("/api/health")
 async def health():
-    return {"app": "ok", "version": "0.21.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
+    return {"app": "ok", "version": "0.24.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
             "ollama": await llm.status()}
 
 
@@ -323,7 +323,7 @@ async def run_r0(body: R0Request):
     held_metrics = {name: _aggregate([m for m in metrics if m["seed"] in holdout]) for name, metrics in results.items()}
     if not dev_metrics["fifo"]["valid"] or not held_metrics["fifo"]["valid"]:
         raise HTTPException(502, "R0 FIFOの独立評価が失敗しました。")
-    data = {"run_id": rid, "created_at": now(), "version": "0.21.0", "contract": CONTRACT_R0,
+    data = {"run_id": rid, "created_at": now(), "version": "0.24.0", "contract": CONTRACT_R0,
             "service_design": body.service_design or SERVICE_R0, "brief": body.brief,
             "seed": body.seed, "dev_seeds": dev, "holdout_seeds": holdout,
             "development": dev_metrics, "holdout": held_metrics,
@@ -462,6 +462,14 @@ def approved(aid: str) -> tuple[dict, dict, dict]:
         raise HTTPException(409, "Evaluator contract changed since approval")
     if rec["evidence_sha256"] != sha256(prop["evidence"]) or rec["service_sha256"] != sha256(SERVICE_R1):
         raise HTTPException(409, "Evidence or design changed since approval")
+    # Direct /api/generate-r1 and /api/evaluate-r1 must not bypass the same
+    # temporal policy applied to the full workflow. Use approval ID as a
+    # scoped synthetic workflow identity for standalone operations.
+    from . import dogwood_authorization as dogwood
+    authorization = dogwood.check(aid, rec["proposal_id"], aid, rec)
+    if not dogwood.admitted(authorization):
+        raise HTTPException(503 if authorization["status"] == "ERROR" else 403,
+                            "Dogwood denied R1: " + authorization["reason"][:250])
     return rec, prop, run
 
 

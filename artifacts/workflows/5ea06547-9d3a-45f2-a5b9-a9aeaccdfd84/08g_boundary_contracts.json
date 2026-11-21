@@ -1,0 +1,51 @@
+{
+  "version": "BOUNDARY-ASSURANCE-v0.24.0",
+  "contracts": {
+    "00b_to_01": {
+      "owner": "human evidence reviewer",
+      "consumer": "service-design input",
+      "invariants": [
+        "explicit_hypothesis_review",
+        "evidence_ids_from_current_rag",
+        "requirement_and_feature_unchanged",
+        "hypothesis_not_customer_approval"
+      ]
+    },
+    "05_to_06": {
+      "owner": "explicit human revision approval",
+      "consumer": "R1 code generation/evaluation",
+      "invariants": [
+        "approved_proposal_matches_workflow",
+        "decision_is_approved",
+        "approval_is_recorded_before_execution"
+      ]
+    },
+    "06_to_downstream": {
+      "owner": "R1 evaluation and artifact writer",
+      "consumer": "08b/08c/08f/09 evaluators",
+      "invariants": [
+        "experiment_lineage_matches_current_workflow",
+        "selected_code_digest_matches",
+        "completed_result_not_started_marker"
+      ]
+    },
+    "05_to_06_dogwood": {
+      "owner": "server-side workflow execution adapter",
+      "consumer": "R1 code generation / E2B evaluation",
+      "invariants": [
+        "recorded_human_approval_precedes_execution",
+        "matching_workflow_proposal_and_approval_identity",
+        "no_temporal_revocation",
+        "deny_by_default_if_engine_unavailable"
+      ],
+      "scope": "ephemeral Dogwood replay, not a persistent authorizer"
+    },
+    "shared_budget_fixture": {
+      "owner": "multiple capacity consumers (synthetic only)",
+      "consumer": "global resource allocator",
+      "invariants": [
+        "sum_of_claims_does_not_exceed_shared_capacity"
+      ]
+    }
+  }
+}

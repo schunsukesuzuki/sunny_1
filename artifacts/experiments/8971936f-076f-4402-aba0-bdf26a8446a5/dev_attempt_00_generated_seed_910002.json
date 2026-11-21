@@ -1,0 +1,105 @@
+{
+  "name": "generated",
+  "seed": 910002,
+  "source_sha256": "542f2cb81e8e69b57a4168d75dae820ecc90bc452d8f96ef0a7e59263f6f48c8",
+  "sandbox_id": "i9vrqvnfa9jsmputrjhi0",
+  "elapsed_seconds": 0.384,
+  "stdout": "",
+  "stderr": "",
+  "output": {
+    "assignments": [
+      {
+        "case_id": "C007",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "C008",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "C009",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "C010",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "C018",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "C005",
+        "reviewer_id": "R-A",
+        "day": 1,
+        "hours": 1
+      },
+      {
+        "case_id": "C012",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "C014",
+        "reviewer_id": "R-A",
+        "day": 1,
+        "hours": 2
+      },
+      {
+        "case_id": "C015",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 2
+      },
+      {
+        "case_id": "C001",
+        "reviewer_id": "R-A",
+        "day": 1,
+        "hours": 2
+      },
+      {
+        "case_id": "C002",
+        "reviewer_id": "R-A",
+        "day": 2,
+        "hours": 3
+      },
+      {
+        "case_id": "C003",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 3
+      },
+      {
+        "case_id": "C004",
+        "reviewer_id": "R-A",
+        "day": 2,
+        "hours": 2
+      },
+      {
+        "case_id": "C006",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 1
+      }
+    ],
+    "unassigned_case_ids": [
+      "C011",
+      "C013",
+      "C016",
+      "C017"
+    ]
+  },
+  "output_sha256": "69fa5c51f172579c6f988b5e16986124eb3d4074b90a10dd770e90b0375e558f",
+  "error": null
+}

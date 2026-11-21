@@ -1,0 +1,48 @@
+{
+  "name": "skill_deadline_scarcity",
+  "seed": 2000003,
+  "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+  "sandbox_id": "i4l1toow1a0ohrps2mbtr",
+  "elapsed_seconds": 0.379,
+  "stdout": "",
+  "stderr": "",
+  "output": {
+    "assignments": [
+      {
+        "case_id": "BL03-04",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 2
+      },
+      {
+        "case_id": "BL03-02",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "BL03-00",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "BL03-03",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 1
+      },
+      {
+        "case_id": "BL03-01",
+        "reviewer_id": "R-A",
+        "day": 1,
+        "hours": 1
+      }
+    ],
+    "unassigned_case_ids": [
+      "BL03-05"
+    ]
+  },
+  "output_sha256": "b1e213e08b9a0b1aa7f0dfb3863053984671609a5eb943e4dfb4ec8b26078dd4",
+  "error": null
+}

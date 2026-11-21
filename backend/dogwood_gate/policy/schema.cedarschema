@@ -1,0 +1,24 @@
+namespace Claims {
+  type RevisionInput = {
+    workflow_id: String,
+    proposal_id: String,
+    approval_id: String
+  };
+  entity Workflow;
+  entity Service;
+  action "ApproveRevision" appliesTo {
+    principal: [Workflow],
+    resource: [Service],
+    context: { input: RevisionInput }
+  };
+  action "RevokeRevision" appliesTo {
+    principal: [Workflow],
+    resource: [Service],
+    context: { input: RevisionInput }
+  };
+  action "GenerateR1" appliesTo {
+    principal: [Workflow],
+    resource: [Service],
+    context: { input: RevisionInput }
+  };
+}

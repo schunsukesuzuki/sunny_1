@@ -540,12 +540,18 @@ export default function App() {
         },!fullRunId.trim(),'secondary')}
       </div>
       {fullRun && <section className="assessment-report" aria-label="00〜09 一括実行状況">
-        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.23</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
+        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.24</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
           <Status good={fullRun.status==='COMPLETE'}>{fullRun.status}</Status></div>
         {fullRun.topic_alignment && <div className="notice"><strong>公開資料と保険請求課題の対応:</strong> {fullRun.topic_alignment.status} — {fullRun.topic_alignment.reason}。一致は原文の意味的支持・因果の証明ではありません。</div>}
         {fullRun.grounded_contract_status && <p className="muted">担当者割当KPIの検証: {fullRun.grounded_contract_status}（該当要件のみ）</p>}
         {fullRun.requirement_type && <div className="notice"><strong>選択要件:</strong> {fullRun.requirement_type} ／ <strong>対応する受入試験:</strong> {fullRun.requirement_trace_status || '未実行'}<p className="muted">「進捗通知」の場合、R1担当者割当は別系統の回帰実験です。進捗通知プロトタイプの結果だけを当該要件の合成評価として扱います。</p></div>}
         <p className="muted">現在の段階: {fullRun.phase}　／　モード: {fullRun.evidence_mode==='public'?'外部データ利用':'合成デモのみ'}　／　R1: {fullRun.r1_mode || 'legacy'}　／　各工程はDockerの<code>artifacts/</code>に逐次保存します。</p>
+        {fullRun.dogwood_authorization && <div className="notice">
+          <strong>Dogwood 時系列認可：</strong>{fullRun.dogwood_authorization.status}
+          {fullRun.dogwood_authorization.status === 'NOT_ENFORCED' ? '（テスト用：認可は無効）' : ''}
+          {' — '}05→06の明示承認／Proposal境界を、Rust製Dogwoodで判定します。
+          <Disclosure title="Dogwood 認可判定とポリシー証跡" data={fullRun.dogwood_authorization}/>
+        </div>}
         {fullRun.boundary_assurance && <div className="notice">
           <strong>08g 境界整合性検査：</strong>{fullRun.boundary_assurance.status} — 根拠・要件・承認・実験成果物の引継ぎを検査します。
           <p className="muted">これはID・状態・依存関係の整合性検査です。顧客要件の妥当性や本番安全性を証明するものではありません。</p>

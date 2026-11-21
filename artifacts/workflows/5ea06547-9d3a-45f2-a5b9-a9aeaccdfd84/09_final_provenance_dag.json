@@ -1,0 +1,93 @@
+{
+  "version": "BOUNDARY-ASSURANCE-v0.24.0",
+  "nodes": [
+    {
+      "node_id": "workflow",
+      "kind": "workflows",
+      "artifact_id": "5ea06547-9d3a-45f2-a5b9-a9aeaccdfd84"
+    },
+    {
+      "node_id": "runs",
+      "kind": "runs",
+      "artifact_id": "bb03c979-be51-475b-9224-56c3aa3c26ae"
+    },
+    {
+      "node_id": "proposals",
+      "kind": "proposals",
+      "artifact_id": "d2f96820-a5d0-437e-8506-c54a660c5c91"
+    },
+    {
+      "node_id": "approvals",
+      "kind": "approvals",
+      "artifact_id": "298fb0b4-fefb-467e-90c9-f7ac7a089782"
+    },
+    {
+      "node_id": "experiments",
+      "kind": "experiments",
+      "artifact_id": "8971936f-076f-4402-aba0-bdf26a8446a5"
+    },
+    {
+      "node_id": "policy_validations",
+      "kind": "policy_validations",
+      "artifact_id": "57c4b25c-b5eb-4230-8bf6-bc8935b5f231"
+    },
+    {
+      "node_id": "benchmarks",
+      "kind": "benchmarks",
+      "artifact_id": "b373ec18-7a19-42d9-a5fe-a8f168e922d9"
+    },
+    {
+      "node_id": "assessments",
+      "kind": "assessments",
+      "artifact_id": "4d4dde1e-0d1e-46bd-8f87-da483a407d00"
+    },
+    {
+      "node_id": "dogwood_gate",
+      "kind": "authorization",
+      "artifact_id": "05_dogwood_authorization.json"
+    }
+  ],
+  "edges": [
+    {
+      "source": "workflow",
+      "target": "runs",
+      "type": "DECLARED_DEPENDENCY"
+    },
+    {
+      "source": "runs",
+      "target": "proposals",
+      "type": "DECLARED_DEPENDENCY"
+    },
+    {
+      "source": "proposals",
+      "target": "approvals",
+      "type": "DECLARED_DEPENDENCY"
+    },
+    {
+      "source": "approvals",
+      "target": "dogwood_gate",
+      "type": "DECLARED_DEPENDENCY"
+    },
+    {
+      "source": "dogwood_gate",
+      "target": "experiments",
+      "type": "DECLARED_DEPENDENCY"
+    },
+    {
+      "source": "experiments",
+      "target": "policy_validations",
+      "type": "DECLARED_DEPENDENCY"
+    },
+    {
+      "source": "experiments",
+      "target": "assessments",
+      "type": "DECLARED_DEPENDENCY"
+    },
+    {
+      "source": "benchmarks",
+      "target": "assessments",
+      "type": "DECLARED_DEPENDENCY"
+    }
+  ],
+  "semantics": "Declared workflow dependencies only; no proof of semantic support"
+}

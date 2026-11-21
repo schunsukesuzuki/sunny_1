@@ -1,13 +1,13 @@
 {
-  "source_package_version": "0.23.0",
-  "source_base": "v0.22.0",
+  "source_package_version": "0.24.1",
+  "source_base": "v0.24.0",
   "runtime_dependencies_not_bundled": true,
-  "verification": "SHA256 hashes of the exact source bytes",
+  "verification": "SHA256 hashes of the exact source bytes (excluding SOURCE_MANIFEST.json itself)",
   "files": [
     {
       "path": ".env.example",
-      "bytes": 775,
-      "sha256": "f8c5211cfecce3472768b066151ba11e3d31e70189e24668b895d9ed7cccc6f2"
+      "bytes": 1017,
+      "sha256": "c22a4f663b0d77da958dcf120fb84c0be0a46eee5528f756b721f4b7e46ec6a0"
     },
     {
       "path": ".gitignore",
@@ -16,8 +16,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 7497,
-      "sha256": "a649c61373d484917062ea6773c5e91ceb09f5e5675c90d20c6010d97318e30c"
+      "bytes": 10202,
+      "sha256": "23d691ee5ef4eaf5e4aa493b6832d4dc8992026655bc6fc756fa8fcc5762ff23"
     },
     {
       "path": "LICENSE",
@@ -26,8 +26,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 29882,
-      "sha256": "e087f728cce30c38f0db59fe7f498821d87c64b27f0f1730df41177812468f76"
+      "bytes": 31194,
+      "sha256": "0f1587ebf30c2f18e394f8764969ca9b8247ecf6da9bf92b56b8840d2e2a00f0"
     },
     {
       "path": "artifacts/.gitkeep",
@@ -36,8 +36,8 @@
     },
     {
       "path": "backend/Dockerfile",
-      "bytes": 428,
-      "sha256": "e058192fa80210c1ea0d50b224820257fde40a97f3ec457ab3ed92d0d1bb7198"
+      "bytes": 887,
+      "sha256": "212d8f072fde9024c514bbffbb5c9fe8a07375a2166a3303e84b6d96ced81a02"
     },
     {
       "path": "backend/app/__init__.py",
@@ -56,8 +56,8 @@
     },
     {
       "path": "backend/app/boundary_assurance.py",
-      "bytes": 14914,
-      "sha256": "d35e745a8b6d517ef69e76f1855aa5b036de1eed851277f3ef43a2ab76f273f6"
+      "bytes": 15675,
+      "sha256": "aefdff7823f7e0acba206fb6f1bbda386ddb919fe88c705bccc96ca0507a47cc"
     },
     {
       "path": "backend/app/business_assessment.py",
@@ -85,6 +85,11 @@
       "sha256": "2ba9293d66657bda82cd6d035da1fedb1cac0a94b8d3492f4b1c07ba609892ff"
     },
     {
+      "path": "backend/app/dogwood_authorization.py",
+      "bytes": 7819,
+      "sha256": "add185f7c17be85b5281fa94df83659d636a07cb7be4c8b0d63f6c6260ed19ba"
+    },
+    {
       "path": "backend/app/domain.py",
       "bytes": 11543,
       "sha256": "f28dcc62141cfe82ee8a927c4879c7502602e254c73d7e57be0edeacea6b5d2f"
@@ -101,13 +106,13 @@
     },
     {
       "path": "backend/app/export_bundle.py",
-      "bytes": 9210,
-      "sha256": "46a0723dfa1c6e9428d040da9347d197d4613b46d3ef1f2a1e74223926e21d3d"
+      "bytes": 9689,
+      "sha256": "9e0e2a7bf395e0c0551d63a99e6a251124ee33197176728efdb72d3392ec3fd9"
     },
     {
       "path": "backend/app/full_run.py",
-      "bytes": 57440,
-      "sha256": "aa9357022799aabecf0905f82b95524023fcdfaa484fb45bcdcf54f7c3b517b6"
+      "bytes": 59976,
+      "sha256": "7dc80e4a2d323f745c5d8e29974a7067ff9a732d5c04953c57ad737c7d240153"
     },
     {
       "path": "backend/app/grounded_contract.py",
@@ -121,8 +126,8 @@
     },
     {
       "path": "backend/app/main.py",
-      "bytes": 93026,
-      "sha256": "321e245ba47df07f6513ba0dfa964fb642a88ae3c4cc6b27fbf10ae227a2383f"
+      "bytes": 93570,
+      "sha256": "b66c9750186a28caf3906ac13a6bac908ba79d841c1f52db2a31bfe679f68272"
     },
     {
       "path": "backend/app/notification_demo.py",
@@ -138,6 +143,31 @@
       "path": "backend/app/requirement_trace.py",
       "bytes": 8271,
       "sha256": "673ec3f1c11ae4bf6e277fcc88c62aa0ace59397dce62b23861abbe8d16b8cdd"
+    },
+    {
+      "path": "backend/dogwood_gate/Cargo.toml",
+      "bytes": 374,
+      "sha256": "cdc52ed2c10903df7335a419e9a5ea8c358ab1af13535a7c770a628046f412af"
+    },
+    {
+      "path": "backend/dogwood_gate/Dockerfile",
+      "bytes": 494,
+      "sha256": "b03a7ada349ed6bae8798a52daed493ef5217c0539220464e597b99d56e31063"
+    },
+    {
+      "path": "backend/dogwood_gate/policy/policy.dw",
+      "bytes": 967,
+      "sha256": "1c87fd7c7629c7c1933f6088d6ed768575a927b966a3345e9dd7da068d03ba98"
+    },
+    {
+      "path": "backend/dogwood_gate/policy/schema.cedarschema",
+      "bytes": 558,
+      "sha256": "fd203bf2bc9ca59132dbcd3c9aae2a448b854d70ffde81853858fb36fddc757a"
+    },
+    {
+      "path": "backend/dogwood_gate/src/main.rs",
+      "bytes": 7226,
+      "sha256": "2e5d2ae3f29aedf270be9ec7b215f2223fe200137f7268d29c5fa9da5024d4fe"
     },
     {
       "path": "backend/requirements-dev.txt",
@@ -208,6 +238,11 @@
       "path": "backend/skills/claims_allocation/validators.py",
       "bytes": 696,
       "sha256": "97342b76fd021fb61284402e591fd31a49d5a0961b1c2b984e7e8f3bf77be71e"
+    },
+    {
+      "path": "backend/tests/conftest.py",
+      "bytes": 442,
+      "sha256": "96a806e3e5804f7a7bf12bbe95e65480af47148f8414125e6f24d2a3e8d26736"
     },
     {
       "path": "backend/tests/test_business_assessment_v013.py",
@@ -287,12 +322,17 @@
     {
       "path": "backend/tests/test_v022_partial_experiment.py",
       "bytes": 6917,
-      "sha256": "26f4d78ed34675a71a2653579d2e78ea76f745bd0567d09e13793a09e67d2dbf"
+      "sha256": "b3212869bd37c545e7c8091aed1d611e0574a203f8535aba6236c78e758061d7"
     },
     {
       "path": "backend/tests/test_v023_boundary_assurance.py",
       "bytes": 9133,
-      "sha256": "3fe2712ca9ace20da04011cfe3ff9d0d90cae8a4663661224dd4ab675fe404fa"
+      "sha256": "8bd0735b6c3b3dcc1be59ba6dfbbf55f344c6aa9c4aebdd33e6ad9390b4dd8f5"
+    },
+    {
+      "path": "backend/tests/test_v024_dogwood_approval.py",
+      "bytes": 8621,
+      "sha256": "86c3fd95aa3312c182392ab0fa21dd0b2080834e198533ec7c1972f846059d67"
     },
     {
       "path": "backend/tests/test_vertical_v09.py",
@@ -301,8 +341,8 @@
     },
     {
       "path": "compose.yaml",
-      "bytes": 838,
-      "sha256": "155bec9393abad863d3db6a94ecde273c75661d2052c1a83e4d92b38339c36bd"
+      "bytes": 940,
+      "sha256": "efbc0e0d391dca74a11d49e86e8cbb8e326900a3eb861db06d5ddbbec2a8d517"
     },
     {
       "path": "docs/io-contract.md",
@@ -390,6 +430,16 @@
       "sha256": "a95160a64834cd3f03a1c99bd40dc1bd9f751910d5300bde58d75295dd28c843"
     },
     {
+      "path": "docs/v024-dogwood-approval-gate.md",
+      "bytes": 6590,
+      "sha256": "23455cce2788f4c58d81f04bfdd4b0a5c7f4cc6002b28e22287cfadcb81c0413"
+    },
+    {
+      "path": "docs/v0241-build-hotfix.md",
+      "bytes": 1361,
+      "sha256": "6e15b3125f0b0d3d6bec05db854517ca23afa3ce41d76fbaf254c05abcde2e88"
+    },
+    {
       "path": "docs/v08-claims-experiment-protocol.md",
       "bytes": 3593,
       "sha256": "99a9d6f4a087ce74a1e1138d9232330d948dbea31b557bf62451153322988492"
@@ -446,8 +496,8 @@
     },
     {
       "path": "frontend/src/App.tsx",
-      "bytes": 77692,
-      "sha256": "cb998f8965ac84d2e105b6229f8e98ba5d262caef98ff9acf5cf8e0b1d17bbb8"
+      "bytes": 78192,
+      "sha256": "90c39ae07e6018e4f75fd1217250a43aff8ec4a779f1c1af9ef1cb4c2853926f"
     },
     {
       "path": "frontend/src/main.tsx",

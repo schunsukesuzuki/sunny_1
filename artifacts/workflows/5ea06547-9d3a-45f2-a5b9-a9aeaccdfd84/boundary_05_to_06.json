@@ -1,0 +1,13 @@
+{
+  "version": "BOUNDARY-ASSURANCE-v0.24.0",
+  "boundary": "05_to_06",
+  "status": "PASS",
+  "checks_performed": [
+    "explicit_approval",
+    "proposal_lineage"
+  ],
+  "violations": [],
+  "semantic_validity": "NOT_PROVEN",
+  "production_authorization": false,
+  "certificates": []
+}

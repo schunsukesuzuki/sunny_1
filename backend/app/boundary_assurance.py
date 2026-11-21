@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-VERSION = "BOUNDARY-ASSURANCE-v0.23.0"
+VERSION = "BOUNDARY-ASSURANCE-v0.24.0"
 
 # Declarative contracts are deliberately small enough to review with a customer.
 CONTRACTS = {
@@ -33,6 +33,14 @@ CONTRACTS = {
         "consumer": "08b/08c/08f/09 evaluators",
         "invariants": ["experiment_lineage_matches_current_workflow",
                        "selected_code_digest_matches", "completed_result_not_started_marker"],
+    },
+    "05_to_06_dogwood": {
+        "owner": "server-side workflow execution adapter",
+        "consumer": "R1 code generation / E2B evaluation",
+        "invariants": ["recorded_human_approval_precedes_execution",
+                       "matching_workflow_proposal_and_approval_identity",
+                       "no_temporal_revocation", "deny_by_default_if_engine_unavailable"],
+        "scope": "ephemeral Dogwood replay, not a persistent authorizer",
     },
     "shared_budget_fixture": {
         "owner": "multiple capacity consumers (synthetic only)",
@@ -195,8 +203,11 @@ def topology(linked_ids: dict, workflow_id: str) -> dict:
     for kind in names:
         if linked_ids.get(kind):
             nodes.append({"node_id": kind, "kind": kind, "artifact_id": linked_ids[kind]})
+    if linked_ids.get("approvals"):
+        nodes.append({"node_id": "dogwood_gate", "kind": "authorization", "artifact_id": "05_dogwood_authorization.json"})
     pairs = [("workflow", "runs"), ("runs", "proposals"), ("proposals", "approvals"),
-             ("approvals", "experiments"), ("experiments", "policy_validations"),
+             ("approvals", "dogwood_gate"), ("dogwood_gate", "experiments"),
+             ("experiments", "policy_validations"),
              ("experiments", "assessments"), ("benchmarks", "assessments")]
     existing = {n["node_id"] for n in nodes}
     edges = [{"source": a, "target": b, "type": "DECLARED_DEPENDENCY"}
@@ -241,11 +252,12 @@ def report(state: dict, checkpoints: list[dict], suite: dict) -> dict:
             "limits": ["Local record consistency, not formal proof",
                        "Synthetic scenario detection is not a measured incident probability",
                        "Reviewer actor labels are unauthenticated",
-                       "No GraphRAG, multi-agent deployment or trusted append-only storage"]}
+                       "No GraphRAG, multi-agent deployment or trusted append-only storage",
+                       "Dogwood is bounded replay, not a continuous authenticated authorizer"]}
 
 
 def markdown(report: dict) -> str:
-    lines = ["# Boundary Assurance — EAIR-inspired, bounded v0.23", "",
+    lines = ["# Boundary Assurance — EAIR-inspired, bounded v0.24", "",
              f"- Status: **{report['status']}**", "- Production: **NO-GO**",
              "- Focus: identity, human review, typed requirements, and artifact readiness", "",
              "## Boundary checks"]

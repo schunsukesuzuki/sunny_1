@@ -1,3 +1,22 @@
+# v0.24.1 — Rust/Dogwood compile hotfix (2026-11-21)
+
+- Fixed `E0308`: pass `&principal` to `EventBuilder::principal(&str)`.
+- Fixed five `E0277` failures: wrap `DurableError` (which does not implement `std::error::Error` in the pinned `dogwood-local-engine = 1.1.2`) as `std::io::Error` at `open`, `install`, and three `submit` call sites. The original failure is preserved in the diagnostic message; no authorization failure is converted to ALLOW.
+- This is a targeted source compatibility fix. Python API/audit JSON formats remain v0.24.0; policy and schema files are unchanged.
+- Validation: Python unit tests can be run in an available Python environment; native Rust compilation and Dogwood policy fixture execution **must be run in Docker** (`docker compose build --no-cache api`) because Rust/Docker are unavailable in the creation environment. Treat all runtime ALLOW/DENY assertions as **not yet verified** until those tests pass.
+
+# v0.24.0 — Real Dogwood Local Engine Approval Gate (bounded replay)
+
+- Add a Rust executable compiled against published `dogwood-local-engine` and `dogwood-language` 1.1, with a readable `.dw` policy, Cedar schema, and native temporal authorization fixtures. Not a fake Python policy interpreter.
+- Require matching persisted human approval before R1 in BOTH full-run and direct `/api/generate-r1` / `/api/evaluate-r1` endpoints. Reject absent/stale/mismatched approval, DENY, errors and subprocess timeouts without fallback.
+- Replay the approved event and requested operation into a fresh temporary durable store for every decision. Revocation is tested in Rust, but **no authenticated user-revocation UI/event ledger** is implemented. This deliberately reduces persistent infrastructure at the cost of not being a continuously running authorizer.
+- Export `05_dogwood_authorization.json`, `boundary_05_to_06_dogwood.json`, exact source policy/schema, source hashes and boundary certificates; show policy status in UI. Preserve EAIR-inspired 08g, E2B, independent evaluation, diagnostic scoring and all original business controls.
+- Default Docker mode `DOGWOOD_MODE=enforce`. `DOGWOOD_MODE=off` is explicitly labelled `NOT_ENFORCED` for Python regression tests only, never to be interpreted as an actual Dogwood verdict.
+- Python adapter tests and old regression tests run without local Rust. Real Rust compile/test and container integration require Docker networking and were NOT verified in this authoring environment.
+- Limitations: replay trusts locally persisted records and actor labels are not authenticated, no immutable audit ledger, no inter-session cumulative policies, no semantic/legal verification, and no demonstrated production ROI.
+
+---
+
 # v0.23.0 — Boundary-Aware Evaluation Harness
 
 - Microsoft Research EAIR's cross-role/cross-state risk framing is adapted only to **workflow hand-offs**, not to a multi-agent simulation.

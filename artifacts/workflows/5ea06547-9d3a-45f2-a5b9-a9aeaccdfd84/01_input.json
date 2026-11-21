@@ -1,0 +1,37 @@
+{
+  "original_brief": "想定顧客：ドイツ国内で実績があり欧州の複数国への展開を検討する保険業務SaaS企業（架空）。案件ごとに審査所要時間、期限、保険金請求額、必要資格が異なる。固定の審査人員・勤務時間で、先着順よりも期限超過を減らしたい。支払可否は人間が判断する。顧客固有のEU法規制適合は未検証。サービス設計→コード生成→E2B評価→要件改訂を再現可能な実験にする。",
+  "effective_brief": "想定顧客：ドイツ国内で実績があり欧州の複数国への展開を検討する保険業務SaaS企業（架空）。案件ごとに審査所要時間、期限、保険金請求額、必要資格が異なる。固定の審査人員・勤務時間で、先着順よりも期限超過を減らしたい。支払可否は人間が判断する。顧客固有のEU法規制適合は未検証。サービス設計→コード生成→E2B評価→要件改訂を再現可能な実験にする。\n\n[PUBLIC EVIDENCE — HUMAN-REVIEWED HYPOTHESIS, NOT CUSTOMER APPROVAL]\nHypothesis: Insurers need to improve timeliness and communication in claims processing\nEvidence pointers (source statements only): PUB-001, PUB-003, PUB-004\nEvidence support, causal attribution, customer validity: UNVERIFIED. R0 FIFO and R1 contracts remain synthetic fixed test specifications.\n[END HUMAN-REVIEWED HYPOTHESIS]",
+  "approved_hypothesis": "Insurers need to improve timeliness and communication in claims processing",
+  "selected_evidence_ids": [
+    "PUB-001",
+    "PUB-003",
+    "PUB-004"
+  ],
+  "rag_id": "3f2bdc2d-f5d9-4cd9-a80f-04e861746487",
+  "evidence_mode": "public",
+  "inputs": {
+    "evidence_mode": "public",
+    "r1_mode": "compare",
+    "diagnostic_repair": true,
+    "blind_case_count": 4,
+    "diagnostic_blind_cases": true,
+    "dataset_id": "insurance_claims_uk",
+    "evidence_query": "insurance claim delays poor communication processing time",
+    "llm_extraction": true,
+    "brief": "想定顧客：ドイツ国内で実績があり欧州の複数国への展開を検討する保険業務SaaS企業（架空）。案件ごとに審査所要時間、期限、保険金請求額、必要資格が異なる。固定の審査人員・勤務時間で、先着順よりも期限超過を減らしたい。支払可否は人間が判断する。顧客固有のEU法規制適合は未検証。サービス設計→コード生成→E2B評価→要件改訂を再現可能な実験にする。",
+    "seed": 42,
+    "evidence_condition": "counterexample",
+    "case_ids": [
+      "fifo_sla_conflict",
+      "actual_fifo_implementation_bug"
+    ],
+    "repetitions": 1
+  },
+  "customer_validity": "UNVERIFIED",
+  "r0_contract_changed": false,
+  "technical_evaluator": "BOUNDED_HUMAN_CONFIGURED_SYNTHETIC_CONTRACT",
+  "technical_spec_path": "00c_technical_spec.md",
+  "requirement_type": "claim_progress_updates",
+  "requirement_trace_path": "00c_requirement_trace.json",
+  "acceptance_test_target": "separate_deterministic_notification_prototype"
+}

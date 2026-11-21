@@ -1,0 +1,30 @@
+// v0.24: the persisted approval is a prerequisite for running R1.
+// A response event is sourced from the reviewed approval.json by the Python adapter.
+// Any matching later revocation event overrides the permit. Deny by default.
+@id("r1_after_explicit_human_approval")
+permit (
+    principal,
+    action == Claims::Action::"GenerateR1",
+    resource
+)
+when temporal {
+    formerly within 24h Claims::Action::"ApproveRevision"::response {
+        input.workflow_id: context.input.workflow_id,
+        input.proposal_id: context.input.proposal_id,
+        input.approval_id: context.input.approval_id
+    }
+};
+
+@id("r1_revoked")
+forbid (
+    principal,
+    action == Claims::Action::"GenerateR1",
+    resource
+)
+when temporal {
+    formerly within 24h Claims::Action::"RevokeRevision"::response {
+        input.workflow_id: context.input.workflow_id,
+        input.proposal_id: context.input.proposal_id,
+        input.approval_id: context.input.approval_id
+    }
+};

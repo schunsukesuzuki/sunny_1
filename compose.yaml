@@ -9,6 +9,8 @@ services:
       - .env
     environment:
       ARTIFACT_DIR: /app/artifacts
+      DOGWOOD_MODE: ${DOGWOOD_MODE:-enforce}
+      DOGWOOD_BINARY: /usr/local/bin/claims-dogwood-gate
     # ホスト8000番の既存コンテナとの競合を避け、18000番を既定にする。
     # Vite -> api:8000 はDocker内通信なので変更不要。
     ports:

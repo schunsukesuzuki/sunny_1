@@ -11,7 +11,7 @@ from test_outer_loop_v08 import client
 
 
 def test_registry_and_small_simulation_are_deterministic():
-    assert len(ba.CONTRACTS) == 4
+    assert len(ba.CONTRACTS) == 5
     a = ba.regression_scenarios()
     assert a == ba.regression_scenarios()
     assert a['status'] == 'PASS'
@@ -95,7 +95,7 @@ def test_full_batch_carries_boundary_report_and_dag_in_single_zip(client,monkeyp
         assert z.testzip() is None
         man=json.loads(z.read('manifest.json'))
         assert man['status']=='COMPLETE'
-        assert man['format_version']=='AUDIT-EXPORT-v0.23.0'
+        assert man['format_version']=='AUDIT-EXPORT-v0.24.0'
         for suffix in ('08g_boundary_assurance.json','08g_boundary_regression.json',
                        '08g_provenance_dag.json','boundary_05_to_06.json','boundary_08b_lineage.json'):
             assert any(x.endswith('/'+suffix) for x in z.namelist()),suffix
