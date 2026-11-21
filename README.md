@@ -1,3 +1,5 @@
+> **v0.18 — Evidence / Domain / KPI contract alignment:** 00で保険請求遅延に関するFCA・Financial Ombudsman Serviceの公表資料を取得できます。公開金融利用者インタビューや銀行苦情を保険のR0/R1へ流用することは禁止。00の出典照合に加え**課題領域スクリーニング → 人間による支持範囲の確認 → 人間設定KPI閾値の検証契約 → 固定合成HOLDOUTによる独立検証**を実装しました。RAG検索した公開根拠の原本を一括ZIPへ収録し、Business Assessmentでは「公開された問題の背景」と「実顧客の要件/原因/ROI」を区別します。**任意の自然言語仕様や評価器を自動生成する機能ではありません**。詳細は `docs/v018-evidence-to-contract.md`。
+
 > **v0.17 — Step 10 actually runs Evidence RAG:** 公開データモードでは、ボタンから **00の取得（未取得時）・SHA256照合・索引化・検索・要件候補作成**を起動。**00bでは根拠IDと要件仮説を人間が選択・承認するまで停止**し、その後01〜04、05で再度人間承認、06〜09を実行し、実験・根拠・承認記録を一つのZIPに保存します。取得失敗時は `FAILED`/`PARTIAL` で停止し、**synthetic-demoへの自動フォールバックはしません**。合成モードは明示的に選択した場合だけ動きます。`docs/v017-full-evidence-pipeline.md` を参照。
 
 > **v0.16 — Evidence-grounded Requirements RAG（旧バージョンの説明）:** 00画面でCommunity Credit匿名化インタビューとCFPB公開苦情（件数制限付き）を配布元から個別取得し、データセットを**別ZIPで保存**できます。元資料の出所・SHA256・文字位置に紐づけた検索、根拠付き要求仮説（Qwenによる抽出は任意）、未検証項目の表示、RAG証跡のZIP保存を追加。10の一括実行ZIPにも00の結果を任意で添付します。**引用の正確さは顧客要求の妥当性の証明ではありません。** `docs/v016-evidence-grounded-requirements.md` を参照。
@@ -12,7 +14,7 @@
 
 > **v0.10:** 要件診断の多軸独立採点・Qwen/ODAの合成ベンチマーク・過去ログ再採点を追加。詳細は `docs/v010-requirement-diagnostic-benchmark.md`。
 
-# Claims Operations Planner — AI Venture Feasibility Studio v0.17
+# Claims Operations Planner — AI Venture Feasibility Studio v0.18
 
 ドイツの保険業務SaaS企業（**架空**）の事業開発PoC。**Qwen3-Coder 30B** はサービス設計・Pythonコード生成、**OpenDataArena/ODA-Fin-RL-8B** は金融ドメイン要件診断を担当。E2Bは生成コードを隔離して実行し、独立した決定的評価器で審査割当・期限・資格・稼働上限を検証します。v0.8にあったMarkdown結果保存を維持し、生成コード・差分・各試行のE2B実行証跡・履歴取得を拡張しました。
 
@@ -65,9 +67,9 @@ docker compose up --build
 
 既にOllamaアプリが常駐している場合、別途 `ollama serve` は不要です。`bash scripts/preflight-mac.sh` で接続とモデル有無を確認できます。
 
-### 3. UI操作（v0.17）
+### 3. UI操作（v0.18）
 
-0. **Evidence-grounded Requirements RAG**：00画面でデータセットとクエリを選びます。手動取得・別ZIPダウンロード・索引化・検索も可能ですが、**10の公開データモードでは手動実行不要**で取得・索引化・検索が始まります。
+0. **Evidence-grounded Requirements RAG**：保険請求の合成実験に接続する場合は `insurance_claims_uk`（FCA/FOS）を選択します。`community_credit`と`cfpb_sample`は個人向け金融業務の資料であり、保険請求案件の証拠として承認できません。手動取得・別ZIPダウンロード・索引化・検索も可能ですが、**10の公開データモードでは事前操作不要**です。
 1. **顧客課題とR0サービス設計**：架空ブリーフ・seedを選択。
 2. **R0をE2B実行**：FIFO実装の仕様適合とDEV指標を確認。
 3. **Qwen × ODAで独立診断**：`SIM-SLA-001` を与え、両モデルの分類・理由・改訂提案を比較。証拠なしの対照条件も試せます。
@@ -76,7 +78,7 @@ docker compose up --build
 6. **レポートと全証跡ZIP**：成功・失敗の記録をMac側 `./artifacts/` へ保存。「保存した実験と監査証跡」から過去の結果を読み直せます。
 7. **08診断品質ベンチマーク**：QwenとODAへ同じ合成ケース・同じschemaを与えて独立採点。過去のproposal IDを再採点可能（非破壊）。
 8. **09 Business & Delivery Assessment**：R1実験IDを入力（06から自動入力、または07の履歴から選択）、二軸評価を生成。**v0.14の新しい仕様・ストレス・ベンチマークをまだ紐づけていない場合、HOLD_POLICY**となります。
-9. **10 一括実行＋保存**：公開データモードでは **00を自動実行 → 00bで証拠IDと要件仮説の人間レビュー → 01〜04 → 05で別の人間承認 → 06〜09**。一括ZIPに根拠・出所ハッシュ・承認・コード・評価をまとめます。実顧客の要件の正当性は未保証。合成デモだけを行う場合は `synthetic` を明示的に選択。いずれもPARTIAL ZIPを保存します。
+9. **10 一括実行＋保存**：公開データモードでは **00データ取得/索引化/関連性検査 → 00bで出典/問題背景の支持範囲を人間確認 → 00cで合成実験に適用するKPI閾値を設定 → 01〜04 → 05で独立した人間承認 → 06〜08b → 08cで人間設定KPIを独立判定 → 09の事業評価**。銀行資料との領域不一致、関連する問題の出典不足、却下の場合は01へ進みません。公開資料の原本も単一ZIPに含めます。実顧客の要件・原因の正しさは未検証。合成モードは明示選択した場合のみ。
 
 ## 保存・監査
 
@@ -105,6 +107,9 @@ artifacts/
   workflows/<uuid>/
     workflow.json, 00_evidence_grounded_requirements.json, 00_source_manifest.json
     00_index_metadata.json, 00_rag_report.md, 00b_human_evidence_review.json
+    00_raw_source__*.html, 00_raw_source__*.txt, 00_raw_source__*.json
+    00c_grounded_test_contract.json, 00c_technical_spec.md
+    08c_grounded_kpi_verification.json
     01_input.json, 02_service_design.json, 07_history_snapshot.json
     03_r0_started.json, 04_proposal_started.json, 08_benchmark_started.json, 08b_policy_started.json
   exports/<uuid>/
@@ -206,3 +211,12 @@ PYTHONPATH=. pytest -q tests
 ```
 
 The tests use mocked E2B/LLM calls and separately check the deterministic scenario grader. They do not prove real Mac Ollama/GGUF inference, production claims processes, EU compliance, or frontend dependency installation.
+
+## v0.18の重要な区別
+
+- `insurance_claims_uk`は英国の監督当局・オンブズマンによる公表資料です。**ドイツの顧客企業の実運用記録ではありません**。
+- 公開資料による遅延問題の存在（problem context）と、FIFO/希少資格による原因（causality）を混同しません。
+- インタビューやRAG要件候補は正式顧客要件ではありません。承認時の担当者は**デモ実験の仮説とKPI閾値**を定義するだけです。
+- 要件評価器は**固定合成Claimsデータの既存独立評価ロジック**に対して閾値（最大期限超過件数、FIFO比削減率、行動プローブ）を設定する仕組みです。任意の顧客資料からアルゴリズムやOracleを自動構築していません。
+- 一括ZIPの `COMPLETE` は収録工程の完了であり、要件の意味的正しさを証明しません。技術判定と実顧客の事業採算性は別です。
+- 実公開データのダウンロード、Mac StudioでのOllama・E2B実行、Reactの完全ビルドはこの配布環境では検証していません。

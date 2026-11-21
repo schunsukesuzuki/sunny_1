@@ -69,8 +69,8 @@ export default function App() {
   const [fullRun, setFullRun] = useState<Dict | null>(null);
   const [fullRunId, setFullRunId] = useState('');
   const [evidenceDatasets, setEvidenceDatasets] = useState<Dict[]>([]);
-  const [evidenceDataset, setEvidenceDataset] = useState<'community_credit' | 'cfpb_sample'>('community_credit');
-  const [evidenceQuery, setEvidenceQuery] = useState('financial services customer pain points trust access fees');
+  const [evidenceDataset, setEvidenceDataset] = useState<'community_credit' | 'cfpb_sample' | 'insurance_claims_uk'>('insurance_claims_uk');
+  const [evidenceQuery, setEvidenceQuery] = useState('insurance claim delays poor communication processing time');
   const [ragResult, setRagResult] = useState<Dict | null>(null);
   const [datasetMeta, setDatasetMeta] = useState<Dict | null>(null);
   const [ragIndex, setRagIndex] = useState<Dict | null>(null);
@@ -82,6 +82,10 @@ export default function App() {
   const [reviewRequirement, setReviewRequirement] = useState('');
   const [selectedEvidenceIds, setSelectedEvidenceIds] = useState<string[]>([]);
   const [acknowledgeEvidence, setAcknowledgeEvidence] = useState(false);
+  const [supportAssessment, setSupportAssessment] = useState<'supports_problem'|'context_only'|'contradicts'>('context_only');
+  const [maxTotalMissed, setMaxTotalMissed] = useState(0);
+  const [minReductionPct, setMinReductionPct] = useState(50);
+  const [requireBehavioral, setRequireBehavioral] = useState(true);
   async function refreshHistory(kind: HistoryKind) {
     const result = await call<{items: Dict[]}>(`/history/${kind}`);
     setHistory(result.items);
@@ -137,7 +141,7 @@ export default function App() {
 
   return <div className="app-shell">
     <header className="masthead">
-      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.17</div>
+      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.18</div>
       <h1>Claims Operations <span>Planner</span></h1>
       <p className="lead">German InsurTech事業開発：審査人員を増やさず、保険金請求の期限超過を減らせるか。</p>
       <div className="tags"><span>架空顧客 / 合成請求データ</span><span>Qwen3-Coder + ODA-Fin-RL-8B · Ollama / Metal</span><span>E2B isolated execution</span><span>R0 → R1 requirement refinement</span></div>
@@ -151,7 +155,7 @@ export default function App() {
       </div>
       <h3 className="intro-subtitle">主な機能と画面の進め方</h3>
       <ol className="feature-overview">
-        <li><span className="feature-index">00</span><div><strong>公開金融データから根拠を検索</strong><p>データセット取得・検索・原文位置付き要件候補。顧客要求の確定は人間が行います。</p></div></li>
+        <li><span className="feature-index">00</span><div><strong>公開資料の根拠を取得・関連性を検査</strong><p>FCA/FOS保険資料・銀行インタビュー・苦情を検索。案件領域との不一致を検出し、人間による根拠の確認を必須にします。</p></div></li>
         <li><span className="feature-index">01–02</span><div><strong>顧客課題・サービス設計</strong><p>業務目標、制約、受入テストを整理し、サービス設計案を構造化します。</p></div></li>
         <li><span className="feature-index">03</span><div><strong>R0を隔離実行</strong><p>FIFO仕様をE2Bで実行し、仕様適合性と合成KPIを独立評価します。</p></div></li>
         <li><span className="feature-index">04–05</span><div><strong>二つのLLM診断・人間承認</strong><p>QwenとODAの診断を比較し、要件改訂の可否を人間が判断します。</p></div></li>
@@ -159,7 +163,7 @@ export default function App() {
         <li><span className="feature-index">07</span><div><strong>履歴・監査証跡</strong><p>コード、ログ、採点結果、承認記録を参照・ZIP取得できます。</p></div></li>
         <li><span className="feature-index">08</span><div><strong>診断品質ベンチマーク</strong><p>合成ケースを用い、原因分類・証拠参照・説明の整合性を比較します。</p></div></li>
         <li><span className="feature-index">09</span><div><strong>事業価値 × AIデリバリー評価</strong><p>KPI改善とR1仕様適合を区別し、診断品質・本番未検証事項を保守的に評価します。</p></div></li>
-        <li><span className="feature-index">10</span><div><strong>00〜09を一括実行してZIP保存</strong><p>公開データモードでは00の取得・索引化・検索まで自動実行し、根拠レビュー後に01へ進みます。05でも人間の承認を待ち、全結果を一括ZIP保存します。</p></div></li>
+        <li><span className="feature-index">10</span><div><strong>00〜09を一括実行してZIP保存</strong><p>保険の公開資料を検索→課題との関連性を検査→人間設定のKPI契約→固定の合成R0/R1検証。領域不一致は遮断し、原本もZIPへ保存します。</p></div></li>
       </ol>
       <div className="evidence-explainer" aria-labelledby="evidence-title">
         <div className="evidence-heading">
@@ -195,12 +199,12 @@ export default function App() {
     <section className="card evidence-rag-panel" aria-labelledby="evidence-rag-title">
       <header className="section-header"><div className="step-number">00</div><div>
         <h2 id="evidence-rag-title">Evidence-grounded Requirements RAG</h2>
-        <p>公開された金融関連の発言・苦情を、出典と原文位置を付けて検索します。要件候補は未承認のまま扱います。</p>
+        <p>公表された保険請求業務の問題背景や金融サービス利用者の発言を検索します。銀行資料を保険業務の要件根拠と誤認しないよう領域も判定します。</p>
       </div></header>
-      <div className="notice"><strong>根拠の追跡 ≠ 根拠による実証。</strong>この画面は公開発言の検索を実行しますが、実顧客の需要・原因・要件を立証しません。R0/R1は独立した合成実験です。公開データの利用条件は配布元で確認してください。Community Creditは信用組合等の利用者インタビューであり、保険金請求のFIFOや顧客の承認済み要求を裏付ける資料ではありません。</div>
+      <div className="notice"><strong>問題背景 ≠ 原因の証明 ≠ 顧客要件。</strong>FCA・FOSの公開資料は保険請求の遅延等の問題を示しますが、FIFO・資格配分が原因だとは証明しません。銀行向けインタビューは保険の業務設計の根拠として利用できません。出所・利用条件を確認してください。</div>
       <label htmlFor="evidence-dataset">取得する公開金融データ</label>
-      <select id="evidence-dataset" value={evidenceDataset} onChange={e=>{setEvidenceDataset(e.target.value as 'community_credit'|'cfpb_sample');setDatasetMeta(null);setRagIndex(null);setRagResult(null);}}>
-        {evidenceDatasets.length ? evidenceDatasets.map((x:Dict)=><option value={x.id} key={x.id}>{x.title}</option>) : <><option value="community_credit">Community Credit interviews</option><option value="cfpb_sample">CFPB complaints sample</option></>}
+      <select id="evidence-dataset" value={evidenceDataset} onChange={e=>{setEvidenceDataset(e.target.value as 'community_credit'|'cfpb_sample'|'insurance_claims_uk');setDatasetMeta(null);setRagIndex(null);setRagResult(null);}}>
+        {evidenceDatasets.length ? evidenceDatasets.map((x:Dict)=><option value={x.id} key={x.id}>{x.title}</option>) : <><option value="insurance_claims_uk">FCA/FOS — UK insurance claim handling</option><option value="community_credit">Community Credit interviews (banking)</option><option value="cfpb_sample">CFPB complaints sample (banking)</option></>}
       </select>
       <p className="muted">{evidenceDatasets.find((x:Dict)=>x.id===evidenceDataset)?.notice}</p>
       <p className="muted"><a target="_blank" rel="noreferrer" href={evidenceDatasets.find((x:Dict)=>x.id===evidenceDataset)?.source || 'https://zenodo.org/records/10425908'}>配布元・利用条件を確認</a></p>
@@ -225,10 +229,10 @@ export default function App() {
         <p className="muted">{ragResult.rag_id} / 元資料へのポインタを検証済み、意味的支持関係は未検証</p></div><Status good={false}>REQUIRES VALIDATION</Status></div>
         <div className="evidence-register">{ragResult.evidence?.map((e:Dict)=><div key={e.evidence_id}>
           <strong>{e.evidence_id} — {e.source_file}</strong><p>{e.quote}</p>
-          <small>chars {e.start_char}–{e.end_char} / {e.source_type}</small>
+          <small>chars {e.start_char}–{e.end_char} / {e.source_type}（HTML資料は抽出テキスト基準の位置）</small>
           <small>support: {e.support_status} / validity: {e.validity}</small>
         </div>)}</div>
-        <Disclosure title="要件候補・未検証項目・照合結果" data={{candidates:ragResult.requirement_candidates,evaluation:ragResult.evaluation}}/>
+        <Disclosure title="課題との関連性・要件候補・未検証項目" data={{topic_alignment:ragResult.topic_alignment,candidates:ragResult.requirement_candidates,evaluation:ragResult.evaluation}}/>
         {ragResult.llm_suggestions && <Disclosure title="Qwenが生成した要求仮説（必ず人間が検証）" data={ragResult.llm_suggestions}/>}
         <a className="download-link" href={`${BACKEND}/evidence/results/${ragResult.rag_id}/bundle`}>RAG根拠・要求候補のZIPを保存</a>
         <p className="muted">10の公開データモードは、ここを事前に操作しなくても、ダウンロード・索引化・検索を新たに実行します。人間が根拠を選んで承認した仮説だけを01の文脈に反映します。</p>
@@ -447,18 +451,19 @@ export default function App() {
         <p className="muted">使用データセット：<strong>{evidenceDataset}</strong> / 現在の00画面で選択しているデータを使います。別途00のボタンを操作する必要はありません。</p>
         <p className="muted">検索クエリ：{evidenceQuery}</p>
         <p className="muted">Qwenの要求仮説抽出：{llmExtraction?'有効（未承認）':'無効（人間が検索結果から要求仮説を記述）'}</p>
+        <p className="muted"><strong>公開資料の対象:</strong> {evidenceDataset==='insurance_claims_uk'?'保険請求の遅延・苦情（FCA/FOS）':'個人向け金融サービス。保険請求のR0/R1へは連携不可'}</p>
         <p className="muted">データセットとクエリを変更する場合は、上の00セクションで変更してください。</p>
       </div>}
       <div className="button-row">
         {button(evidenceMode==='public'?'公開データ取得から00〜09一括実行（00レビュー・05で停止）':'合成デモ01〜09一括実行（05で停止）', 'full-run-start', async()=>{
-          setExplicitReview(false);setFullRun(null);setReviewRequirement('');setSelectedEvidenceIds([]);setAcknowledgeEvidence(false);
+          setExplicitReview(false);setFullRun(null);setReviewRequirement('');setSelectedEvidenceIds([]);setAcknowledgeEvidence(false);setSupportAssessment('context_only');
           const r=await call<Dict>('/full-run/start',{
             brief,seed,evidence_condition:condition,case_ids:benchmarkCases,repetitions:benchmarkRepetitions,
             evidence_mode:evidenceMode,dataset_id:evidenceDataset,evidence_query:evidenceQuery,llm_extraction:llmExtraction
           });setFullRun(r);setFullRunId(r.workflow_id);
         },brief.trim().length<20 || benchmarkCases.length===0 || (evidenceMode==='public'&&evidenceQuery.trim().length<3))}
       </div>
-      <p className="muted">01の顧客ブリーフ・seed、04の模擬反例／対照条件、08の診断ケースと回数を使います。公開データから人間が確認した仮説は01の文脈に追加しますが、合成実験用R0/R1の固定契約を自動改変しません。</p>
+      <p className="muted">01の顧客ブリーフ・seed、04の模擬反例／対照条件、08の診断ケースと回数を使います。公開データを利用する場合は事業領域の一致を必須とし、00bの承認で固定合成ケースに対するKPI閾値を別途設定します。任意の顧客要件から完全なコードと評価器を自動生成する機能ではありません。</p>
       <label htmlFor="full-run-id">再表示・復旧用のWorkflow ID</label>
       <div className="button-row">
         <input id="full-run-id" value={fullRunId} placeholder="実行中/保存済みのworkflow UUID" onChange={e=>setFullRunId(e.target.value)}/>
@@ -467,15 +472,18 @@ export default function App() {
         },!fullRunId.trim(),'secondary')}
       </div>
       {fullRun && <section className="assessment-report" aria-label="00〜09 一括実行状況">
-        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.17</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
+        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.18</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
           <Status good={fullRun.status==='COMPLETE'}>{fullRun.status}</Status></div>
+        {fullRun.topic_alignment && <div className="notice"><strong>公開資料と保険請求課題の対応:</strong> {fullRun.topic_alignment.status} — {fullRun.topic_alignment.reason}。一致は原文の意味的支持・因果の証明ではありません。</div>}
+        {fullRun.grounded_contract_status && <p className="muted">人間設定KPIの検証: {fullRun.grounded_contract_status}（合成ケース限定）</p>}
         <p className="muted">現在の段階: {fullRun.phase}　／　モード: {fullRun.evidence_mode==='public'?'外部データ利用':'合成デモのみ'}　／　各工程はDockerの<code>artifacts/</code>に逐次保存します。</p>
         <ol className="workflow-progress">
           {fullRun.stages?.map((x:Dict)=><li key={x.name}><span className="step-label">{x.name}</span><span className={'assessment-state '+(x.status==='FAILED'?'hold':x.status==='COMPLETED'?'supported_synthetic':'demo_controlled')}>{x.status}</span><small>{x.detail}</small></li>)}
         </ol>
         {fullRun.status==='AWAITING_EVIDENCE_REVIEW' && <div className="evidence-review">
           <h4>00b — 公開根拠と要求仮説の人間レビュー</h4>
-          <p>実際に取得した公開資料の断片です。<strong>引用IDが一致しても、発言が要求を正当化するとは限りません。</strong>本番向けの顧客承認ではなく、合成実験のブリーフへ仮説を追加するための確認です。</p>
+          <p>実際に取得した公開資料の断片です。<strong>一致した課題領域は証明された原因や顧客要件ではありません。</strong>この技術実証では、固定の保険案件合成データに対する明示的なKPI閾値を人間が指定します。</p>
+          <div className="notice"><strong>領域ゲート:</strong> {fullRun.evidence_review?.topic_alignment?.status} — {fullRun.evidence_review?.topic_alignment?.reason}<p>許容根拠: {fullRun.evidence_review?.topic_alignment?.topic_matching_evidence_ids?.join(', ') || 'なし'}</p></div>
           <p className="muted">RAG ID: {fullRun.evidence_review?.rag_id} / Data source: {fullRun.evidence_review?.dataset_id} / Query: {fullRun.evidence_review?.query}</p>
           <div className="evidence-review-list">{fullRun.evidence_review?.evidence?.map((e:Dict)=><label key={e.evidence_id} className="evidence-select">
             <input type="checkbox" checked={selectedEvidenceIds.includes(e.evidence_id)} onChange={ev=>setSelectedEvidenceIds(prev=>ev.target.checked ? [...prev,e.evidence_id] : prev.filter(id=>id!==e.evidence_id))}/>
@@ -490,15 +498,31 @@ export default function App() {
             <p className="muted">候補の正しさ・引用からの含意は未検証です。必ず原文を読み、必要に応じて編集してください。</p>
           </div>}
           <label htmlFor="human-evidence-requirement">人間が確認・編集した要件仮説（20文字以上、実顧客未承認）</label>
-          <textarea id="human-evidence-requirement" rows={4} value={reviewRequirement} onChange={e=>setReviewRequirement(e.target.value)} placeholder="例：金融サービスの手数料説明を分かりやすくする案を顧客との検証候補にする（顧客未承認）"/>
+          <textarea id="human-evidence-requirement" rows={4} value={reviewRequirement} onChange={e=>setReviewRequirement(e.target.value)} placeholder="例：公開された保険請求遅延の報告を背景に、期限と資格を考慮した担当者割当案を合成データで検証する（実原因は未確認）"/>
+          <label htmlFor="human-support">選択した原文が支持する範囲（人間による判断）</label>
+          <select id="human-support" value={supportAssessment} onChange={e=>setSupportAssessment(e.target.value as 'supports_problem'|'context_only'|'contradicts')}>
+            <option value="context_only">課題の背景説明に留まる（HOLD）</option>
+            <option value="supports_problem">遅延などの問題が存在するという文脈のみ支持する（次の合成実験を許可）</option>
+            <option value="contradicts">仮説に反する／不一致（HOLD）</option>
+          </select>
+          <div className="two-cols">
+            <div><label htmlFor="max-missed">合成HOLDOUTで許容する期限超過（未割当を含む）件数</label>
+              <input id="max-missed" type="number" min="0" max="100" value={maxTotalMissed} onChange={e=>setMaxTotalMissed(Number(e.target.value))}/></div>
+            <div><label htmlFor="min-reduction">合成FIFO比で要求する改善率（%）</label>
+              <input id="min-reduction" type="number" min="0" max="100" value={minReductionPct} onChange={e=>setMinReductionPct(Number(e.target.value))}/></div>
+          </div>
+          <label className="radio"><input type="checkbox" checked={requireBehavioral} onChange={e=>setRequireBehavioral(e.target.checked)}/>期限優先・希少資格の既存行動プローブもPASS必須にする</label>
+          <p className="muted">上の数値は「顧客合意のKPI」ではなく、人間が今回の固定合成実験のために設定する検証条件です。未対応の任意要件から評価器を自動生成しません。</p>
           <label htmlFor="human-evidence-actor">確認担当者</label><input id="human-evidence-actor" value={evidenceActor} onChange={e=>setEvidenceActor(e.target.value)}/>
           <label htmlFor="human-evidence-rationale">選択・承認する根拠（10文字以上）</label><textarea id="human-evidence-rationale" rows={3} value={evidenceRationale} onChange={e=>setEvidenceRationale(e.target.value)}/>
           <label className="radio"><input type="checkbox" checked={acknowledgeEvidence} onChange={e=>setAcknowledgeEvidence(e.target.checked)}/>引用の実在と、証拠の妥当性・診断の正しさ・顧客の正式承認は別であることを確認した</label>
           <div className="button-row">
             {button('根拠を選択・仮説を承認して01〜04を実行', 'evidence-review-approve', async()=>{
               const r=await call<Dict>('/full-run/review-evidence',{workflow_id:fullRun.workflow_id,decision:'approved',actor:evidenceActor,rationale:evidenceRationale,
-                evidence_ids:selectedEvidenceIds,approved_requirement:reviewRequirement});setFullRun(r);
-            },!acknowledgeEvidence||selectedEvidenceIds.length===0||reviewRequirement.trim().length<20||evidenceActor.trim().length<2||evidenceRationale.trim().length<10)}
+                evidence_ids:selectedEvidenceIds,approved_requirement:reviewRequirement,
+                support_assessment:supportAssessment,max_total_missed:maxTotalMissed,
+                min_reduction_pct:minReductionPct,require_behavioral:requireBehavioral});setFullRun(r);
+            },!acknowledgeEvidence||fullRun.evidence_review?.topic_alignment?.status!=='TOPIC_MATCH_REVIEW_REQUIRED'||supportAssessment!=='supports_problem'||selectedEvidenceIds.length===0||!selectedEvidenceIds.some(id=>(fullRun.evidence_review?.topic_alignment?.topic_matching_evidence_ids||[]).includes(id))||reviewRequirement.trim().length<20||evidenceActor.trim().length<2||evidenceRationale.trim().length<10||!Number.isInteger(maxTotalMissed)||maxTotalMissed<0||maxTotalMissed>100||!Number.isInteger(minReductionPct)||minReductionPct<0||minReductionPct>100)}
             {button('根拠を採用せず、PARTIAL ZIPで終了', 'evidence-review-reject', async()=>{
               const r=await call<Dict>('/full-run/review-evidence',{workflow_id:fullRun.workflow_id,decision:'rejected',actor:evidenceActor,rationale:evidenceRationale});setFullRun(r);
             },evidenceActor.trim().length<2||evidenceRationale.trim().length<10,'secondary')}

@@ -1,0 +1,10 @@
+{
+  "validation_id": "c3965c87-2914-43fe-96c8-a326f46074ef",
+  "experiment_id": "115c0ce9-ab09-4027-b981-2599a8490975",
+  "created_at": "2026-11-21T06:02:10+00:00",
+  "selected_code_sha256": "42adf00fbe7c9ad694bacd1a2fb942c40f338ac21e3d26527cac1a0ce49cee2a",
+  "status": "RUNNING",
+  "policy_version": "POLICY-BEHAVIOR-v0.14.0",
+  "stress_version": "STRESS-FIXTURES-v0.14.0",
+  "real_customer_validity": "UNVERIFIED"
+}

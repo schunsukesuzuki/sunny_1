@@ -61,7 +61,7 @@ def test_no_index_fails_closed(tmp_path, monkeypatch):
 
 def test_00_api_and_download_are_separate(fixed_corpus,client):
     x=client.get('/api/evidence/datasets');assert x.status_code==200
-    assert {d['id'] for d in x.json()['datasets']}=={'community_credit','cfpb_sample'}
+    assert {d['id'] for d in x.json()['datasets']}=={'community_credit','cfpb_sample','insurance_claims_uk'}
     a=client.post('/api/evidence/index',json={'dataset_id':'community_credit'});assert a.status_code==200,a.text
     r=client.post('/api/evidence/requirements',json={'dataset_id':'community_credit','query':'fees checking account'})
     assert r.status_code==200,r.text

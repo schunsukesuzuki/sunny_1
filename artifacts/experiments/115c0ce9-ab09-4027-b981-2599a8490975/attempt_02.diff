@@ -1,0 +1,116 @@
+--- previous.py
++++ attempt_02.py
+@@ -16,51 +16,48 @@
+     return case["required_skill"] in reviewer["skills"]
+ 
+ def can_assign(case, reviewer, day):
++    if not is_skill_match(case, reviewer):
++        return False
++    
+     # Check if reviewer has capacity for this day
+     if day >= len(reviewer["daily_capacity_hours"]):
+         return False
+     
+-    daily_capacity = reviewer["daily_capacity_hours"][day]
+-    
+-    # Check if case duration fits within daily capacity
+-    if case["duration_hours"] > daily_capacity:
++    capacity = reviewer["daily_capacity_hours"][day]
++    if case["duration_hours"] > capacity:
+         return False
+     
+     return True
+ 
+-def assign_case_to_reviewer(case, reviewer, day):
+-    hours = case["duration_hours"]
+-    assignment = {
+-        "case_id": case["case_id"],
+-        "reviewer_id": reviewer["reviewer_id"],
+-        "day": day,
+-        "hours": hours
+-    }
+-    return assignment
+-
+-def find_best_assignment(case, reviewers, days):
+-    best_assignment = None
+-    best_day = None
++def assign_case_to_reviewer(case, reviewers, day, assignments, reviewer_usage):
++    # Find all qualified reviewers for this case
++    qualified_reviewers = [r for r in reviewers if is_skill_match(case, r)]
+     
+-    # Sort reviewers by skill match and then by deadline priority
+-    eligible_reviewers = []
+-    for reviewer in reviewers:
+-        if is_skill_match(case, reviewer):
+-            eligible_reviewers.append(reviewer)
++    # Sort by deadline risk (earlier deadlines first) and then by skill scarcity
++    qualified_reviewers.sort(key=lambda r: (
++        -sum(1 for a in assignments if a["reviewer_id"] == r["reviewer_id"]),  # Prefer reviewers with fewer cases
++        sum(1 for a in assignments if a["reviewer_id"] == r["reviewer_id"])   # Tie-breaker
++    ))
+     
+-    # Sort by deadline priority (earlier deadlines first)
+-    eligible_reviewers.sort(key=lambda r: case["deadline_day"])
+-    
+-    # Try to assign to each eligible reviewer
+-    for reviewer in eligible_reviewers:
+-        # Check if reviewer has capacity for any day
+-        for day in range(min(days, len(reviewer["daily_capacity_hours"]))):
+-            if can_assign(case, reviewer, day):
+-                if best_assignment is None or day < best_day:
+-                    best_assignment = assign_case_to_reviewer(case, reviewer, day)
+-                    best_day = day
+-    
+-    return best_assignment
++    # Try to assign to the best reviewer
++    for reviewer in qualified_reviewers:
++        if can_assign(case, reviewer, day):
++            # Check if reviewer has capacity
++            if day < len(reviewer["daily_capacity_hours"]):
++                capacity = reviewer["daily_capacity_hours"][day]
++                if case["duration_hours"] <= capacity:
++                    assignments.append({
++                        "case_id": case["case_id"],
++                        "reviewer_id": reviewer["reviewer_id"],
++                        "day": day,
++                        "hours": case["duration_hours"]
++                    })
++                    # Update reviewer usage
++                    if reviewer["reviewer_id"] not in reviewer_usage:
++                        reviewer_usage[reviewer["reviewer_id"]] = [0] * len(reviewer["daily_capacity_hours"])
++                    reviewer_usage[reviewer["reviewer_id"]][day] += case["duration_hours"]
++                    return True
++    return False
+ 
+ def main():
+     data = load_input()
+@@ -68,17 +65,22 @@
+     cases = data["cases"]
+     reviewers = data["reviewers"]
+     
++    # Sort cases by deadline day (earlier deadlines first)
++    cases.sort(key=lambda c: c["deadline_day"])
++    
+     assignments = []
+     unassigned_case_ids = []
+-    
+-    # Sort cases by deadline (earlier deadlines first)
+-    cases.sort(key=lambda c: c["deadline_day"])
++    reviewer_usage = {}
+     
+     for case in cases:
+-        assignment = find_best_assignment(case, reviewers, days)
+-        if assignment:
+-            assignments.append(assignment)
+-        else:
++        assigned = False
++        # Try to assign to any day within the deadline
++        for day in range(min(case["deadline_day"] + 1, days)):
++            if assign_case_to_reviewer(case, reviewers, day, assignments, reviewer_usage):
++                assigned = True
++                break
++        
++        if not assigned:
+             unassigned_case_ids.append(case["case_id"])
+     
+     save_output(assignments, unassigned_case_ids)

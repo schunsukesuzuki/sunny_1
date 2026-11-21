@@ -12,12 +12,12 @@ from test_outer_loop_v08 import client
 from test_policy_bundle_v014 import benchmark_model_stub
 
 
-def start_public(client,monkeypatch,query='checking account fees'):
+def start_public(client,monkeypatch,query='checking account fees',dataset='community_credit'):
     monkeypatch.setattr(llm,'design',fake_design)
     monkeypatch.setattr(llm,'benchmark_diagnosis',benchmark_model_stub)
     sample=client.get('/api/sample').json()
     response=client.post('/api/full-run/start',json={
-       'evidence_mode':'public','dataset_id':'community_credit','evidence_query':query,
+       'evidence_mode':'public','dataset_id':dataset,'evidence_query':query,
        'brief':sample['brief'],'case_ids':['fifo_sla_conflict','actual_fifo_implementation_bug'],
        'seed':42,'repetitions':1})
     assert response.status_code==200,response.text
@@ -29,11 +29,26 @@ def approve_public(client,state,ids=None,text=None):
     return client.post('/api/full-run/review-evidence',json={
         'workflow_id':state['workflow_id'], 'decision':'approved',
         'actor':'Technical Reviewer','rationale':'Use retrieved statement only as a synthetic evaluation hypothesis',
-        'evidence_ids':ids,'approved_requirement':text or 'Investigate whether account fee disclosures need clearer presentation for users.'})
+        'evidence_ids':ids,'approved_requirement':text or 'Investigate whether insurance claims delays can be reduced without additional staffing.',
+        'support_assessment':'supports_problem', 'max_total_missed':0,'min_reduction_pct':50})
 
 
-def test_public_pipeline_needs_evidence_and_05_review_with_complete_zip(fixed_corpus,client,monkeypatch):
-    st=start_public(client,monkeypatch)
+@pytest.fixture
+def fixed_insurance_corpus(tmp_path,monkeypatch):
+    monkeypatch.setattr(er,'ROOT',tmp_path/'insurance_evidence')
+    folder=er.fixed_path('insurance_claims_uk');folder.mkdir(parents=True)
+    files={
+        'fca_claims_review.html':b'<main><h1>Insurance claims handling</h1><p>Insurance customers experienced claim delays and poor communication in handling claims.</p><p>Some insurers took too long to handle claims. Customers reported unnecessary delays.</p></main>',
+        'fos_claims_delay.html':b'<main><p>Insurance claim delays were a complaint from policyholders. They waited to settle claims and complained about handling.</p></main>',
+        'fos_insurance_delays.html':b'<main><p>Claims delays and poor communication affected insurance complaint cases. These are public problem reports.</p></main>'}
+    for name,raw in files.items(): (folder/name).write_bytes(raw)
+    (folder/'source_manifest.json').write_text(json.dumps({'dataset_id':'insurance_claims_uk','kind':'REGULATORY_RESEARCH_AND_CASE_STUDIES',
+        'files':[{'name':name,'sha256_raw':hashlib.sha256(raw).hexdigest()} for name,raw in files.items()]}))
+    return folder
+
+
+def test_public_pipeline_needs_evidence_and_05_review_with_complete_zip(fixed_insurance_corpus,client,monkeypatch):
+    st=start_public(client,monkeypatch,query='insurance claim delays and handling',dataset='insurance_claims_uk')
     assert st['status']=='AWAITING_EVIDENCE_REVIEW',st
     assert st['linked_ids']['runs'] is None and st['linked_ids']['proposals'] is None
     assert st['evidence_review']['evaluation']['customer_approval']=='NOT_OBTAINED'
@@ -46,9 +61,10 @@ def test_public_pipeline_needs_evidence_and_05_review_with_complete_zip(fixed_co
     assert mid['status']=='AWAITING_APPROVAL',mid
     assert mid['review']['proposal_id']
     stored=main.load('workflows',st['workflow_id'],'01_input.json')
-    assert 'Investigate whether account fee disclosures' in stored['effective_brief']
+    assert 'Investigate whether insurance claims delays' in stored['effective_brief']
     assert 'PUBLIC EVIDENCE' in stored['effective_brief']
     assert stored['r0_contract_changed'] is False
+    assert stored['technical_evaluator']=='BOUNDED_HUMAN_CONFIGURED_SYNTHETIC_CONTRACT'
     assert stored['customer_validity']=='UNVERIFIED'
     # Public evidence approval does not replace the 05 requirement-change review.
     final_request=client.post('/api/full-run/approve-and-continue',json={'workflow_id':st['workflow_id'],
@@ -56,7 +72,8 @@ def test_public_pipeline_needs_evidence_and_05_review_with_complete_zip(fixed_co
                    'actor':'Reviewer','rationale':'Synthetic workflow test, independent R0 evidence'}})
     assert final_request.status_code==200,final_request.text
     final=client.get('/api/full-run/'+st['workflow_id']).json()
-    assert final['status']=='COMPLETE',final
+    assert final['status']=='COMPLETE', final
+    assert any(x['name']=='08c_grounded_kpi_verification' for x in final['stages'])
     assert final['evidence_mode']=='public'
     with zipfile.ZipFile(io.BytesIO(client.get(final['bundle_url']).content)) as z:
         manifest=json.loads(z.read('manifest.json'))
@@ -65,7 +82,8 @@ def test_public_pipeline_needs_evidence_and_05_review_with_complete_zip(fixed_co
         assert '00b_evidence_review' in manifest['completed_steps']
         for name in ('00_evidence_grounded_requirements.json','00_source_manifest.json',
                      '00_index_metadata.json','00_rag_report.md','00b_human_evidence_review.json',
-                     '01_input.json'):
+                     '01_input.json','00c_grounded_test_contract.json','00c_technical_spec.md',
+                     '08c_grounded_kpi_verification.json','00_raw_source__fca_claims_review.html'):
             assert any(n.endswith('/'+name) for n in z.namelist()),name
         for info in manifest['files']:
             assert hashlib.sha256(z.read(info['path'])).hexdigest()==info['sha256_raw_bytes']
@@ -74,6 +92,9 @@ def test_public_pipeline_needs_evidence_and_05_review_with_complete_zip(fixed_co
         assert evidence_review['customer_requirement_approval']=='NOT_OBTAINED'
         assert evidence_review['selected_evidence_ids']
         assert evidence_review['approval_scope']=='DEMO_HYPOTHESIS_ONLY'
+        assert evidence_review['support_assessment']=='supports_problem'
+        report=next(n for n in z.namelist() if n.endswith('/report.md') and n.startswith('assessments/'))
+        assert 'E08' in z.read(report).decode()
     assert client.post('/api/full-run/review-evidence',json={
         'workflow_id':st['workflow_id'],'decision':'rejected','actor':'Reviewer','rationale':'Duplicate request'}).status_code==409
 
@@ -153,3 +174,12 @@ def test_cfpb_records_have_distinct_locators_and_are_not_marked_exact_raw_text(t
     results=er.requirements('cfpb_sample','incorrect billing fees')
     assert results['evidence']
     assert all(x['reference_status']=='NORMALIZED_API_RECORD' for x in results['evidence'])
+
+
+def test_banking_excerpt_is_blocked_before_insurance_claims_run(fixed_corpus,client,monkeypatch):
+    state=start_public(client,monkeypatch)
+    assert state['status']=='AWAITING_EVIDENCE_REVIEW'
+    assert state['evidence_review']['topic_alignment']['status']=='DOMAIN_MISMATCH'
+    result=approve_public(client,state)
+    assert result.status_code==422 and 'Domain/topic mismatch' in result.text
+    assert client.get('/api/full-run/'+state['workflow_id']).json()['linked_ids']['runs'] is None

@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.18 — Context-matched public evidence and bounded, auditable KPI contracts
+
+- Add fixed-source UK insurance-claims handling publications from FCA and Financial Ombudsman Service, acquired by explicit download with recorded source URLs, raw HTML SHA256, and extracted-text locators.
+- Preserve Community Credit and CFPB as separate banking datasets. Insurance experiment source compatibility gate rejects banking/public unrelated citations even if a reviewer manually selects them.
+- Add conservative excerpt/topic screening, optional competing-explanation search, human evidence support assessment, and guarded review of human-edited hypotheses.
+- Compile human-selected limits (`max_total_missed`, `min_reduction_pct`, behavioral probe requirement) into a pinned, deterministic test contract for the **existing synthetic claims evaluator**. Do not claim general executable specification generation.
+- Run 08c post-HOLDOUT independent validation, and explicitly retain test-contract HOLD and business-readiness HOLD. Add public contextual evidence E08 to the two-axis report; customer-specific business facts remain unverified.
+- Bundle fetched source bytes, manifest, approved review, test contract, report, and all 01–09 artifacts into a single SHA256-manifest ZIP; no hidden synthetic fallback.
+- Keep the light UI and existing features; add review fields, status indicators, and full source download.
+- Extend offline backend unit/integration tests and validate source/code packaging. Real external download, browser build, Ollama and E2B remain untested in this environment.
+
 ## v0.17 — True evidence-first 00–09 batch execution, two human gates, and verified ZIPs
 
 - Fix step 10 so public-mode runs dataset acquisition (or verifies cached source SHA256), index build/check, lexical retrieval and optional Qwen draft extraction itself; no preexisting `rag_id` required.

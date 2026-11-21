@@ -6,6 +6,8 @@ No model may certify evidence validity or customer requirements.
 from __future__ import annotations
 
 from collections import Counter
+from html.parser import HTMLParser
+from urllib.parse import urlparse
 from datetime import datetime, timezone
 import hashlib
 import io
@@ -31,6 +33,7 @@ DATASETS = {
    'source':'https://zenodo.org/records/10425908',
    'publisher':'Maurer et al. / Dryad record mirrored by Zenodo',
    'type':'INTERVIEW_TRANSCRIPT',
+   'domain':'retail_banking',
    'files': {
     'transcripts.txt':'https://zenodo.org/records/10425908/files/Maurer2022CommunityCreditInterviews_Transcripts.txt?download=1',
     'question_guide.txt':'https://zenodo.org/records/10425908/files/Maurer2022CommunityCreditInterviews_Question_Guide.txt?download=1',
@@ -38,11 +41,25 @@ DATASETS = {
    },
    'notice':'匿名化インタビュー。小標本であり金融利用者全体を代表しない。顧客の承認済み要求ではない。元資料の条件を確認。',
  },
+ 'insurance_claims_uk': {
+   'title':'UK insurance claims handling — FCA / Financial Ombudsman primary publications',
+   'source':'https://www.fca.org.uk/publications/good-and-poor-practice/home-travel-claims-handling-arrangements',
+   'publisher':'Financial Conduct Authority / Financial Ombudsman Service',
+   'type':'REGULATORY_RESEARCH_AND_CASE_STUDIES',
+   'domain':'insurance_claims',
+   'files': {
+     'fca_claims_review.html':'https://www.fca.org.uk/publications/good-and-poor-practice/home-travel-claims-handling-arrangements',
+     'fos_claims_delay.html':'https://www.financial-ombudsman.org.uk/businesses/resolving-complaint/case-studies/took-insurer-four-months-settle-medical-insurance-claim',
+     'fos_insurance_delays.html':'https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication',
+   },
+   'notice':'英国の監督当局・オンブズマンの公表資料です。顧客ヒアリング逐語録やドイツ保険会社の運用記録ではありません。遅延という課題を示唆してもFIFOや資格配分が原因という証拠ではありません。著作権・利用条件を確認。',
+ },
  'cfpb_sample': {
    'title':'CFPB Consumer Complaint Database — bounded public complaint sample',
    'source':'https://www.consumerfinance.gov/data-research/consumer-complaints/',
    'publisher':'Consumer Financial Protection Bureau',
    'type':'CONSUMER_COMPLAINT',
+   'domain':'retail_banking',
    'files': {'complaints.json':'https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/?size=60&no_aggs=true&field=all&sort=created_date_desc'},
    'notice':'当事者の申告であり事実認定ではない。母集団の代表標本ではない。新規ナラティブ公開停止等の影響で原文が欠落する場合あり。',
  },
@@ -54,16 +71,20 @@ def fixed_path(dataset:str):
  if dataset not in DATASETS: raise HTTPException(404,'Unknown dataset. Fixed allowlist only.')
  return ROOT/dataset
 
-def _fetch(url:str,client:httpx.Client)->bytes:
+def _fetch(url:str,client:httpx.Client, *, redirects:int=0)->bytes:
+ if redirects>5: raise ValueError('Too many redirects from dataset source')
+ allowed=('zenodo.org','www.consumerfinance.gov','consumerfinance.gov','www.fca.org.uk','fca.org.uk','www.financial-ombudsman.org.uk','financial-ombudsman.org.uk')
+ parsed=urlparse(url)
+ if parsed.scheme!='https' or parsed.hostname not in allowed: raise ValueError('Non-allowlisted HTTPS source')
  # URLs are immutable allowlist entries, never user-controlled; redirects are only to HTTPS.
  with client.stream('GET',url,follow_redirects=False) as r:
   if r.status_code in (301,302,303,307,308):
-   from urllib.parse import urlparse, urljoin
+   from urllib.parse import urljoin
    dest=urljoin(url,r.headers.get('location',''))
    host=urlparse(dest).hostname or ''
-   if urlparse(dest).scheme!='https' or not (host=='zenodo.org' or host.endswith('.zenodo.org') or host=='www.consumerfinance.gov' or host=='consumerfinance.gov'):
+   if urlparse(dest).scheme!='https' or not (host=='zenodo.org' or host.endswith('.zenodo.org') or host=='www.consumerfinance.gov' or host=='consumerfinance.gov' or host=='www.fca.org.uk' or host=='fca.org.uk' or host=='www.financial-ombudsman.org.uk' or host=='financial-ombudsman.org.uk'):
     raise ValueError('Remote redirect host not on allowlist')
-   return _fetch(dest,client)
+   return _fetch(dest,client,redirects=redirects+1)
   r.raise_for_status()
   data=bytearray()
   for chunk in r.iter_bytes(65536):
@@ -76,7 +97,7 @@ def acquire(dataset:str, *,client:httpx.Client|None=None)->dict:
  if not desc:raise HTTPException(404,'Unknown dataset')
  folder=fixed_path(dataset);folder.mkdir(parents=True,exist_ok=True)
  own=client is None
- if own: client=httpx.Client(timeout=httpx.Timeout(45.0,connect=8.0),headers={'User-Agent':'Claims-Evidence-Demo/0.17'})
+ if own: client=httpx.Client(timeout=httpx.Timeout(45.0,connect=8.0),headers={'User-Agent':'Claims-Evidence-Demo/0.18'})
  try:
   fetched={}
   for filename,url in desc['files'].items():
@@ -159,6 +180,59 @@ def trigrams(s:str)->set[str]:
  s=re.sub(r'\s+',' ',_normalize(s))
  return {s[i:i+3] for i in range(max(0,len(s)-2))}
 
+class _MainHTMLText(HTMLParser):
+ """Minimal HTML text extractor. Offsets refer to extracted text, never raw HTML."""
+ def __init__(self):
+  super().__init__(); self.skip=0; self.parts=[]
+ def handle_starttag(self, tag, attrs):
+  if tag in ('script','style','noscript','svg'): self.skip+=1
+  if not self.skip and tag in ('p','h1','h2','h3','h4','li','article','main','section','div'): self.parts.append('\n')
+ def handle_endtag(self,tag):
+  if tag in ('script','style','noscript','svg') and self.skip:self.skip-=1
+  if not self.skip and tag in ('p','h1','h2','h3','li'):self.parts.append('\n')
+ def handle_data(self,data):
+  if not self.skip:self.parts.append(data)
+ def text(self):
+  import html
+  return '\n'.join(x.strip() for x in html.unescape(''.join(self.parts)).splitlines() if len(x.strip())>=12)
+
+def _interview_chunks(text:str,source:str,dataset:str,kind:str)->list[dict]:
+ """Prefer speaker turns when the transcript supplies identifiable turn markers."""
+ pat=re.compile(r'(?m)^(?:\[?[0-9: .-]+\]?\s*)?(?:Interviewer|Participant|Interviewer [0-9]+|Participant [0-9]+|P[0-9]{1,3}|I[0-9]{1,3})\s*[:：]',re.I)
+ starts=[m.start() for m in pat.finditer(text)]
+ if len(starts)<3:return _chunk(text,source,dataset,kind)
+ records=[]
+ for i,start in enumerate(starts):
+  end=starts[i+1] if i+1<len(starts) else len(text)
+  block=text[start:end]
+  if len(block.strip())<35:continue
+  for item in _chunk(block,source,dataset,kind,max_length=950):
+   item['start_char']+=start;item['end_char']+=start
+   item['id']=f"{dataset}:{source}:{item['start_char']}"
+   item['speaker_turn']=block.split(':',1)[0][:80]
+   records.append(item)
+ return records[:MAX_CHUNKS]
+
+# These terms only establish a conservative *topic* check, not semantic entailment.
+_INSURANCE_TERMS=('insurance','insurer','claim','claims','settlement','policyholder','保険','請求','審査')
+_DELAY_TERMS=('delay','delayed','late','waiting','time','processing','handling','遅延','期限','処理')
+def topic_alignment(dataset:str, query:str, excerpts:list[dict], target_domain:str='insurance_claims')->dict:
+ descriptor=DATASETS[dataset]
+ domain=descriptor.get('domain','UNKNOWN')
+ if target_domain!='insurance_claims':
+  return {'status':'OUT_OF_SCOPE','target_domain':target_domain,'source_domain':domain,
+          'reason':'Only insurance-claims scheduling has an independent, executable synthetic evaluator.'}
+ if domain!='insurance_claims':
+  return {'status':'DOMAIN_MISMATCH','target_domain':target_domain,'source_domain':domain,
+          'reason':'Consumer retail-banking material cannot be used as insurance claims-workflow evidence.'}
+ matches=[]
+ for e in excerpts:
+  text=e.get('quote',e.get('text','')).lower()
+  if any(term in text for term in _INSURANCE_TERMS) and any(term in text for term in _DELAY_TERMS):matches.append(e.get('evidence_id') or e.get('id'))
+ return {'status':'TOPIC_MATCH_REVIEW_REQUIRED' if matches else 'INSUFFICIENT_TOPIC_EVIDENCE',
+         'target_domain':target_domain,'source_domain':domain,'topic_matching_evidence_ids':matches,
+         'reason':'Topic match is lexical; it does not prove FIFO causation, customer approval, or requirements validity.'}
+
 def _chunk(text:str,source:str,dataset:str,kind:str,max_length:int=950,record_locator:str|None=None)->list[dict]:
  """Exact fixed-width windows of source text, with modest overlap.
 
@@ -174,7 +248,7 @@ def _chunk(text:str,source:str,dataset:str,kind:str,max_length:int=950,record_lo
   start=pos+first
   output.append({'id':f'{dataset}:{source}{('#'+record_locator) if record_locator else ''}:{start}','dataset_id':dataset,'source_file':source,'source_type':kind,
                   'source_record_id':record_locator, 'source_text_origin':'NORMALIZED_API_RECORD' if record_locator else 'EXACT_SOURCE_TEXT',
-                  'start_char':start,'end_char':start+len(excerpt),'text':excerpt,'source_url':DATASETS[dataset]['source'],
+                  'start_char':start,'end_char':start+len(excerpt),'text':excerpt,'source_url':DATASETS[dataset]['files'].get(source,DATASETS[dataset]['source']),
                   'evidence_class':'PUBLIC_SOURCE_UNVERIFIED'})
   if len(output)>=MAX_CHUNKS:break
  return output
@@ -204,7 +278,12 @@ def index(dataset:str)->dict:
     docs.extend(_chunk(strval,name,dataset,meta['kind'],record_locator=record_id))
   elif name.endswith('.txt') and name not in ('readme.txt','question_guide.txt'):
    t=raw.decode('utf-8-sig',errors='replace')[:MAX_DOC_CHARS]
+   docs.extend(_interview_chunks(t,name,dataset,meta['kind']))
+  elif name.endswith('.html'):
+   parser=_MainHTMLText();parser.feed(raw.decode('utf-8-sig',errors='replace'));t=parser.text()[:MAX_DOC_CHARS]
    docs.extend(_chunk(t,name,dataset,meta['kind']))
+   for item in docs:
+    if item['source_file']==name:item['source_text_origin']='EXTRACTED_HTML_TEXT'
   if len(docs)>=MAX_CHUNKS:break
  docs=docs[:MAX_CHUNKS]
  if not docs:raise HTTPException(422,'No usable source passages found; inspect download source')
@@ -252,9 +331,11 @@ def requirements(dataset:str,query:str)->dict:
  hits=result['hits'];evidence=[];candidates=[]
  for i,h in enumerate(hits):
   eid=f'PUB-{i+1:03d}'
+  quote=h['text'][:420]
   evidence.append({'evidence_id':eid,'chunk_id':h['id'],'source_file':h['source_file'],'source_url':h['source_url'],
-                   'start_char':h['start_char'],'end_char':h['end_char'],'quote':h['text'][:420],
-                   'reference_status':'EXACT_LOCAL_EXCERPT' if h.get('exact_source_match') else 'NORMALIZED_API_RECORD',
+                   'start_char':h['start_char'],'end_char':h['start_char']+len(quote),
+                   'chunk_end_char':h['end_char'],'quote':quote,
+                   'reference_status':'EXACT_LOCAL_EXCERPT' if h.get('exact_source_match') else ('EXTRACTED_HTML_TEXT' if h.get('source_text_origin')=='EXTRACTED_HTML_TEXT' else 'NORMALIZED_API_RECORD'),
                    'source_record_id':h.get('source_record_id'), 'support_status':'NOT_SEMANTICALLY_VERIFIED',
                    'source_type':h['source_type'],'validity':'UNVERIFIED'})
   candidates.append({'requirement_candidate_id':f'RC-{i+1:03d}','evidence_ids':[eid],
@@ -267,6 +348,16 @@ def requirements(dataset:str,query:str)->dict:
      'evidence_validity':'UNVERIFIED','semantic_entailment':'UNVERIFIED','requirements_correctness':'UNVERIFIED',
      'customer_approval':'NOT_OBTAINED','contradiction_search':'NOT_PROVEN'},
   'safe_summary':'Public statements retrieved; human must derive, verify and approve any requirements. These are NOT customer requirements.'}
+ assessment['topic_alignment']=topic_alignment(dataset,query,evidence)
+ # Run a separate, *optional* retrieval for competing explanations; never claim coverage.
+ if dataset=='insurance_claims_uk':
+  alternative_query='insurance claims delays communication documentation third party external assessors staffing'
+  alternative_hits=search(dataset,alternative_query,top_k=4)['hits']
+  assessment['alternative_cause_search']={
+   'query':alternative_query,'status':'POTENTIAL_ALTERNATIVES_ONLY_NOT_VALIDATED',
+   'items':[{'chunk_id':x['id'],'source_url':x['source_url'],'source_file':x['source_file'],
+             'quote':x['text'][:360],'start_char':x['start_char'],'end_char':x['end_char']} for x in alternative_hits],
+   'limitations':'Not an exhaustive contradictory-evidence search; no causal claims inferred.'}
  aid=str(uuid.uuid4());assessment['rag_id']=aid
  folder=ROOT/'rag_runs'/aid;folder.mkdir(parents=True,exist_ok=True)
  (folder/'rag.json').write_text(json.dumps(assessment,ensure_ascii=False,indent=2),encoding='utf-8')
@@ -274,7 +365,7 @@ def requirements(dataset:str,query:str)->dict:
  return assessment
 
 def report_md(r:dict)->str:
- lines=['# Evidence-grounded Requirements — v0.17','',f"- Query: {r['query']}",f"- Dataset: {r['dataset_id']}",
+ lines=['# Evidence-grounded Requirements — v0.18','',f"- Query: {r['query']}",f"- Dataset: {r['dataset_id']}",
         '- Status: **REQUIRES_VALIDATION** — no customer approval, no causal or semantic proof.','',
         '## Retrieved source excerpts (not approved requirements)','']
  for e in r['evidence']:
@@ -283,6 +374,9 @@ def report_md(r:dict)->str:
                 f"Quote (truncated): {json.dumps(e['quote'],ensure_ascii=False)}",''])
  lines.extend(['## Evaluation','', '| Field | Value |','|---|---|'])
  for k,v in r['evaluation'].items():lines.append(f'| {k} | {v} |')
+ lines.extend(['','## Topic gate', '',f"- {json.dumps(r.get('topic_alignment'),ensure_ascii=False)}",''])
+ if r.get('alternative_cause_search'):
+  lines.extend(['## Alternative cause search (NOT conclusive)','',json.dumps(r['alternative_cause_search'],ensure_ascii=False,indent=2),''])
  lines.extend(['','Evidence ID correctness ≠ evidence validity ≠ diagnostic correctness.','All requirements remain hypotheses; synthetic R0/R1 claims evaluation is a separate experiment.',''])
  return '\n'.join(lines)
 

@@ -1,0 +1,10 @@
+{
+  "source_sha256": "42adf00fbe7c9ad694bacd1a2fb942c40f338ac21e3d26527cac1a0ce49cee2a",
+  "rationale": "This solution implements a greedy algorithm that prioritizes cases based on their deadlines (earliest first) and business priority (higher first). For each case, it searches through reviewers in order to find one with the required skill and sufficient capacity on any day. The algorithm ensures:\n\n1. Cases are assigned in deadline-priority order to minimize missed deadlines\n2. Each reviewer is only assigned cases they are qualified for (skill matching)\n3. No reviewer exceeds their daily capacity\n4. Each case is assigned exactly once or remains unassigned if no suitable reviewer exists\n5. The solution does not increase total reviewer hours compared to a FIFO approach\n6. All hard constraints are satisfied including one assignment per claim, no overtime, and valid day ranges\n\nThe algorithm uses a greedy approach where it processes cases in deadline order and assigns them as soon as possible to any qualified reviewer with sufficient capacity, which aligns with the R1 requirement to prioritize deadline risk and scarce qualified reviewers over arrival order.",
+  "created_at": "2026-11-21T06:00:47+00:00",
+  "coding_model": "qwen3-coder:30b",
+  "finance_model": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+  "domain_review_sha256": "39593e419b2194e0d610e069a4b8aa20cb853e8d20630bd5a0a5dee0c6112985",
+  "domain_review_used_as_advisory": false,
+  "human_adjudication_used_instead": true
+}

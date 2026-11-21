@@ -43,7 +43,7 @@ def make_manifest(artifact_dir: Path, export_id: str, identifiers: dict,
             files.append(entry)
             total+=size
     incomplete=bool(missing or skipped or any(stage.get('status') not in ('COMPLETED','COMPLETED_WITH_FINDINGS') for stage in stages))
-    return {'format_version':'AUDIT-EXPORT-v0.17.0', 'export_id':export_id,
+    return {'format_version':'AUDIT-EXPORT-v0.18.0', 'export_id':export_id,
             'created_at':created_at,'status':'PARTIAL' if incomplete else 'COMPLETE',
             'experiment_id':identifiers.get('experiments'),
             'linked_ids':identifiers,'stages':stages,'files':files,'missing':missing,
@@ -53,7 +53,7 @@ def make_manifest(artifact_dir: Path, export_id: str, identifiers: dict,
 
 
 def make_intro(manifest:dict, assessment:dict|None)->str:
-    lines=['# Claims Operations Planner — v0.17 Evidence-to-Evaluation Audit Package','',
+    lines=['# Claims Operations Planner — v0.18 Evidence-to-Evaluation Audit Package','',
            f"- Export: `{manifest['export_id']}`",
            f"- Original experiment: `{manifest['experiment_id']}`",
            f"- Export completeness: **{manifest['status']}**",
@@ -61,8 +61,8 @@ def make_intro(manifest:dict, assessment:dict|None)->str:
            '- All methods run on synthetic customer/case fixtures, not real customer data.',
            '- GO, if any, means *Customer Discovery only*. Production is never authorized.',
            '- Public-evidence mode pauses at step 00b for explicit human review; step 05 also requires human approval.',
-           '- Public evidence hypotheses in the 01 brief do not change the fixed synthetic R0/R1 contracts.',
-           '- Raw source snapshots are immutable. Additional policy/stress validation is stored separately.',
+           '- Public source materials are screened for topic relevance; mismatched evidence is blocked. Human-selected thresholds run on fixed synthetic claims cases. No arbitrary customer requirements are executable.',
+           '- Raw source snapshots and original document SHA256 are included in the workflow folder; additional policy/stress and configured-KPI results are stored separately.',
            '- `manifest.json` lists every included file with raw-bytes SHA256, omitted categories, and failures.','',
            '## Execution stages','']
     for stage in manifest['stages']:
@@ -80,7 +80,9 @@ def make_intro(manifest:dict, assessment:dict|None)->str:
         lines.append('- Assessment not produced; see stage failure in manifest.')
     lines.extend(['','## Reading order','',
                   '0. `workflows/<id>/00_evidence_grounded_requirements.json`, `00_source_manifest.json`, `00_index_metadata.json`, `00_rag_report.md` — retrieved public evidence; no real-world approval',
-                  '0b. `workflows/<id>/00b_human_evidence_review.json` — human-selected IDs and hypothesis (demo-only); check `01_input.json` effective_brief',
+                  '0b. `workflows/<id>/00b_human_evidence_review.json` — human-selected evidence; check domain alignment and reviewer judgment',
+                  '0c. `workflows/<id>/00c_grounded_test_contract.json` and `00c_technical_spec.md` — human-configured bounded KPI thresholds',
+                  '8c. `workflows/<id>/08c_grounded_kpi_verification.json` — bounded deterministic evaluation; SYNTHETIC ONLY',
                   '1. `workflows/<id>/01_input.json` and `02_service_design.json` — input and generated service design (v0.15 full batch)',
                   '2. `assessments/<id>/report.md` — business/delivery decision and evidence register',
                   '3. `policy_validations/<id>/report.md` — semantic contract and stress failures',
@@ -93,6 +95,8 @@ def make_intro(manifest:dict, assessment:dict|None)->str:
                   '- Unassigned claims are counted as missed deadlines; never ignore them when comparing methods.',
                   '- Synthetic evidence IDs are internal pointers, not public citations or validation.',
                   '- Dataset download and indexing must actually succeed in public mode; never interpret missing data as COMPLETED.',
+                  '- Public banking materials do not support insurance claim workflows; the compatibility gate blocks such handoffs.',
+                  '- FCA/FOS material supports problem context but does not establish a scheduling mechanism or a German customer request.',
                   '- Source manifest/file hashes establish local integrity only, not semantic truth or representative sampling.',
                   '- Public evidence excerpts remain unverified as supporting customer requirements; RAG is never automatic approval.',
                   '- AI model diagnostics, human approval, and KPI PASS have separate scopes.',

@@ -1,4 +1,4 @@
-"""Claims Operations Planner v0.17: E2B + local Qwen + auditable two-level verification."""
+"""Claims Operations Planner v0.18: E2B + local Qwen + auditable two-level verification."""
 from __future__ import annotations
 
 import asyncio
@@ -68,7 +68,7 @@ def store(kind: str, id_: str, filename: str, data: object):
     return target
 
 
-app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.17.0")
+app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.18.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                    allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
@@ -1124,11 +1124,11 @@ from fastapi import BackgroundTasks
 
 class EvidenceQueryRequest(BaseModel):
     llm_extraction: bool = False
-    dataset_id: Literal['community_credit','cfpb_sample']
+    dataset_id: Literal['community_credit','cfpb_sample','insurance_claims_uk']
     query: str = Field(min_length=3, max_length=500)
 
 class DatasetRequest(BaseModel):
-    dataset_id: Literal['community_credit','cfpb_sample']
+    dataset_id: Literal['community_credit','cfpb_sample','insurance_claims_uk']
 
 @app.get('/api/evidence/datasets')
 def evidence_datasets():
@@ -1145,7 +1145,7 @@ def evidence_download(body:DatasetRequest):
 @app.get('/api/evidence/datasets/{dataset_id}/download')
 def evidence_dataset_download(dataset_id:str):
     return StreamingResponse(io.BytesIO(er.archive(dataset_id)),media_type='application/zip',
-       headers={'Content-Disposition':f'attachment; filename="financial_dataset_{dataset_id}_v017.zip"'})
+       headers={'Content-Disposition':f'attachment; filename="financial_dataset_{dataset_id}_v018.zip"'})
 
 @app.post('/api/evidence/index')
 def evidence_index(body:DatasetRequest):
