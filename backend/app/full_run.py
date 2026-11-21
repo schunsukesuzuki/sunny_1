@@ -23,13 +23,14 @@ from . import requirement_trace as rt
 from . import notification_demo as nd
 from . import blind_optimality as bo
 from . import artifact_readiness as ar
+from . import boundary_assurance as ba
 
 # The endpoints are registered by register(app, main_module) to keep the
 # existing 01..09 handlers as the single implementation of each operation.
 
 STEP_ORDER = ["00_evidence_grounded_requirements", "00b_evidence_review", "00c_grounded_test_contract", "01_input", "02_service_design", "03_r0_e2b", "04_independent_diagnoses",
               "05_human_approval", "06_r1_generation_and_evaluation", "07_audit_index",
-              "08_diagnostic_benchmark", "08b_policy_and_stress", "08c_grounded_kpi_verification", "08d_notification_prototype", "08e_requirement_trace", "08f_blind_optimality", "09_business_delivery_assessment"]
+              "08_diagnostic_benchmark", "08b_policy_and_stress", "08c_grounded_kpi_verification", "08d_notification_prototype", "08e_requirement_trace", "08f_blind_optimality", "08g_boundary_assurance", "09_business_delivery_assessment"]
 KINDS = ("runs", "proposals", "approvals", "experiments", "policy_validations", "benchmarks", "assessments", "workflows")
 
 class FullRunStart(BaseModel):
@@ -105,7 +106,11 @@ def register(app, m) -> None:
         successful evaluation. Stage-specific snapshots stay in the audit ZIP.
         """
         audit = ar.inspect_experiment(m.ARTIFACT_DIR, state["linked_ids"].get("experiments"))
+        audit = ba.apply_experiment_gate(state, audit)
         add_file(state["workflow_id"], f"{stage}_experiment_dependency.json", ar.public_view(audit))
+        gate = audit["boundary_gate"]
+        gate["certificates"] = ba.certificate(gate, stopped_at=stage)
+        add_file(state["workflow_id"], f"boundary_{stage}_lineage.json", gate)
         return audit
 
     def required_steps(state: dict) -> list[str]:
@@ -114,10 +119,16 @@ def register(app, m) -> None:
     def summarize(state:dict) -> dict:
         result = {key:state.get(key) for key in (
             "workflow_id", "export_id", "created_at", "updated_at", "status", "phase", "stages",
-            "linked_ids", "error", "service_design", "evidence_mode", "r1_mode", "topic_alignment", "grounded_contract_status", "requirement_type", "requirement_trace_status")}
+            "linked_ids", "error", "service_design", "evidence_mode", "r1_mode", "topic_alignment", "grounded_contract_status", "requirement_type", "requirement_trace_status", "boundary_status")}
         blind_file=folder(state['workflow_id'])/'08f_blind_optimality.json'
         if blind_file.exists():
             result['blind_optimality']=json.loads(blind_file.read_text(encoding='utf-8'))
+        boundary_file=folder(state["workflow_id"])/"08g_boundary_assurance.json"
+        if boundary_file.is_file():
+            record=json.loads(boundary_file.read_text(encoding="utf-8"))
+            result["boundary_assurance"]={"status":record["status"],"risk_axes":record["risk_axes"],
+                 "checks":record["checks"],"regression_suite":record["regression_suite"],
+                 "limits":record["limits"]}
         if state["status"] == "AWAITING_EVIDENCE_REVIEW":
             rag = m.load("workflows", state["workflow_id"], "00_evidence_grounded_requirements.json")
             result["evidence_review"] = {
@@ -253,7 +264,20 @@ def register(app, m) -> None:
         inp=FullRunStart(**state["inputs"])
         try:
             current="06_r1_generation_and_evaluation"
+            approval_id=state["linked_ids"].get("approvals")
+            approval_path=m.path_for("approvals",approval_id)/"approval.json" if approval_id else None
             try:
+                approval_record=json.loads(approval_path.read_text(encoding="utf-8")) if approval_path and approval_path.is_file() else None
+            except (OSError, ValueError, UnicodeError):
+                approval_record=None
+            approval_gate=ba.approval_handoff(state,approval_record)
+            approval_gate["certificates"]=ba.certificate(approval_gate, stopped_at="06")
+            add_file(wid,"boundary_05_to_06.json",approval_gate)
+            if approval_gate["status"]=="HOLD":
+                state["error"]="Boundary 05→06: missing or mismatched human approval"
+                step(state,current,"SKIPPED",state["error"])
+            else:
+              try:
                 if inp.r1_mode == 'skill_only':
                     generated={'python_code':'','rationale':'Pinned Domain Skill, no LLM R1 code generation'}
                 else:
@@ -270,7 +294,7 @@ def register(app, m) -> None:
                     step(state,current,"COMPLETED_WITH_FINDINGS",
                         "R1 mode: "+inp.r1_mode+"; selected: "+str(exp.get('selected_engine'))+
                         "; KPI/HOLDOUT: "+str(exp.get("r1_independent_kpi_improvement_pass")))
-            except Exception as exc:
+              except Exception as exc:
                 # Preserve partial experiment ID as a pointer, not a completion claim.
                 marker=folder(wid)/"06_unused_marker.json"
                 try:
@@ -425,9 +449,33 @@ def register(app, m) -> None:
                          'Post-selection blind synthetic benchmark; solver status and gaps saved')
             except Exception as exc:
                 step(state,current,'FAILED',f'{type(exc).__name__}: {str(exc)[:400]}')
+            # A separate risk audit captures cross-stage boundary failures, even when R1
+            # has no eligible candidate. No new LLM calls and no GraphDB are required.
+            current="08g_boundary_assurance"
+            try:
+                checkpoints=[]
+                for path in sorted(folder(wid).glob("boundary_*.json")):
+                    data=json.loads(path.read_text(encoding="utf-8"))
+                    if isinstance(data,dict) and "boundary" in data and "status" in data:
+                        checkpoints.append(data)
+                suite=ba.regression_scenarios()
+                audit=ba.report(state,checkpoints,suite)
+                add_file(wid,"08g_boundary_contracts.json",{"version":ba.VERSION,"contracts":ba.CONTRACTS})
+                add_file(wid,"08g_boundary_regression.json",suite)
+                add_file(wid,"08g_provenance_dag.json",ba.topology(state["linked_ids"],wid))
+                add_file(wid,"08g_boundary_assurance.json",audit)
+                (folder(wid)/"08g_boundary_assurance.md").write_text(ba.markdown(audit),encoding="utf-8")
+                state["boundary_status"]=audit["status"]
+                step(state,current,"FAILED" if audit["status"]=="HOLD" else "COMPLETED_WITH_FINDINGS",
+                    "Boundary checks: "+audit["status"]+"; simulated scenarios: "+suite["status"])
+                if audit["status"]=="HOLD" and not state.get("error"):
+                    state["error"]="Cross-stage boundary violation; see 08g_boundary_assurance.json"
+            except Exception as exc:
+                state["boundary_status"]="HOLD"
+                step(state,current,"FAILED",f"{type(exc).__name__}: {str(exc)[:350]}")
             current="09_business_delivery_assessment"
             assessment_input=check_experiment(state,"09")
-            if ar.record_is_complete(assessment_input):
+            if ar.record_is_complete(assessment_input) and state.get("boundary_status")=="PASS_CONTROLLED":
                 try:
                     bid=state["linked_ids"].get("benchmarks")
                     benchmark_path=m.path_for('benchmarks',bid)/'benchmark.json' if bid else None
@@ -483,6 +531,19 @@ def register(app, m) -> None:
                             tmp=assessment_dir/(name+".tmp")
                             tmp.write_text(content,encoding="utf-8")
                             os.replace(tmp,assessment_dir/name)
+                    # Explicitly record the separate boundary risk conclusion without
+                    # upgrading any customer/production decision to GO.
+                    assessment_dir=m.path_for("assessments",assess["assessment_id"])
+                    assessment_record=m.load("assessments",assess["assessment_id"],"assessment.json")
+                    boundary_record=m.load("workflows",wid,"08g_boundary_assurance.json")
+                    assessment_record["boundary_assurance"]={"status":boundary_record["status"],
+                        "contract_version":boundary_record["version"],
+                        "scope":"cross-stage integrity only, not service or customer correctness"}
+                    assessment_record["decision"]["production_go"]=False
+                    assessment_record["decision"]["production_status"]="NO_GO"
+                    new_path=assessment_dir/"assessment.json.tmp"
+                    new_path.write_text(json.dumps(assessment_record,ensure_ascii=False,indent=2),encoding="utf-8")
+                    os.replace(new_path,assessment_dir/"assessment.json")
                     state["linked_ids"]["assessments"]=assess["assessment_id"]
                     step(state,current,"COMPLETED_WITH_FINDINGS", "Production remains NO-GO; public source is contextual")
                 except Exception as exc:
@@ -495,8 +556,11 @@ def register(app, m) -> None:
                     "reason":"Complete R1 experiment is required for assessment",
                     "artifact_readiness":ar.public_view(assessment_input),
                     "production_go":False,"customer_business_go":False})
-                step(state,current,"SKIPPED","06 R1 dependency: "+assessment_input['status'] + '; no business/production GO')
+                step(state,current,"SKIPPED","06/boundary dependency: "+assessment_input['status'] + '; boundary='+str(state.get('boundary_status'))+'; no business/production GO')
             snapshot_index(state)
+            # Final topology includes the assessment node, which is not yet present
+            # when 08g runs. This is a declared dependency map, not a knowledge graph.
+            add_file(wid,"09_final_provenance_dag.json",ba.topology(state["linked_ids"],wid))
             all_good=all(any(x["name"]==name and x["status"] in ("COMPLETED", "COMPLETED_WITH_FINDINGS")
                     for x in state["stages"]) for name in required_steps(state))
             state["status"]="COMPLETE" if all_good else "PARTIAL"
@@ -560,7 +624,7 @@ def register(app, m) -> None:
         wid, export_id=m.fresh_id(), m.fresh_id()
         public = body.evidence_mode == "public"
         record={"workflow_id":wid,"export_id":export_id,"created_at":m.now(),
-            "updated_at":m.now(),"version":"0.21.1","evidence_mode":body.evidence_mode,"r1_mode":body.r1_mode,
+            "updated_at":m.now(),"version":"0.23.0","evidence_mode":body.evidence_mode,"r1_mode":body.r1_mode,
             "status":"RUNNING","phase":"00_evidence_grounded_requirements" if public else "02_service_design",
             "inputs":body.model_dump(),"service_design":None,"linked_ids":{k:None for k in KINDS},
             "stages":[],"bundle_ready":False}
@@ -679,6 +743,16 @@ def register(app, m) -> None:
                 "r0_contract_changed":False,"technical_evaluator":"BOUNDED_HUMAN_CONFIGURED_SYNTHETIC_CONTRACT",
                 "technical_spec_path":"00c_technical_spec.md", "requirement_type":body.requirement_type,
                 "requirement_trace_path":"00c_requirement_trace.json", "acceptance_test_target":trace['test_target']})
+            boundary_gate=ba.public_handoff(state,folder(body.workflow_id))
+            boundary_gate["certificates"]=ba.certificate(boundary_gate,stopped_at="01")
+            add_file(body.workflow_id,"boundary_00b_to_01.json",boundary_gate)
+            if boundary_gate["status"]!="PASS":
+                state["status"]="PARTIAL"
+                state["phase"]="BOUNDARY_HOLD_00B_TO_01"
+                state["error"]="00b→01 boundary contract violation; see boundary_00b_to_01.json"
+                step(state,"01_input","FAILED",state["error"])
+                save_archive(state)
+                return summarize(state)
             step(state, "01_input", "COMPLETED", "Evidence-reviewed hypothesis inserted into 01 brief; fixed synthetic R0 contract unchanged")
             state["status"]="RUNNING"
             state["bundle_ready"]=False  # previous PARTIAL is superseded by in-progress work
@@ -723,5 +797,5 @@ def register(app, m) -> None:
         file=m.path_for("exports",state["export_id"])/"complete_audit_package.zip"
         if not file.is_file():
             raise HTTPException(409,"ZIP is not ready; check workflow status")
-        return FileResponse(file,filename=f"claims_full_run_v020_{workflow_id}.zip",media_type="application/zip")
+        return FileResponse(file,filename=f"claims_full_run_v023_{workflow_id}.zip",media_type="application/zip")
 

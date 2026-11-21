@@ -1,3 +1,5 @@
+> **v0.23 — EAIR-inspired Boundary Assurance（限定的な社会実装向け）**：00b→01では公開根拠・承認仮説・機能タイプの整合、05→06では明示的人間承認の保存とproposal ID、06→08b/08f/09では実験のWorkflow/Approval/R0/Proposal IDとコードのSHA256を検査。異常な引継ぎを次工程へ進めず、**Boundary Certificate（最初に検出した境界・証拠・遮断・修復案）**を監査ZIPに保存します。新しい08gは5件の**合成**境界反例と最小限の出所DAGを出力し、失敗検出と業務KPIを分けます。EAIRのマルチエージェント環境・GraphRAG・形式証明を導入したものではありません。詳細：`docs/v023-boundary-assurance-eair.md`。
+
 > **v0.22 — 08b Artifact not found修正**：06のR1評価が途中失敗し、`evaluation_started.json`にIDだけ残って`experiment.json`が存在しない場合、08b・08f・09は二次的な404を起こさず **SKIPPED** にします。原発エラーを`06_r1_failure.json`に保存し、PARTIAL ZIPに原因・未実施工程・欠落成果物を保持します。08cの担当者割当契約も未完成のR1をPASS扱いしません。詳細：`docs/v022-resilient-artifact-lineage.md`。**この修正は06自体のE2B/LLM失敗を自動修復するものではありません。**
 
 > **v0.21.2 — LLM要件診断の二層評価（v0.21系改訂）**：Qwen/ODAに元入力だけから作ったFact Sheetを与え、独立実装テストと合成KPIを順に判断させます。証拠IDを落とした場合は、**単一の原文根拠が診断と整合するときだけ**決定的なID補助を行います。**生回答のPASS率と補助込みのPASS率は厳密に分離**し、事業評価の自動診断PASSには生回答の成績だけを使用します。04の既存診断・一括実行・Domain Skillと08f厳密比較は維持しています。モデル実機でのPASS率は未検証です。`docs/v0212-diagnostic-two-layer.md` を参照。
@@ -30,7 +32,7 @@
 
 > **v0.10:** 要件診断の多軸独立採点・Qwen/ODAの合成ベンチマーク・過去ログ再採点を追加。詳細は `docs/v010-requirement-diagnostic-benchmark.md`。
 
-# Claims Operations Planner — AI Venture Feasibility Studio v0.22
+# Claims Operations Planner — AI Venture Feasibility Studio v0.23
 
 ドイツの保険業務SaaS企業（**架空**）の事業開発PoC。**Qwen3-Coder 30B** はサービス設計・Pythonコード生成、**OpenDataArena/ODA-Fin-RL-8B** は金融ドメイン要件診断を担当。E2Bは生成コードを隔離して実行し、独立した決定的評価器で審査割当・期限・資格・稼働上限を検証します。v0.8にあったMarkdown結果保存を維持し、生成コード・差分・各試行のE2B実行証跡・履歴取得を拡張しました。
 

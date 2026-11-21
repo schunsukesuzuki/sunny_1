@@ -1,0 +1,59 @@
+{
+  "status": "OPTIMAL",
+  "solver": "PYTHON_EXHAUSTIVE",
+  "solution": {
+    "assignments": [
+      {
+        "case_id": "BL01-04",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "BL01-02",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "BL01-01",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 2
+      },
+      {
+        "case_id": "BL01-00",
+        "reviewer_id": "R-B",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "BL01-03",
+        "reviewer_id": "R-A",
+        "day": 1,
+        "hours": 2
+      }
+    ],
+    "unassigned_case_ids": []
+  },
+  "nodes": 16,
+  "objective": [
+    5,
+    5
+  ],
+  "elapsed_seconds": 0.0,
+  "metrics": {
+    "valid": true,
+    "violations": [],
+    "missed_deadlines": 0,
+    "on_time": 5,
+    "completed": 5,
+    "assigned_hours": 9,
+    "total_cases": 5,
+    "planned_capacity_hours": 12,
+    "unassigned_cases": 0,
+    "deadline_hit_rate": 1.0
+  },
+  "cp_sat_status": "UNAVAILABLE_DEPENDENCY",
+  "input_sha256": "149732cfc64cec572ea5cea53a5375464fc513f2dcab5befd0aad40720f9c1d7"
+}

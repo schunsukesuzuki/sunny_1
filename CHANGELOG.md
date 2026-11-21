@@ -1,3 +1,15 @@
+# v0.23.0 — Boundary-Aware Evaluation Harness
+
+- Microsoft Research EAIR's cross-role/cross-state risk framing is adapted only to **workflow hand-offs**, not to a multi-agent simulation.
+- New `backend/app/boundary_assurance.py`: reviewed requirement/evidence hand-off (00b→01), human approval integrity (05→06), experiment lineage integrity (06→08b/08c/08f/09), and deterministic shared-resource violation fixture.
+- New `08g_boundary_assurance`: boundary-regression suite, bounded realization certificates, process anomalies vs intercepted harm, and topology-only provenance graph (JSON, no graph DB).
+- Block a dependent step on a mismatched/missing approval or cross-workflow experiment, instead of inheriting a false `COMPLETED` status; preserve original failures and PARTIAL archive.
+- Read-only per-stage risk observations, v0.23 version tags/ZIP filenames, UI visibility, and assessment linkage added.
+- Retains existing evidence RAG, Domain Skill, LLM raw/assisted diagnosis, E2B execution, randomized blind exact optimization and two human gates.
+- This is an **engineering demo**. No authenticated permission enforcement, formal proof, production safety claim, new real-data performance evaluation or EAIR reproduction.
+
+---
+
 ## v0.22 — Dependency-safe experiment artifacts and PARTIAL audit (2026-11-21)
 
 - Fix stage **08b `HTTPException: Artifact not found`** caused by treating `evaluation_started.json` (06 marker) as a completed `experiment.json`.

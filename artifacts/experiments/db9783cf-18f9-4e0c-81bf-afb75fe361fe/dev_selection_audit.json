@@ -1,0 +1,400 @@
+{
+  "version": "R1-DEV-SELECTION-GATE-v0.19.0",
+  "attempts": [
+    {
+      "attempt": 0,
+      "source_sha256": "bb81c7f4fcdadd3fef31a3c8abaeb64322a388830326ae446a529d691af948aa",
+      "selection_gate": {
+        "gate_version": "R1-DEV-SELECTION-GATE-v0.19.0",
+        "eligible": false,
+        "reasons": [
+          "DEV_CONSTRAINT_INVALID",
+          "BEHAVIORAL_PROBE_FAIL_OR_IDENTITY_MISMATCH",
+          "STRESS_CONSTRAINT_INVALID"
+        ],
+        "dev_cases": 3,
+        "behavioral_probes_pass": false,
+        "stress_scenarios_checked": 4,
+        "selection_rule": "Require valid DEV, strict improvement over FIFO on at least one DEV seed, equal hours, two behavioral probes and no stress regression against the fixed heuristic.",
+        "holdout_used_for_selection": false
+      },
+      "behavioral_probes": [
+        {
+          "seed": 900001,
+          "scenario": "deadline_risk_probe",
+          "dataset_sha256": "5575eb9625e7050872d5f7cf582afd8cac3afa69270b3caabea8b79125e54cde",
+          "valid": false,
+          "checks": {
+            "urgent_served_on_due_day": true,
+            "both_cases_served": true
+          },
+          "pass": false,
+          "missed_deadlines": 0,
+          "unassigned_cases": 0,
+          "violations": [
+            "Capacity exceeded: R-A/day0: 2"
+          ],
+          "execution_error": null
+        },
+        {
+          "seed": 900002,
+          "scenario": "scarce_qualification_probe",
+          "dataset_sha256": "152f675fe5e0514271365f4aaa711a15de12aa7266f46756994ccdbf8d4595df",
+          "valid": false,
+          "checks": {
+            "scarce_case_uses_sole_specialist": true,
+            "common_case_preserves_specialist_capacity": false,
+            "all_cases_served": true
+          },
+          "pass": false,
+          "missed_deadlines": 0,
+          "unassigned_cases": 0,
+          "violations": [
+            "Capacity exceeded: R-A/day0: 2"
+          ],
+          "execution_error": null
+        }
+      ],
+      "stress_checks": [
+        {
+          "seed": 910000,
+          "scenario": "capacity_pressure",
+          "generated": {
+            "valid": false,
+            "missed": 0,
+            "unassigned": 0
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        },
+        {
+          "seed": 910001,
+          "scenario": "skill_bottleneck",
+          "generated": {
+            "valid": false,
+            "missed": 1,
+            "unassigned": 1
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 1,
+            "unassigned": 1
+          }
+        },
+        {
+          "seed": 910002,
+          "scenario": "deadline_compression",
+          "generated": {
+            "valid": false,
+            "missed": 0,
+            "unassigned": 0
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        },
+        {
+          "seed": 910003,
+          "scenario": "arrival_reordering",
+          "generated": {
+            "valid": false,
+            "missed": 0,
+            "unassigned": 0
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        }
+      ]
+    },
+    {
+      "attempt": 1,
+      "source_sha256": "12f55d3c21199b97b28c0ea2158fe5fc94b5dd086fd5fe77d8ab05357e4d38fe",
+      "selection_gate": {
+        "gate_version": "R1-DEV-SELECTION-GATE-v0.19.0",
+        "eligible": false,
+        "reasons": [
+          "DEV_CONSTRAINT_INVALID",
+          "NO_DEV_IMPROVEMENT_OVER_FIFO",
+          "BEHAVIORAL_PROBE_FAIL_OR_IDENTITY_MISMATCH",
+          "STRESS_CONSTRAINT_INVALID",
+          "STRESS_REGRESSION_VS_FIXED_REFERENCE"
+        ],
+        "dev_cases": 3,
+        "behavioral_probes_pass": false,
+        "stress_scenarios_checked": 4,
+        "selection_rule": "Require valid DEV, strict improvement over FIFO on at least one DEV seed, equal hours, two behavioral probes and no stress regression against the fixed heuristic.",
+        "holdout_used_for_selection": false
+      },
+      "behavioral_probes": [
+        {
+          "seed": 900001,
+          "scenario": "deadline_risk_probe",
+          "dataset_sha256": "5575eb9625e7050872d5f7cf582afd8cac3afa69270b3caabea8b79125e54cde",
+          "valid": true,
+          "checks": {
+            "urgent_served_on_due_day": true,
+            "both_cases_served": false
+          },
+          "pass": false,
+          "missed_deadlines": 1,
+          "unassigned_cases": 1,
+          "violations": [],
+          "execution_error": null
+        },
+        {
+          "seed": 900002,
+          "scenario": "scarce_qualification_probe",
+          "dataset_sha256": "152f675fe5e0514271365f4aaa711a15de12aa7266f46756994ccdbf8d4595df",
+          "valid": false,
+          "checks": {
+            "scarce_case_uses_sole_specialist": false,
+            "common_case_preserves_specialist_capacity": true,
+            "all_cases_served": false
+          },
+          "pass": false,
+          "missed_deadlines": 1,
+          "unassigned_cases": 1,
+          "violations": [
+            "Unknown/duplicate claim: COMMON"
+          ],
+          "execution_error": null
+        }
+      ],
+      "stress_checks": [
+        {
+          "seed": 910000,
+          "scenario": "capacity_pressure",
+          "generated": {
+            "valid": false,
+            "missed": 12,
+            "unassigned": 12
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        },
+        {
+          "seed": 910001,
+          "scenario": "skill_bottleneck",
+          "generated": {
+            "valid": false,
+            "missed": 13,
+            "unassigned": 13
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 1,
+            "unassigned": 1
+          }
+        },
+        {
+          "seed": 910002,
+          "scenario": "deadline_compression",
+          "generated": {
+            "valid": false,
+            "missed": 11,
+            "unassigned": 11
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        },
+        {
+          "seed": 910003,
+          "scenario": "arrival_reordering",
+          "generated": {
+            "valid": false,
+            "missed": 11,
+            "unassigned": 11
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "source_sha256": "1df8e1ec6a9213b85e350c3c80e67ea9733ded55e8fcad88b6a54f149544b32c",
+      "selection_gate": {
+        "gate_version": "R1-DEV-SELECTION-GATE-v0.19.0",
+        "eligible": false,
+        "reasons": [
+          "DEV_HOURS_INCREASE_OR_CHANGE",
+          "BEHAVIORAL_PROBE_FAIL_OR_IDENTITY_MISMATCH",
+          "STRESS_REGRESSION_VS_FIXED_REFERENCE"
+        ],
+        "dev_cases": 3,
+        "behavioral_probes_pass": false,
+        "stress_scenarios_checked": 4,
+        "selection_rule": "Require valid DEV, strict improvement over FIFO on at least one DEV seed, equal hours, two behavioral probes and no stress regression against the fixed heuristic.",
+        "holdout_used_for_selection": false
+      },
+      "behavioral_probes": [
+        {
+          "seed": 900001,
+          "scenario": "deadline_risk_probe",
+          "dataset_sha256": "5575eb9625e7050872d5f7cf582afd8cac3afa69270b3caabea8b79125e54cde",
+          "valid": true,
+          "checks": {
+            "urgent_served_on_due_day": true,
+            "both_cases_served": true
+          },
+          "pass": true,
+          "missed_deadlines": 0,
+          "unassigned_cases": 0,
+          "violations": [],
+          "execution_error": null
+        },
+        {
+          "seed": 900002,
+          "scenario": "scarce_qualification_probe",
+          "dataset_sha256": "152f675fe5e0514271365f4aaa711a15de12aa7266f46756994ccdbf8d4595df",
+          "valid": true,
+          "checks": {
+            "scarce_case_uses_sole_specialist": false,
+            "common_case_preserves_specialist_capacity": false,
+            "all_cases_served": false
+          },
+          "pass": false,
+          "missed_deadlines": 1,
+          "unassigned_cases": 1,
+          "violations": [],
+          "execution_error": null
+        }
+      ],
+      "stress_checks": [
+        {
+          "seed": 910000,
+          "scenario": "capacity_pressure",
+          "generated": {
+            "valid": true,
+            "missed": 8,
+            "unassigned": 5
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        },
+        {
+          "seed": 910001,
+          "scenario": "skill_bottleneck",
+          "generated": {
+            "valid": true,
+            "missed": 6,
+            "unassigned": 3
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 1,
+            "unassigned": 1
+          }
+        },
+        {
+          "seed": 910002,
+          "scenario": "deadline_compression",
+          "generated": {
+            "valid": true,
+            "missed": 7,
+            "unassigned": 0
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        },
+        {
+          "seed": 910003,
+          "scenario": "arrival_reordering",
+          "generated": {
+            "valid": true,
+            "missed": 1,
+            "unassigned": 1
+          },
+          "deadline": {
+            "valid": true,
+            "missed": 0,
+            "unassigned": 0
+          }
+        }
+      ]
+    }
+  ],
+  "selected_code_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+  "selected_engine": "skill_deadline_scarcity",
+  "skill_candidates": [
+    {
+      "engine": "skill_deadline_scarcity",
+      "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+      "selection_gate": {
+        "gate_version": "R1-DEV-SELECTION-GATE-v0.19.0",
+        "eligible": true,
+        "reasons": [],
+        "dev_cases": 3,
+        "behavioral_probes_pass": true,
+        "stress_scenarios_checked": 4,
+        "selection_rule": "Require valid DEV, strict improvement over FIFO on at least one DEV seed, equal hours, two behavioral probes and no stress regression against the fixed heuristic.",
+        "holdout_used_for_selection": false
+      },
+      "dev": {
+        "valid": true,
+        "missed_total": 0,
+        "worked_hours_total": 100,
+        "deadline_hit_rate": 1.0,
+        "all_claims_completed": true,
+        "violations": [],
+        "seeds": [
+          142,
+          143,
+          144
+        ]
+      }
+    },
+    {
+      "engine": "skill_bounded_beam",
+      "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+      "selection_gate": {
+        "gate_version": "R1-DEV-SELECTION-GATE-v0.19.0",
+        "eligible": true,
+        "reasons": [],
+        "dev_cases": 3,
+        "behavioral_probes_pass": true,
+        "stress_scenarios_checked": 4,
+        "selection_rule": "Require valid DEV, strict improvement over FIFO on at least one DEV seed, equal hours, two behavioral probes and no stress regression against the fixed heuristic.",
+        "holdout_used_for_selection": false
+      },
+      "dev": {
+        "valid": true,
+        "missed_total": 0,
+        "worked_hours_total": 100,
+        "deadline_hit_rate": 1.0,
+        "all_claims_completed": true,
+        "violations": [],
+        "seeds": [
+          142,
+          143,
+          144
+        ]
+      }
+    }
+  ],
+  "holdout_used_for_selection": false,
+  "status": "ELIGIBLE_SKILL_SELECTED"
+}

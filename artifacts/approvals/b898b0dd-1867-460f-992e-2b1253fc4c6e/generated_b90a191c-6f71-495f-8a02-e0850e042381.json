@@ -1,0 +1,10 @@
+{
+  "source_sha256": "bb81c7f4fcdadd3fef31a3c8abaeb64322a388830326ae446a529d691af948aa",
+  "rationale": "This solution implements a deadline-priority greedy assignment algorithm that:\n1. Reads input from input.json\n2. Sorts cases by deadline day (earliest first) to prioritize deadline risk as required by R1\n3. For each case, finds the best reviewer assignment by:\n   - Checking skill match\n   - Ensuring capacity is available on an early day\n   - Prioritizing assignments that minimize deadline risk\n4. Writes results to output.json with proper assignments and unassigned cases\n5. Follows all hard constraints including skill matching, daily capacity limits, no overtime, and one assignment per case\n6. Uses only Python standard library functions\n7. Handles the specific example provided in the prompt correctly",
+  "created_at": "2026-11-21T11:22:37+00:00",
+  "coding_model": "qwen3-coder:30b",
+  "finance_model": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+  "domain_review_sha256": "f5f7a9da987c4d7cb3728999a7079f69fdf611d4cf5540b7d97642708b4800ca",
+  "domain_review_used_as_advisory": false,
+  "human_adjudication_used_instead": true
+}

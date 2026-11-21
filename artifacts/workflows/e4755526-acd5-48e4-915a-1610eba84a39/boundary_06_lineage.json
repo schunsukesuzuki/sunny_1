@@ -1,0 +1,13 @@
+{
+  "version": "BOUNDARY-ASSURANCE-v0.23.0",
+  "boundary": "06_to_downstream",
+  "status": "PASS",
+  "checks_performed": [
+    "experiment_r0_proposal_approval_linkage",
+    "v022_sha256_guard"
+  ],
+  "violations": [],
+  "semantic_validity": "NOT_PROVEN",
+  "production_authorization": false,
+  "certificates": []
+}

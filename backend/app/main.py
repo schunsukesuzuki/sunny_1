@@ -1,4 +1,4 @@
-"""Claims Operations Planner v0.22: auditable LLM and pinned Domain Skill comparison."""
+"""Claims Operations Planner v0.23: auditable LLM and pinned Domain Skill comparison."""
 from __future__ import annotations
 
 import asyncio
@@ -71,7 +71,7 @@ def store(kind: str, id_: str, filename: str, data: object):
     return target
 
 
-app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.22.0")
+app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.23.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                    allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 

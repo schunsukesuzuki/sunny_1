@@ -57,7 +57,7 @@ def test_full_run_waits_for_explicit_human_approval_and_exports_partial(client,m
     final=client.get(f"/api/full-run/{st['workflow_id']}").json()
     assert final['status']=='COMPLETE', final
     assert all(final['linked_ids'].values())
-    assert len(final['stages'])==17  # v0.21 adds 08f blind optimality
+    assert len(final['stages'])==18  # v0.23 adds 08g boundary assurance
     assert final['bundle_url']
     with zipfile.ZipFile(io.BytesIO(client.get(final['bundle_url']).content)) as z:
         manifest=json.loads(z.read('manifest.json'))

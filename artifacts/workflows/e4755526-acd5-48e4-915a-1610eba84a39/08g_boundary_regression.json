@@ -1,0 +1,37 @@
+{
+  "version": "BOUNDARY-ASSURANCE-v0.23.0",
+  "status": "PASS",
+  "scenarios": [
+    {
+      "scenario_id": "cross_workflow_result",
+      "expected_detection": true,
+      "detected_as_expected": true,
+      "synthetic_fixture": true
+    },
+    {
+      "scenario_id": "unapproved_revision",
+      "expected_detection": true,
+      "detected_as_expected": true,
+      "synthetic_fixture": true
+    },
+    {
+      "scenario_id": "shared_capacity_oversubscription",
+      "expected_detection": true,
+      "detected_as_expected": true,
+      "synthetic_fixture": true
+    },
+    {
+      "scenario_id": "safe_shared_capacity",
+      "expected_detection": true,
+      "detected_as_expected": true,
+      "synthetic_fixture": true
+    },
+    {
+      "scenario_id": "healthy_approval",
+      "expected_detection": true,
+      "detected_as_expected": true,
+      "synthetic_fixture": true
+    }
+  ],
+  "scope": "Synthetic deterministic checks; no LLM or multi-agent risk rates"
+}

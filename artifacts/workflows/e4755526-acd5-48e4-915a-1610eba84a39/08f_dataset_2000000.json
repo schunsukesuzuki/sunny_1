@@ -1,0 +1,96 @@
+{
+  "schema_version": "claims-0.8",
+  "days": 2,
+  "seed": 2000000,
+  "scenario": "BLIND_RANDOMIZED_POST_SELECTION",
+  "cases": [
+    {
+      "case_id": "BL00-05",
+      "arrival_order": 1,
+      "required_skill": "motor",
+      "duration_hours": 2,
+      "deadline_day": 0,
+      "business_priority": 4,
+      "amount_eur": 4200
+    },
+    {
+      "case_id": "BL00-03",
+      "arrival_order": 2,
+      "required_skill": "property",
+      "duration_hours": 1,
+      "deadline_day": 0,
+      "business_priority": 4,
+      "amount_eur": 2900
+    },
+    {
+      "case_id": "BL00-04",
+      "arrival_order": 3,
+      "required_skill": "motor",
+      "duration_hours": 2,
+      "deadline_day": 1,
+      "business_priority": 5,
+      "amount_eur": 4600
+    },
+    {
+      "case_id": "BL00-00",
+      "arrival_order": 4,
+      "required_skill": "motor",
+      "duration_hours": 2,
+      "deadline_day": 0,
+      "business_priority": 1,
+      "amount_eur": 700
+    },
+    {
+      "case_id": "BL00-01",
+      "arrival_order": 5,
+      "required_skill": "property",
+      "duration_hours": 2,
+      "deadline_day": 0,
+      "business_priority": 2,
+      "amount_eur": 3400
+    },
+    {
+      "case_id": "BL00-02",
+      "arrival_order": 6,
+      "required_skill": "motor",
+      "duration_hours": 1,
+      "deadline_day": 1,
+      "business_priority": 3,
+      "amount_eur": 600
+    }
+  ],
+  "reviewers": [
+    {
+      "reviewer_id": "R-A",
+      "skills": [
+        "motor",
+        "property"
+      ],
+      "daily_capacity_hours": [
+        3,
+        3
+      ]
+    },
+    {
+      "reviewer_id": "R-B",
+      "skills": [
+        "motor"
+      ],
+      "daily_capacity_hours": [
+        2,
+        3
+      ]
+    },
+    {
+      "reviewer_id": "R-C",
+      "skills": [
+        "property",
+        "liability"
+      ],
+      "daily_capacity_hours": [
+        2,
+        2
+      ]
+    }
+  ]
+}

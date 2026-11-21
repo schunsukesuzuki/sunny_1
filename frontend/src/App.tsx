@@ -176,7 +176,7 @@ export default function App() {
 
   return <div className="app-shell">
     <header className="masthead">
-      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.21.1</div>
+      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.23</div>
       <h1>Claims Operations <span>Planner</span></h1>
       <p className="lead">German InsurTech事業開発：審査人員を増やさず、保険金請求の期限超過を減らせるか。</p>
       <div className="tags"><span>架空顧客 / 合成請求データ</span><span>Qwen3-Coder + ODA-Fin-RL-8B · Ollama / Metal</span><span>E2B isolated execution</span><span>R0 → R1 requirement refinement</span></div>
@@ -540,12 +540,17 @@ export default function App() {
         },!fullRunId.trim(),'secondary')}
       </div>
       {fullRun && <section className="assessment-report" aria-label="00〜09 一括実行状況">
-        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.22</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
+        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.23</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
           <Status good={fullRun.status==='COMPLETE'}>{fullRun.status}</Status></div>
         {fullRun.topic_alignment && <div className="notice"><strong>公開資料と保険請求課題の対応:</strong> {fullRun.topic_alignment.status} — {fullRun.topic_alignment.reason}。一致は原文の意味的支持・因果の証明ではありません。</div>}
         {fullRun.grounded_contract_status && <p className="muted">担当者割当KPIの検証: {fullRun.grounded_contract_status}（該当要件のみ）</p>}
         {fullRun.requirement_type && <div className="notice"><strong>選択要件:</strong> {fullRun.requirement_type} ／ <strong>対応する受入試験:</strong> {fullRun.requirement_trace_status || '未実行'}<p className="muted">「進捗通知」の場合、R1担当者割当は別系統の回帰実験です。進捗通知プロトタイプの結果だけを当該要件の合成評価として扱います。</p></div>}
         <p className="muted">現在の段階: {fullRun.phase}　／　モード: {fullRun.evidence_mode==='public'?'外部データ利用':'合成デモのみ'}　／　R1: {fullRun.r1_mode || 'legacy'}　／　各工程はDockerの<code>artifacts/</code>に逐次保存します。</p>
+        {fullRun.boundary_assurance && <div className="notice">
+          <strong>08g 境界整合性検査：</strong>{fullRun.boundary_assurance.status} — 根拠・要件・承認・実験成果物の引継ぎを検査します。
+          <p className="muted">これはID・状態・依存関係の整合性検査です。顧客要件の妥当性や本番安全性を証明するものではありません。</p>
+          <Disclosure title="境界検査・失敗リスクの分類・模擬反例を表示" data={fullRun.boundary_assurance}/>
+        </div>}
         {fullRun.blind_optimality && <div className="notice">
           <strong>08f 独立したランダム化行動HOLDOUT：</strong>{fullRun.blind_optimality.status} / {fullRun.blind_optimality.suite_size || 0}件
           <p className="muted">証明された最適性ギャップは、ソルバーがOPTIMALを返したケースだけ計算しています。CP-SATが未導入の場合は小規模全探索に切り替わります。</p>
