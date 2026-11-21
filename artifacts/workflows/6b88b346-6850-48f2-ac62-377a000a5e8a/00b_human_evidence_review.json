@@ -1,0 +1,31 @@
+{
+  "decision": "approved",
+  "actor": "Technical reviewer (demo)",
+  "rationale": "公開資料を参照し、次工程では顧客未承認の検証仮説としてのみ扱う。",
+  "approved_requirement_hypothesis": "Financial services should optimize digital platforms to meet customer demand for online banking experiences",
+  "selected_evidence_ids": [
+    "PUB-001"
+  ],
+  "evidence_pointer_records": [
+    {
+      "evidence_id": "PUB-001",
+      "chunk_id": "community_credit:transcripts.txt:1302160",
+      "source_file": "transcripts.txt",
+      "source_url": "https://zenodo.org/records/10425908",
+      "start_char": 1302160,
+      "end_char": 1303109,
+      "quote": "viewer  07:15\rWhen you have the option do you prefer to handle banking online or to go in person?\r\rParticipant  07:26\rOnline. If I go in person, it's basically once maybe every six weeks to... when I receive some cash for one reason or another, I deposit it and do that at the branch. Or perhaps if I need to cash for something that they only take cash�for example, my, my barber, he only takes cash. So if I don't have ",
+      "reference_status": "EXACT_LOCAL_EXCERPT",
+      "source_record_id": null,
+      "support_status": "NOT_SEMANTICALLY_VERIFIED",
+      "source_type": "INTERVIEW_TRANSCRIPT",
+      "validity": "UNVERIFIED"
+    }
+  ],
+  "rag_id": "fd8c5513-4405-4114-b853-56693664fa51",
+  "dataset_id": "community_credit",
+  "created_at": "2026-11-21T05:24:16+00:00",
+  "approval_scope": "DEMO_HYPOTHESIS_ONLY",
+  "semantic_evidence_support": "UNVERIFIED",
+  "customer_requirement_approval": "NOT_OBTAINED"
+}

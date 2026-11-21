@@ -43,7 +43,7 @@ def make_manifest(artifact_dir: Path, export_id: str, identifiers: dict,
             files.append(entry)
             total+=size
     incomplete=bool(missing or skipped or any(stage.get('status') not in ('COMPLETED','COMPLETED_WITH_FINDINGS') for stage in stages))
-    return {'format_version':'AUDIT-EXPORT-v0.15.0', 'export_id':export_id,
+    return {'format_version':'AUDIT-EXPORT-v0.17.0', 'export_id':export_id,
             'created_at':created_at,'status':'PARTIAL' if incomplete else 'COMPLETE',
             'experiment_id':identifiers.get('experiments'),
             'linked_ids':identifiers,'stages':stages,'files':files,'missing':missing,
@@ -53,14 +53,15 @@ def make_manifest(artifact_dir: Path, export_id: str, identifiers: dict,
 
 
 def make_intro(manifest:dict, assessment:dict|None)->str:
-    lines=['# Claims Operations Planner — v0.15 01–09 Batch Audit Package','',
+    lines=['# Claims Operations Planner — v0.17 Evidence-to-Evaluation Audit Package','',
            f"- Export: `{manifest['export_id']}`",
            f"- Original experiment: `{manifest['experiment_id']}`",
            f"- Export completeness: **{manifest['status']}**",
            f"- Files included: **{manifest['file_count']}**",
            '- All methods run on synthetic customer/case fixtures, not real customer data.',
            '- GO, if any, means *Customer Discovery only*. Production is never authorized.',
-           '- Human requirement approval is always explicit. v0.15 batch pauses at step 05; original LLM HOLD is preserved.',
+           '- Public-evidence mode pauses at step 00b for explicit human review; step 05 also requires human approval.',
+           '- Public evidence hypotheses in the 01 brief do not change the fixed synthetic R0/R1 contracts.',
            '- Raw source snapshots are immutable. Additional policy/stress validation is stored separately.',
            '- `manifest.json` lists every included file with raw-bytes SHA256, omitted categories, and failures.','',
            '## Execution stages','']
@@ -78,6 +79,8 @@ def make_intro(manifest:dict, assessment:dict|None)->str:
     else:
         lines.append('- Assessment not produced; see stage failure in manifest.')
     lines.extend(['','## Reading order','',
+                  '0. `workflows/<id>/00_evidence_grounded_requirements.json`, `00_source_manifest.json`, `00_index_metadata.json`, `00_rag_report.md` — retrieved public evidence; no real-world approval',
+                  '0b. `workflows/<id>/00b_human_evidence_review.json` — human-selected IDs and hypothesis (demo-only); check `01_input.json` effective_brief',
                   '1. `workflows/<id>/01_input.json` and `02_service_design.json` — input and generated service design (v0.15 full batch)',
                   '2. `assessments/<id>/report.md` — business/delivery decision and evidence register',
                   '3. `policy_validations/<id>/report.md` — semantic contract and stress failures',
@@ -89,6 +92,9 @@ def make_intro(manifest:dict, assessment:dict|None)->str:
                   '- No high-load result can be generalized to production distributions.',
                   '- Unassigned claims are counted as missed deadlines; never ignore them when comparing methods.',
                   '- Synthetic evidence IDs are internal pointers, not public citations or validation.',
+                  '- Dataset download and indexing must actually succeed in public mode; never interpret missing data as COMPLETED.',
+                  '- Source manifest/file hashes establish local integrity only, not semantic truth or representative sampling.',
+                  '- Public evidence excerpts remain unverified as supporting customer requirements; RAG is never automatic approval.',
                   '- AI model diagnostics, human approval, and KPI PASS have separate scopes.',
                   ''])
     if manifest['missing'] or manifest['skipped']:

@@ -1,0 +1,119 @@
+{
+  "created_at": "2026-11-21T05:26:51+00:00",
+  "linked_artifacts": {
+    "runs": {
+      "artifact_id": "7ec35f52-2ceb-404f-9cc8-42fc30aa0069",
+      "files": [
+        "dataset_hashes.json",
+        "deadline_reference.py",
+        "e2b_deadline_seed_10042.json",
+        "e2b_deadline_seed_10043.json",
+        "e2b_deadline_seed_42.json",
+        "e2b_deadline_seed_43.json",
+        "e2b_deadline_seed_44.json",
+        "e2b_fifo_seed_10042.json",
+        "e2b_fifo_seed_10043.json",
+        "e2b_fifo_seed_42.json",
+        "e2b_fifo_seed_43.json",
+        "e2b_fifo_seed_44.json",
+        "fifo.py",
+        "report.md",
+        "run.json"
+      ]
+    },
+    "proposals": {
+      "artifact_id": "31e61107-bb23-49fd-bdc7-d3d0f30cf162",
+      "files": [
+        "decision.json",
+        "oda_diagnosis.json",
+        "proposal.json",
+        "qwen_diagnosis.json",
+        "request.json"
+      ]
+    },
+    "approvals": {
+      "artifact_id": "b2513311-89ee-4346-bfcf-fc633b4c08ee",
+      "files": [
+        "approval.json",
+        "evaluation_started.json",
+        "generated_227208ee-33aa-418c-935e-c905e81af095.json",
+        "generated_227208ee-33aa-418c-935e-c905e81af095.py"
+      ]
+    },
+    "experiments": {
+      "artifact_id": "e6271dae-951f-44a4-a512-a4f264989dfc",
+      "files": [
+        "attempt_00.diff",
+        "attempt_00.json",
+        "attempt_00.py",
+        "dev_attempt_00_generated_seed_142.json",
+        "dev_attempt_00_generated_seed_143.json",
+        "dev_attempt_00_generated_seed_144.json",
+        "dev_reference_deadline_seed_142.json",
+        "dev_reference_deadline_seed_143.json",
+        "dev_reference_deadline_seed_144.json",
+        "dev_reference_fifo_seed_142.json",
+        "dev_reference_fifo_seed_143.json",
+        "dev_reference_fifo_seed_144.json",
+        "experiment.json",
+        "holdout_deadline_seed_20042.json",
+        "holdout_deadline_seed_20043.json",
+        "holdout_fifo_seed_20042.json",
+        "holdout_fifo_seed_20043.json",
+        "holdout_generated_seed_20042.json",
+        "holdout_generated_seed_20043.json",
+        "input_candidate.py",
+        "report.md",
+        "selected_r1.py",
+        "started.json"
+      ]
+    },
+    "policy_validations": {
+      "artifact_id": "4089d035-f16a-4444-b78a-e7ad760cd8a3",
+      "files": [
+        "behavior_generated_seed_900001.json",
+        "behavior_generated_seed_900002.json",
+        "behavior_input_900001.json",
+        "behavior_input_900002.json",
+        "report.md",
+        "started.json",
+        "stress_deadline_seed_910000.json",
+        "stress_deadline_seed_910001.json",
+        "stress_deadline_seed_910002.json",
+        "stress_deadline_seed_910003.json",
+        "stress_fifo_seed_910000.json",
+        "stress_fifo_seed_910001.json",
+        "stress_fifo_seed_910002.json",
+        "stress_fifo_seed_910003.json",
+        "stress_generated_seed_910000.json",
+        "stress_generated_seed_910001.json",
+        "stress_generated_seed_910002.json",
+        "stress_generated_seed_910003.json",
+        "stress_input_910000.json",
+        "stress_input_910001.json",
+        "stress_input_910002.json",
+        "stress_input_910003.json",
+        "validation.json"
+      ]
+    },
+    "benchmarks": {
+      "artifact_id": "83cbfda3-f679-4892-8cfd-cc2306a6bf4d",
+      "files": [
+        "benchmark.json",
+        "report.md",
+        "started.json",
+        "trial_01_coding_fifo_sla_conflict.json",
+        "trial_02_finance_fifo_sla_conflict.json",
+        "trial_03_coding_actual_fifo_implementation_bug.json",
+        "trial_04_finance_actual_fifo_implementation_bug.json"
+      ]
+    },
+    "assessments": {
+      "artifact_id": "eadc70ea-8ab3-4be8-800f-a309b195105b",
+      "files": [
+        "assessment.json",
+        "report.md"
+      ]
+    }
+  }
+}

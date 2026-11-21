@@ -1,0 +1,10 @@
+{
+  "dataset_id": "community_credit",
+  "source_manifest_sha256": "812a9084e9fbc4089f07d1695a84e3267dec6277c2bf537b7b3af4fed9bda46d",
+  "indexed_at_utc": "2026-11-21T05:22:47+00:00",
+  "chunk_count": 1668,
+  "method": "BM25 + character ngram fuzzy reranking with RRF; optional semantic embeddings not used",
+  "limitations": "Metadata and exact excerpts are traceable. Retrieval relevance and semantic support are not proven.",
+  "index_action": "BUILT",
+  "index_sha256_raw": "edacbb8ecba4086f77fb7f5b7f7ce070516c360bcab25323077a4c471e8a297f"
+}

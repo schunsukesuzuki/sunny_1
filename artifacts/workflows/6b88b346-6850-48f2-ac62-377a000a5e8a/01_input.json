@@ -1,0 +1,26 @@
+{
+  "original_brief": "想定顧客：ドイツ国内で実績があり欧州の複数国への展開を検討する保険業務SaaS企業（架空）。案件ごとに審査所要時間、期限、保険金請求額、必要資格が異なる。固定の審査人員・勤務時間で、先着順よりも期限超過を減らしたい。支払可否は人間が判断する。顧客固有のEU法規制適合は未検証。サービス設計→コード生成→E2B評価→要件改訂を再現可能な実験にする。",
+  "effective_brief": "想定顧客：ドイツ国内で実績があり欧州の複数国への展開を検討する保険業務SaaS企業（架空）。案件ごとに審査所要時間、期限、保険金請求額、必要資格が異なる。固定の審査人員・勤務時間で、先着順よりも期限超過を減らしたい。支払可否は人間が判断する。顧客固有のEU法規制適合は未検証。サービス設計→コード生成→E2B評価→要件改訂を再現可能な実験にする。\n\n[PUBLIC EVIDENCE — HUMAN-REVIEWED HYPOTHESIS, NOT CUSTOMER APPROVAL]\nHypothesis: Financial services should optimize digital platforms to meet customer demand for online banking experiences\nEvidence pointers (source statements only): PUB-001\nEvidence support, causal attribution, customer validity: UNVERIFIED. R0 FIFO and R1 contracts remain synthetic fixed test specifications.\n[END HUMAN-REVIEWED HYPOTHESIS]",
+  "approved_hypothesis": "Financial services should optimize digital platforms to meet customer demand for online banking experiences",
+  "selected_evidence_ids": [
+    "PUB-001"
+  ],
+  "rag_id": "fd8c5513-4405-4114-b853-56693664fa51",
+  "evidence_mode": "public",
+  "inputs": {
+    "evidence_mode": "public",
+    "dataset_id": "community_credit",
+    "evidence_query": "financial services customer pain points trust access fees",
+    "llm_extraction": true,
+    "brief": "想定顧客：ドイツ国内で実績があり欧州の複数国への展開を検討する保険業務SaaS企業（架空）。案件ごとに審査所要時間、期限、保険金請求額、必要資格が異なる。固定の審査人員・勤務時間で、先着順よりも期限超過を減らしたい。支払可否は人間が判断する。顧客固有のEU法規制適合は未検証。サービス設計→コード生成→E2B評価→要件改訂を再現可能な実験にする。",
+    "seed": 42,
+    "evidence_condition": "counterexample",
+    "case_ids": [
+      "fifo_sla_conflict",
+      "actual_fifo_implementation_bug"
+    ],
+    "repetitions": 1
+  },
+  "customer_validity": "UNVERIFIED",
+  "r0_contract_changed": false
+}

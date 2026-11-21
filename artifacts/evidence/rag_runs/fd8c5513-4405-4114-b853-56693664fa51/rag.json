@@ -1,0 +1,241 @@
+{
+  "dataset_id": "community_credit",
+  "created_at": "2026-11-21T05:22:47+00:00",
+  "query": "financial services customer pain points trust access fees",
+  "evidence": [
+    {
+      "evidence_id": "PUB-001",
+      "chunk_id": "community_credit:transcripts.txt:1302160",
+      "source_file": "transcripts.txt",
+      "source_url": "https://zenodo.org/records/10425908",
+      "start_char": 1302160,
+      "end_char": 1303109,
+      "quote": "viewer  07:15\rWhen you have the option do you prefer to handle banking online or to go in person?\r\rParticipant  07:26\rOnline. If I go in person, it's basically once maybe every six weeks to... when I receive some cash for one reason or another, I deposit it and do that at the branch. Or perhaps if I need to cash for something that they only take cash�for example, my, my barber, he only takes cash. So if I don't have ",
+      "reference_status": "EXACT_LOCAL_EXCERPT",
+      "source_record_id": null,
+      "support_status": "NOT_SEMANTICALLY_VERIFIED",
+      "source_type": "INTERVIEW_TRANSCRIPT",
+      "validity": "UNVERIFIED"
+    },
+    {
+      "evidence_id": "PUB-002",
+      "chunk_id": "community_credit:transcripts.txt:171380",
+      "source_file": "transcripts.txt",
+      "source_url": "https://zenodo.org/records/10425908",
+      "start_char": 171380,
+      "end_char": 172330,
+      "quote": "wer  59:50  \rYeah. Basically we're trying to understand what makes people trust or distrust of variety of financial institutions. And the reason we're doing that is we're trying to help institutions that are more trustworthy, which so for us, we've worked with a lot of credit unions that are community based, that are nonprofit, you know, that kind of thing. And we're trying to figure out if credit unions can work mor",
+      "reference_status": "EXACT_LOCAL_EXCERPT",
+      "source_record_id": null,
+      "support_status": "NOT_SEMANTICALLY_VERIFIED",
+      "source_type": "INTERVIEW_TRANSCRIPT",
+      "validity": "UNVERIFIED"
+    },
+    {
+      "evidence_id": "PUB-003",
+      "chunk_id": "community_credit:transcripts.txt:1220160",
+      "source_file": "transcripts.txt",
+      "source_url": "https://zenodo.org/records/10425908",
+      "start_char": 1220160,
+      "end_char": 1221110,
+      "quote": "h? \r\rParticipant  06:43\rFirst City. \r\rInterviewer  06:44\rFirst City? Okay. How did you decide to bank with First City?\r\rParticipant  06:52\rA relative told me about it. They were offering money if you open a bank account. So I started to try it.\r\rInterviewer  07:06\rDo you feel like you like First City?\r\rParticipant  07:11\rIt's okay. I don't think it's the best for, I don't know, customer service or services or informa",
+      "reference_status": "EXACT_LOCAL_EXCERPT",
+      "source_record_id": null,
+      "support_status": "NOT_SEMANTICALLY_VERIFIED",
+      "source_type": "INTERVIEW_TRANSCRIPT",
+      "validity": "UNVERIFIED"
+    },
+    {
+      "evidence_id": "PUB-004",
+      "chunk_id": "community_credit:transcripts.txt:700280",
+      "source_file": "transcripts.txt",
+      "source_url": "https://zenodo.org/records/10425908",
+      "start_char": 700280,
+      "end_char": 701230,
+      "quote": "mary financial institution, would do for you, so kind of services or products that you wish they offered?\r\rParticipant  16:45\rAgain, the answer at this stage in my life is totally different than what it would have been before. At this stage, let me do my banking, don't charge me any fees, and I'm perfectly content.\r\rInterviewer  17:00\rOkay, so kinda leave me alone. Let me do my own thing.\r\rParticipant  17:03\rYeah, ag",
+      "reference_status": "EXACT_LOCAL_EXCERPT",
+      "source_record_id": null,
+      "support_status": "NOT_SEMANTICALLY_VERIFIED",
+      "source_type": "INTERVIEW_TRANSCRIPT",
+      "validity": "UNVERIFIED"
+    },
+    {
+      "evidence_id": "PUB-005",
+      "chunk_id": "community_credit:transcripts.txt:418200",
+      "source_file": "transcripts.txt",
+      "source_url": "https://zenodo.org/records/10425908",
+      "start_char": 418200,
+      "end_char": 419150,
+      "quote": "mportant for me to understand or kind of irrelevant to this discussion?\r\rParticipant  1:01:41  \rWhat is the overall general study that you are trying to accomplish?\r\rInterviewer  1:03:27  \rYeah, basically, what we're trying to do is to figure out at several different things, we're trying to figure out. There's a huge number of people in the US who are falling into the category of either unbanked or underbanked, meani",
+      "reference_status": "EXACT_LOCAL_EXCERPT",
+      "source_record_id": null,
+      "support_status": "NOT_SEMANTICALLY_VERIFIED",
+      "source_type": "INTERVIEW_TRANSCRIPT",
+      "validity": "UNVERIFIED"
+    },
+    {
+      "evidence_id": "PUB-006",
+      "chunk_id": "community_credit:transcripts.txt:623201",
+      "source_file": "transcripts.txt",
+      "source_url": "https://zenodo.org/records/10425908",
+      "start_char": 623201,
+      "end_char": 624150,
+      "quote": "it and is like, trying to convince them and they're like�meh. [laughs] And everyone points to the bubble that burst, the drop in value that just happened, and I feel like it's pretty hard to argue against that.\r\rParticipant  38:28\rYeah I mean I already had these feelings before that. I will say like, because I don't pay attention to crypto like I didn't really, like put two and two together about that whole thing whe",
+      "reference_status": "EXACT_LOCAL_EXCERPT",
+      "source_record_id": null,
+      "support_status": "NOT_SEMANTICALLY_VERIFIED",
+      "source_type": "INTERVIEW_TRANSCRIPT",
+      "validity": "UNVERIFIED"
+    }
+  ],
+  "requirement_candidates": [
+    {
+      "requirement_candidate_id": "RC-001",
+      "evidence_ids": [
+        "PUB-001"
+      ],
+      "observed_issue": "viewer  07:15\rWhen you have the option do you prefer to handle banking online or to go in person?\r\rParticipant  07:26\rOnline. If I go in person, it's basically once maybe every six weeks to... when I receive some cash for one reason or another, I deposit it and do that at the branch. Or perhaps if I need to cash for so",
+      "proposed_requirement": "REQUIRES_HUMAN_DERIVATION",
+      "business_kpi": "TO_BE_DEFINED_WITH_CUSTOMER",
+      "alternative_explanations": [
+        "Alternative causes not yet evaluated"
+      ],
+      "status": "REQUIRES_VALIDATION",
+      "reason": "Verbatim retrieval is evidence of a statement, not of an approved business requirement."
+    },
+    {
+      "requirement_candidate_id": "RC-002",
+      "evidence_ids": [
+        "PUB-002"
+      ],
+      "observed_issue": "wer  59:50  \rYeah. Basically we're trying to understand what makes people trust or distrust of variety of financial institutions. And the reason we're doing that is we're trying to help institutions that are more trustworthy, which so for us, we've worked with a lot of credit unions that are community based, that are n",
+      "proposed_requirement": "REQUIRES_HUMAN_DERIVATION",
+      "business_kpi": "TO_BE_DEFINED_WITH_CUSTOMER",
+      "alternative_explanations": [
+        "Alternative causes not yet evaluated"
+      ],
+      "status": "REQUIRES_VALIDATION",
+      "reason": "Verbatim retrieval is evidence of a statement, not of an approved business requirement."
+    },
+    {
+      "requirement_candidate_id": "RC-003",
+      "evidence_ids": [
+        "PUB-003"
+      ],
+      "observed_issue": "h? \r\rParticipant  06:43\rFirst City. \r\rInterviewer  06:44\rFirst City? Okay. How did you decide to bank with First City?\r\rParticipant  06:52\rA relative told me about it. They were offering money if you open a bank account. So I started to try it.\r\rInterviewer  07:06\rDo you feel like you like First City?\r\rParticipant  07:",
+      "proposed_requirement": "REQUIRES_HUMAN_DERIVATION",
+      "business_kpi": "TO_BE_DEFINED_WITH_CUSTOMER",
+      "alternative_explanations": [
+        "Alternative causes not yet evaluated"
+      ],
+      "status": "REQUIRES_VALIDATION",
+      "reason": "Verbatim retrieval is evidence of a statement, not of an approved business requirement."
+    },
+    {
+      "requirement_candidate_id": "RC-004",
+      "evidence_ids": [
+        "PUB-004"
+      ],
+      "observed_issue": "mary financial institution, would do for you, so kind of services or products that you wish they offered?\r\rParticipant  16:45\rAgain, the answer at this stage in my life is totally different than what it would have been before. At this stage, let me do my banking, don't charge me any fees, and I'm perfectly content.\r\rIn",
+      "proposed_requirement": "REQUIRES_HUMAN_DERIVATION",
+      "business_kpi": "TO_BE_DEFINED_WITH_CUSTOMER",
+      "alternative_explanations": [
+        "Alternative causes not yet evaluated"
+      ],
+      "status": "REQUIRES_VALIDATION",
+      "reason": "Verbatim retrieval is evidence of a statement, not of an approved business requirement."
+    },
+    {
+      "requirement_candidate_id": "RC-005",
+      "evidence_ids": [
+        "PUB-005"
+      ],
+      "observed_issue": "mportant for me to understand or kind of irrelevant to this discussion?\r\rParticipant  1:01:41  \rWhat is the overall general study that you are trying to accomplish?\r\rInterviewer  1:03:27  \rYeah, basically, what we're trying to do is to figure out at several different things, we're trying to figure out. There's a huge n",
+      "proposed_requirement": "REQUIRES_HUMAN_DERIVATION",
+      "business_kpi": "TO_BE_DEFINED_WITH_CUSTOMER",
+      "alternative_explanations": [
+        "Alternative causes not yet evaluated"
+      ],
+      "status": "REQUIRES_VALIDATION",
+      "reason": "Verbatim retrieval is evidence of a statement, not of an approved business requirement."
+    },
+    {
+      "requirement_candidate_id": "RC-006",
+      "evidence_ids": [
+        "PUB-006"
+      ],
+      "observed_issue": "it and is like, trying to convince them and they're like�meh. [laughs] And everyone points to the bubble that burst, the drop in value that just happened, and I feel like it's pretty hard to argue against that.\r\rParticipant  38:28\rYeah I mean I already had these feelings before that. I will say like, because I don't pa",
+      "proposed_requirement": "REQUIRES_HUMAN_DERIVATION",
+      "business_kpi": "TO_BE_DEFINED_WITH_CUSTOMER",
+      "alternative_explanations": [
+        "Alternative causes not yet evaluated"
+      ],
+      "status": "REQUIRES_VALIDATION",
+      "reason": "Verbatim retrieval is evidence of a statement, not of an approved business requirement."
+    }
+  ],
+  "retrieval": {
+    "retrieval_method": "BM25 + character ngram fuzzy reranking with RRF; optional semantic embeddings not used",
+    "total_indexed": 1668
+  },
+  "evaluation": {
+    "citation_pointer_accuracy": "PASS_LOCAL_POINTERS_ONLY",
+    "evidence_validity": "UNVERIFIED",
+    "semantic_entailment": "UNVERIFIED",
+    "requirements_correctness": "UNVERIFIED",
+    "customer_approval": "NOT_OBTAINED",
+    "contradiction_search": "NOT_PROVEN"
+  },
+  "safe_summary": "Public statements retrieved; human must derive, verify and approve any requirements. These are NOT customer requirements.",
+  "rag_id": "fd8c5513-4405-4114-b853-56693664fa51",
+  "llm_suggestions": [
+    {
+      "problem_statement": "Customer preference for online banking over in-person visits",
+      "requirement_hypothesis": "Financial services should optimize digital platforms to meet customer demand for online banking experiences",
+      "supporting_evidence_ids": [
+        "PUB-001"
+      ],
+      "alternative_explanation": "Participants may prefer online banking due to convenience, time efficiency, or lack of immediate need for in-person services, rather than a fundamental preference for digital over physical banking channels. The limited in-person interactions described could be situational rather than indicative of overall channel preference.",
+      "suggested_kpi": "Percentage of customers using online banking vs. in-person services",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    },
+    {
+      "problem_statement": "Lack of trust in financial institutions",
+      "requirement_hypothesis": "Financial institutions need to improve trustworthiness to attract and retain customers",
+      "supporting_evidence_ids": [
+        "PUB-002"
+      ],
+      "alternative_explanation": "Participants may be expressing general skepticism about financial institutions rather than specific trust issues with particular providers. The discussion focuses on institutional trustworthiness broadly, not individual provider reliability.",
+      "suggested_kpi": "Customer trust scores or trust-related survey responses",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    },
+    {
+      "problem_statement": "Customer dissatisfaction with banking fees",
+      "requirement_hypothesis": "Customers desire fee-free banking services to reduce financial burden",
+      "supporting_evidence_ids": [
+        "PUB-004"
+      ],
+      "alternative_explanation": "Participants may be expressing general dissatisfaction with banking costs rather than specific fee structures. The preference for 'no fees' could reflect broader economic concerns or past negative experiences with fees, not necessarily current fee policies.",
+      "suggested_kpi": "Customer complaints about fees or fee-free service adoption rates",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    },
+    {
+      "problem_statement": "Low trust in financial institutions due to past economic events",
+      "requirement_hypothesis": "Financial institutions should address historical distrust related to economic downturns and market volatility",
+      "supporting_evidence_ids": [
+        "PUB-006"
+      ],
+      "alternative_explanation": "Participants may be expressing general economic skepticism rather than specific distrust of financial institutions. The reference to 'the bubble that burst' could reflect broader economic concerns or lack of understanding about financial markets, not necessarily institutional-specific trust issues.",
+      "suggested_kpi": "Customer sentiment analysis related to economic events and financial trust",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    }
+  ]
+}

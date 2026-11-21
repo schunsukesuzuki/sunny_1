@@ -21,7 +21,7 @@ def _start(client,monkeypatch, condition='counterexample'):
     monkeypatch.setattr(llm,'benchmark_diagnosis',benchmark_model_stub)
     s=client.get('/api/sample').json()
     r=client.post('/api/full-run/start',json={
-        'brief':s['brief'],'seed':42,'evidence_condition':condition,
+        'brief':s['brief'],'evidence_mode':'synthetic','seed':42,'evidence_condition':condition,
         'case_ids':['fifo_sla_conflict','actual_fifo_implementation_bug'], 'repetitions':1})
     assert r.status_code==200,r.text
     state=client.get(f"/api/full-run/{r.json()['workflow_id']}").json()
@@ -36,7 +36,7 @@ def test_full_run_waits_for_explicit_human_approval_and_exports_partial(client,m
     assert st['linked_ids']['approvals'] is None
     assert not any('experiments' in x['name'] for x in st['stages'])
     assert [x['name'] for x in st['stages']]==[
-        '01_input','02_service_design','03_r0_e2b','04_independent_diagnoses','05_human_approval']
+        '00_evidence_grounded_requirements','00b_evidence_review','01_input','02_service_design','03_r0_e2b','04_independent_diagnoses','05_human_approval']
     assert st['bundle_url']
     with zipfile.ZipFile(io.BytesIO(client.get(st['bundle_url']).content)) as z:
         assert json.loads(z.read('manifest.json'))['status']=='PARTIAL'
@@ -57,7 +57,7 @@ def test_full_run_waits_for_explicit_human_approval_and_exports_partial(client,m
     final=client.get(f"/api/full-run/{st['workflow_id']}").json()
     assert final['status']=='COMPLETE', final
     assert all(final['linked_ids'].values())
-    assert len(final['stages'])==10
+    assert len(final['stages'])==12
     assert final['bundle_url']
     with zipfile.ZipFile(io.BytesIO(client.get(final['bundle_url']).content)) as z:
         manifest=json.loads(z.read('manifest.json'))
@@ -69,6 +69,8 @@ def test_full_run_waits_for_explicit_human_approval_and_exports_partial(client,m
         for kind in ('runs','proposals','approvals','experiments','benchmarks','policy_validations','assessments','workflows'):
             assert kind in {x['kind'] for x in manifest['files']}
         assert '00_START_HERE.md' in z.namelist()
+        assert manifest['excluded_steps']['00_evidence_grounded_requirements'].startswith('User explicitly selected')
+        assert '00_evidence_grounded_requirements' not in manifest['expected_steps']
     assert client.post('/api/full-run/approve-and-continue',json={'workflow_id':st['workflow_id'],
         'approval':{'proposal_id':st['review']['proposal_id'],'decision':'approved',
                     'actor':'Reviewer','rationale':'Do not run twice'}}).status_code==409
@@ -119,7 +121,7 @@ def test_full_run_failure_still_emits_partial_zip(client,monkeypatch):
     def fail(*args): raise RuntimeError('E2B initial failure')
     monkeypatch.setattr(main,'run_in_e2b',fail)
     s=client.get('/api/sample').json()
-    result=client.post('/api/full-run/start',json={'brief':s['brief'],'seed':42})
+    result=client.post('/api/full-run/start',json={'brief':s['brief'],'evidence_mode':'synthetic','seed':42})
     assert result.status_code==200
     st=client.get(f"/api/full-run/{result.json()['workflow_id']}").json()
     assert st['status']=='PARTIAL',st

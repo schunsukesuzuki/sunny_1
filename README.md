@@ -1,6 +1,10 @@
-> **v0.15 — 01〜09 Full Workflow:** 画面10から、顧客入力 → Qwen設計 → R0 E2B → Qwen/ODA独立診断 → **人間承認待ち** → R1生成/評価 → 履歴インデックス → 診断ベンチマーク＋R1仕様/ストレス → 二軸事業評価をまとめて実行し、失敗も含めて1つのZIPへ保存します。承認/却下は必ず人間が明示します。詳細は `docs/v015-full-workflow.md`。
+> **v0.17 — Step 10 actually runs Evidence RAG:** 公開データモードでは、ボタンから **00の取得（未取得時）・SHA256照合・索引化・検索・要件候補作成**を起動。**00bでは根拠IDと要件仮説を人間が選択・承認するまで停止**し、その後01〜04、05で再度人間承認、06〜09を実行し、実験・根拠・承認記録を一つのZIPに保存します。取得失敗時は `FAILED`/`PARTIAL` で停止し、**synthetic-demoへの自動フォールバックはしません**。合成モードは明示的に選択した場合だけ動きます。`docs/v017-full-evidence-pipeline.md` を参照。
 
-> **v0.14（旧方式の説明） — R1 Policy / Stress Validation + One-Click Audit Export:** 既存R1の候補コードを再実行し、期限優先・希少資格を巡る行動プローブ、合成ストレス4シナリオ、Qwen/ODAの固定診断ベンチマーク、二軸事業評価を一度に実行し、完全な証跡を単一ZIPへ保存します。旧API `/api/pipeline/run-and-save` で利用できます。v0.15の画面10は新しい01〜09一括方式に置き換わっています。**元のR0/R1実験・人間承認は改変せず、取得失敗時はPARTIAL ZIPと欠落理由を保存します。** 仕様：`docs/v014-complete-audit-pipeline.md`。
+> **v0.16 — Evidence-grounded Requirements RAG（旧バージョンの説明）:** 00画面でCommunity Credit匿名化インタビューとCFPB公開苦情（件数制限付き）を配布元から個別取得し、データセットを**別ZIPで保存**できます。元資料の出所・SHA256・文字位置に紐づけた検索、根拠付き要求仮説（Qwenによる抽出は任意）、未検証項目の表示、RAG証跡のZIP保存を追加。10の一括実行ZIPにも00の結果を任意で添付します。**引用の正確さは顧客要求の妥当性の証明ではありません。** `docs/v016-evidence-grounded-requirements.md` を参照。
+
+> **v0.16 — 00 RAG + 01〜09 Full Workflow:** 画面10から、任意の00 RAG証跡を添付し、顧客入力 → Qwen設計 → R0 E2B → Qwen/ODA独立診断 → **人間承認待ち** → R1生成/評価 → 履歴インデックス → 診断ベンチマーク＋R1仕様/ストレス → 二軸事業評価をまとめて実行し、失敗も含めて1つのZIPへ保存します。承認/却下は必ず人間が明示します。詳細は `docs/v015-full-workflow.md`。
+
+> **v0.14（旧方式の説明） — R1 Policy / Stress Validation + One-Click Audit Export:** 既存R1の候補コードを再実行し、期限優先・希少資格を巡る行動プローブ、合成ストレス4シナリオ、Qwen/ODAの固定診断ベンチマーク、二軸事業評価を一度に実行し、完全な証跡を単一ZIPへ保存します。旧API `/api/pipeline/run-and-save` で利用できます。v0.16の画面10は新しい01〜09一括方式に置き換わっています。**元のR0/R1実験・人間承認は改変せず、取得失敗時はPARTIAL ZIPと欠落理由を保存します。** 仕様：`docs/v014-complete-audit-pipeline.md`。
 
 > **v0.13 — Business & Delivery Assessment:** 新しい手順09で、保存したR1実験を「Business Value & Feasibility」と「AI Delivery & Operational Readiness」の2軸で根拠付き評価。Markdown/証跡ZIPを出力できます。**合成の技術PASSは実顧客・本番のGOではありません。** 評価にはLLMを使わず、特定個人の氏名・所属は評価基準やレポートに含めません。仕様：`docs/v013-business-assessment.md`。
 
@@ -8,11 +12,11 @@
 
 > **v0.10:** 要件診断の多軸独立採点・Qwen/ODAの合成ベンチマーク・過去ログ再採点を追加。詳細は `docs/v010-requirement-diagnostic-benchmark.md`。
 
-# Claims Operations Planner — AI Venture Feasibility Studio v0.15
+# Claims Operations Planner — AI Venture Feasibility Studio v0.17
 
 ドイツの保険業務SaaS企業（**架空**）の事業開発PoC。**Qwen3-Coder 30B** はサービス設計・Pythonコード生成、**OpenDataArena/ODA-Fin-RL-8B** は金融ドメイン要件診断を担当。E2Bは生成コードを隔離して実行し、独立した決定的評価器で審査割当・期限・資格・稼働上限を検証します。v0.8にあったMarkdown結果保存を維持し、生成コード・差分・各試行のE2B実行証跡・履歴取得を拡張しました。
 
-> **技術デモです**：実顧客データもEU法令検索もありません。ODA-Fin-RL-8Bは金融推論モデルであり、EU保険規制への専門適合が実証されたモデルではありません。請求の支払可否・不正判定や法的判断は自動化しません。モデルの評価は合成データと模擬顧客証拠に限定されます。
+> **技術デモです**：架空の商談と合成案件が中心です。00画面では別途、公開された第三者の金融サービス利用者発言・苦情を検索できますが、想定顧客の実際の要求を裏付けるものではなく、EU法令検索も行いません。ODA-Fin-RL-8Bは金融推論モデルであり、EU保険規制への専門適合が実証されたモデルではありません。請求の支払可否・不正判定や法的判断は自動化しません。モデルの評価は合成データと模擬顧客証拠に限定されます。
 
 ## 新規事業仮説
 
@@ -61,8 +65,9 @@ docker compose up --build
 
 既にOllamaアプリが常駐している場合、別途 `ollama serve` は不要です。`bash scripts/preflight-mac.sh` で接続とモデル有無を確認できます。
 
-### 3. UI操作（v0.15）
+### 3. UI操作（v0.17）
 
+0. **Evidence-grounded Requirements RAG**：00画面でデータセットとクエリを選びます。手動取得・別ZIPダウンロード・索引化・検索も可能ですが、**10の公開データモードでは手動実行不要**で取得・索引化・検索が始まります。
 1. **顧客課題とR0サービス設計**：架空ブリーフ・seedを選択。
 2. **R0をE2B実行**：FIFO実装の仕様適合とDEV指標を確認。
 3. **Qwen × ODAで独立診断**：`SIM-SLA-001` を与え、両モデルの分類・理由・改訂提案を比較。証拠なしの対照条件も試せます。
@@ -71,7 +76,7 @@ docker compose up --build
 6. **レポートと全証跡ZIP**：成功・失敗の記録をMac側 `./artifacts/` へ保存。「保存した実験と監査証跡」から過去の結果を読み直せます。
 7. **08診断品質ベンチマーク**：QwenとODAへ同じ合成ケース・同じschemaを与えて独立採点。過去のproposal IDを再採点可能（非破壊）。
 8. **09 Business & Delivery Assessment**：R1実験IDを入力（06から自動入力、または07の履歴から選択）、二軸評価を生成。**v0.14の新しい仕様・ストレス・ベンチマークをまだ紐づけていない場合、HOLD_POLICY**となります。
-9. **10 一括実行＋保存**：承認済みR1の実験IDを選択し、08で指定した診断ベンチマークのケース/回数を利用して、行動プローブ・ストレス・診断・事業評価を連続実行。ブラウザが単一の完成ZIPをダウンロードし、Mac側 `artifacts/exports/<uuid>/complete_audit_package.zip` にも保存。PARTIALでも欠落一覧が入ります。
+9. **10 一括実行＋保存**：公開データモードでは **00を自動実行 → 00bで証拠IDと要件仮説の人間レビュー → 01〜04 → 05で別の人間承認 → 06〜09**。一括ZIPに根拠・出所ハッシュ・承認・コード・評価をまとめます。実顧客の要件の正当性は未保証。合成デモだけを行う場合は `synthetic` を明示的に選択。いずれもPARTIAL ZIPを保存します。
 
 ## 保存・監査
 
@@ -98,10 +103,12 @@ artifacts/
     behavior_input_*.json, behavior_generated_seed_*.json
     stress_input_*.json, stress_{fifo,deadline,generated}_seed_*.json
   workflows/<uuid>/
-    workflow.json, 01_input.json, 02_service_design.json, 07_history_snapshot.json
+    workflow.json, 00_evidence_grounded_requirements.json, 00_source_manifest.json
+    00_index_metadata.json, 00_rag_report.md, 00b_human_evidence_review.json
+    01_input.json, 02_service_design.json, 07_history_snapshot.json
     03_r0_started.json, 04_proposal_started.json, 08_benchmark_started.json, 08b_policy_started.json
   exports/<uuid>/
-    manifest.json, complete_audit_package.zip  # 01〜09フル実行中は随時更新
+    manifest.json, complete_audit_package.zip  # 00〜09（公開モード）または01〜09（合成モード）
     started.json, summary.md                   # 旧v0.14 APIの場合
   experiments/<uuid>/
     started.json, experiment.json, report.md, input_candidate.py, selected_r1.py
@@ -131,10 +138,11 @@ E2B stdout/stderrはSDK側で**末尾3000文字に制限して保存**します�
 - `POST /api/generate-r1`：ODA診断を参考情報として渡しQwenで生成、生成コード保存
 - `POST /api/evaluate-r1`：DEV修正→単回HOLDOUT、全試行保存
 - `POST /api/policy-validation/run`：保存済みR1選択コードをE2Bで追加検証（非破壊）
-- `POST /api/full-run/start`：01〜04を開始（非同期）、05で停止
-- `POST /api/full-run/approve-and-continue`：人間の明示的な承認/却下。承認なら06〜09＋検証を非同期実行
+- `POST /api/full-run/start`：明示的な `evidence_mode` を必須指定。`public` なら00取得・索引化・RAG検索（非同期）→00bで人間レビュー待ち。`synthetic` なら00をSKIPPEDして01〜04へ
+- `POST /api/full-run/review-evidence`：公開データで人間が根拠IDと仮説を選択・承認／却下。承認時のみ01ブリーフへ「未検証仮説」を追加して01〜04へ
+- `POST /api/full-run/approve-and-continue`：05の別個の人間承認/却下。承認なら06〜09＋検証を非同期実行
 - `GET /api/full-run/{uuid}` / `GET /api/full-run/{uuid}/bundle`：進捗・状態と完全/部分ZIPの取得
-- `GET /api/history/workflows`：01〜09の一括実行履歴
+- `GET /api/history/workflows`：00〜09の一括実行履歴
 - `POST /api/pipeline/run-and-save`：旧v0.14互換。承認済みR1から追加検証してZIP化（新UIでは未使用）
 - `GET /api/exports/{uuid}/bundle`：完成/一部失敗を記録した全証跡 ZIP（manifest.json / SHA256付き）
 - `GET /api/history/{runs|proposals|approvals|experiments|benchmarks|assessments|policy_validations|exports|workflows}`：履歴一覧
@@ -159,7 +167,7 @@ python -m pip install -r requirements-dev.txt
 PYTHONPATH=. pytest -q
 ```
 
-E2BとOllamaをモックしたバックエンドテストのみをローカルで実施しました。v0.14の二軸評価自体はモデル推論を呼びませんが、手順10の一括実行ではE2BとOllamaを実際に呼び出します。v0.15の追加統合テストは承認待ち・承認後・却下・エラー保存・ZIPハッシュをモックで検証しました。実Mac Studio上のQwen/ODA推論、E2Bクラウド、フロントエンドの本番ビルドはこの環境では未検証です。
+E2BとOllamaをモックしたバックエンドテストのみをローカルで実施しました。v0.14の二軸評価自体はモデル推論を呼びませんが、手順10の一括実行ではE2BとOllamaを実際に呼び出します。v0.17では自動00の取得失敗・キャッシュ改変・2つの人間レビューポイント・完全/部分ZIP・SHA256までモックで検証しました。実Mac Studio上のQwen/ODA推論、E2Bクラウド、フロントエンドの本番ビルドはこの環境では未検証です。
 
 ## 対照条件と限界
 

@@ -1,0 +1,223 @@
+{
+  "benchmark_id": "83cbfda3-f679-4892-8cfd-cc2306a6bf4d",
+  "created_at": "2026-11-21T05:25:45+00:00",
+  "fixture_version": "CLAIMS-DIAG-FIXTURES-v0.10.1",
+  "rubric_version": "DIAG-RUBRIC-v0.10.1",
+  "case_ids": [
+    "fifo_sla_conflict",
+    "actual_fifo_implementation_bug"
+  ],
+  "repetitions": 1,
+  "models": {
+    "coding": "qwen3-coder:30b",
+    "finance": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M"
+  },
+  "status": "COMPLETED",
+  "real_customer_validity": "UNVERIFIED",
+  "summary": {
+    "coding": {
+      "model": "qwen3-coder:30b",
+      "planned": 2,
+      "completed": 2,
+      "passed": 0,
+      "mean_score": 0.6875,
+      "failed_calls": 0
+    },
+    "finance": {
+      "model": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+      "planned": 2,
+      "completed": 2,
+      "passed": 0,
+      "mean_score": 0.8125,
+      "failed_calls": 0
+    }
+  },
+  "trials": [
+    {
+      "case_id": "fifo_sla_conflict",
+      "repetition": 0,
+      "model_role": "coding",
+      "model_id": "qwen3-coder:30b",
+      "fixture_version": "CLAIMS-DIAG-FIXTURES-v0.10.1",
+      "prompt_input_sha256": "44a4e3a3ac93a72c65498482cb9101f04dce9209ea64911b24a507efec2a795f",
+      "status": "COMPLETED",
+      "real_customer_validity": "UNVERIFIED",
+      "diagnosis": {
+        "classification": "implementation_bug",
+        "implementation_assessment": "correct",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [],
+        "root_cause": "R0 prioritizes arrival_order over deadline_priority, causing missed deadlines when later arrivals have earlier deadlines than earlier arrivals",
+        "suggested_requirement_change": "Replace R0 with: 'assign claims in strict deadline_priority order, earliest feasible qualified reviewer/day, with arrival_order as tiebreaker'",
+        "scheduling_precedence": "deadline_first_fifo_tiebreak",
+        "change_required": true,
+        "remaining_uncertainty": "synthetic_evidence_only"
+      },
+      "rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": false,
+          "implementation_correctness": true,
+          "synthetic_business_fit": true,
+          "real_world_humility": true,
+          "evidence_traceability": false,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": true
+        },
+        "passed": false,
+        "score": 0.75,
+        "failure_codes": [
+          "CAUSE_CLASSIFICATION",
+          "EVIDENCE_TRACEABILITY"
+        ],
+        "expected_classification": "requirement_mismatch",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "elapsed_seconds": 3.49,
+      "created_at": "2026-11-21T05:25:48+00:00"
+    },
+    {
+      "case_id": "fifo_sla_conflict",
+      "repetition": 0,
+      "model_role": "finance",
+      "model_id": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+      "fixture_version": "CLAIMS-DIAG-FIXTURES-v0.10.1",
+      "prompt_input_sha256": "44a4e3a3ac93a72c65498482cb9101f04dce9209ea64911b24a507efec2a795f",
+      "status": "COMPLETED",
+      "real_customer_validity": "UNVERIFIED",
+      "diagnosis": {
+        "classification": "requirement_mismatch",
+        "implementation_assessment": "incorrect",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-SLA-001"
+        ],
+        "root_cause": "business_requirement_inadequacy",
+        "suggested_requirement_change": "strict_fifo_replacement_with_deadline_priority",
+        "scheduling_precedence": "deadline_first_fifo_tiebreak",
+        "change_required": true,
+        "remaining_uncertainty": "evidence_id:SIM-SLA-001"
+      },
+      "rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": false,
+          "synthetic_business_fit": true,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": true
+        },
+        "passed": false,
+        "score": 0.875,
+        "failure_codes": [
+          "IMPLEMENTATION_CORRECTNESS"
+        ],
+        "expected_classification": "requirement_mismatch",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "elapsed_seconds": 37.45,
+      "created_at": "2026-11-21T05:26:26+00:00"
+    },
+    {
+      "case_id": "actual_fifo_implementation_bug",
+      "repetition": 0,
+      "model_role": "coding",
+      "model_id": "qwen3-coder:30b",
+      "fixture_version": "CLAIMS-DIAG-FIXTURES-v0.10.1",
+      "prompt_input_sha256": "cdbf59cfba49a1e2c39565dcc05d249c3995c5a3c481f1fbc3ea8b428c153a4d",
+      "status": "COMPLETED",
+      "real_customer_validity": "UNVERIFIED",
+      "diagnosis": {
+        "classification": "implementation_bug",
+        "implementation_assessment": "incorrect",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [],
+        "root_cause": "The implementation violates the stated FIFO requirement by prioritizing case amount over arrival order when both cases are equally feasible.",
+        "suggested_requirement_change": "The requirement should explicitly state that arrival_order takes precedence over other factors (including case amount) when multiple cases are equally eligible for processing on the same day, or the requirement should be updated to reflect that deadline-reduction is a valid priority criterion.",
+        "scheduling_precedence": "fifo_first",
+        "change_required": true,
+        "remaining_uncertainty": "The synthetic evidence demonstrates a clear violation of FIFO but does not establish whether this represents a real customer need or just a synthetic test artifact."
+      },
+      "rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": false,
+          "real_world_humility": true,
+          "evidence_traceability": false,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": false
+        },
+        "passed": false,
+        "score": 0.625,
+        "failure_codes": [
+          "SYNTHETIC_BUSINESS_FIT",
+          "EVIDENCE_TRACEABILITY",
+          "REVISION_TARGETS_REQUIREMENT"
+        ],
+        "expected_classification": "implementation_bug",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "elapsed_seconds": 3.66,
+      "created_at": "2026-11-21T05:26:29+00:00"
+    },
+    {
+      "case_id": "actual_fifo_implementation_bug",
+      "repetition": 0,
+      "model_role": "finance",
+      "model_id": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+      "fixture_version": "CLAIMS-DIAG-FIXTURES-v0.10.1",
+      "prompt_input_sha256": "cdbf59cfba49a1e2c39565dcc05d249c3995c5a3c481f1fbc3ea8b428c153a4d",
+      "status": "COMPLETED",
+      "real_customer_validity": "UNVERIFIED",
+      "diagnosis": {
+        "classification": "implementation_bug",
+        "implementation_assessment": "incorrect",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-BUG-001"
+        ],
+        "root_cause": "implementation violated R0's strict FIFO requirement by prioritizing amount over arrival_order",
+        "suggested_requirement_change": "R0 must be amended to prohibit non-FIFO prioritization parameters",
+        "scheduling_precedence": "none",
+        "change_required": true,
+        "remaining_uncertainty": "0"
+      },
+      "rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": false,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": false
+        },
+        "passed": false,
+        "score": 0.75,
+        "failure_codes": [
+          "SYNTHETIC_BUSINESS_FIT",
+          "REVISION_TARGETS_REQUIREMENT"
+        ],
+        "expected_classification": "implementation_bug",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "elapsed_seconds": 12.25,
+      "created_at": "2026-11-21T05:26:41+00:00"
+    }
+  ],
+  "methodology": "Same explicit schema, model-neutral prompt and exact synthetic fixture input; independent fixed oracle not included in prompt; no HOLDOUT disclosed.",
+  "caveat": "Rule-based checks, no gold-standard EU customer requirement or regulatory validation."
+}

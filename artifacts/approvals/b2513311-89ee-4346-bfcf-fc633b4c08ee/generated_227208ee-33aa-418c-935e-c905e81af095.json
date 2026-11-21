@@ -1,0 +1,10 @@
+{
+  "source_sha256": "b7f4b2cd0729d5e226b7ef5dc93ae2b2f2f01026bc89ccdeed1af76d33db3894",
+  "rationale": "This solution implements a deadline-priority greedy assignment algorithm that prioritizes cases with earlier deadlines while respecting reviewer skills and capacity constraints. The approach:\n\n1. Loads input data from input.json\n2. Sorts cases by deadline day (earlier deadlines first) to prioritize deadline risk as per R1 requirements\n3. For each case, finds all eligible reviewers who have the required skill and capacity\n4. Assigns each case to the reviewer with earliest available capacity on the earliest possible day\n5. Updates reviewer capacity after assignment\n6. Outputs assignments and unassigned cases to output.json\n\nKey features that satisfy constraints:\n- One assignment maximum per claim (each case assigned exactly once or unassigned)\n- Skill matching enforced\n- No overtime (capacity checked before assignment)\n- Duration hours exactly matched\n- Daily capacity respected\n- Deadline priority implemented\n- No increase in total reviewer-hours compared to FIFO (greedy approach)\n- Handles all edge cases like insufficient capacity or no eligible reviewers\n\nThe algorithm prioritizes deadline risk over arrival order as specified in R1, and does not increase planned or actual reviewer hours beyond what would be needed with FIFO processing.",
+  "created_at": "2026-11-21T05:25:33+00:00",
+  "coding_model": "qwen3-coder:30b",
+  "finance_model": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+  "domain_review_sha256": "373a2ac5d256d7eb476e0d861887c7b68545d4058590d4050b3fc75c6df13b1b",
+  "domain_review_used_as_advisory": false,
+  "human_adjudication_used_instead": true
+}

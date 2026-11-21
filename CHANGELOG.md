@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.17 — True evidence-first 00–09 batch execution, two human gates, and verified ZIPs
+
+- Fix step 10 so public-mode runs dataset acquisition (or verifies cached source SHA256), index build/check, lexical retrieval and optional Qwen draft extraction itself; no preexisting `rag_id` required.
+- Add **explicit `evidence_mode`**: public (UI default) or synthetic (user opt-in). A public fetch/index/search/model failure produces a PARTIAL archive and **never silently falls back** to synthetic.
+- Pause at **00b for a human evidence review**. Only user-selected evidence IDs and a human-written/edited hypothesis are linked to the 01 brief; current synthetic R0/R1 policy contracts remain unchanged. **05 R0→R1 human decision still required**.
+- Record source manifests, cached index hashes, retrieval output, human review decisions, effective/initial brief, 00 report, stages and raw-byte SHA256 in the single audit ZIP. Separate full raw dataset download remains in step 00.
+- Track CFPB normalized API-record locators distinctly from exact transcript character spans; individual CFPB records no longer collide in chunk IDs.
+- Add offline integration checks for automatic public ingestion, missing/corrupted public data, 00b approve/reject, 05 second review, successful COMPLETE ZIP and SHA256. 63 backend tests passed.
+- Documentation: `docs/v017-full-evidence-pipeline.md`.
+
+
+## v0.16 — Public financial data ingestion, evidence-grounded RAG and download
+
+- Add step 00 with fixed-source Community Credit interview / CFPB complaint acquisition, bounded download, separate dataset ZIP and SHA256 source manifest.
+- Local retrieval uses BM25 + character ngram fuzzy RRF (explicitly lexical, not neural semantic retrieval). Source excerpts preserve local position and provenance.
+- Optional Ollama/Qwen converts citations into *draft* problem/requirement hypotheses; valid IDs are checked but semantic support and approval remain UNVERIFIED.
+- Link the selected step-00 evidence result into step 10 full-run ZIP without automatically updating the synthetic customer brief or approving requirements.
+- Add offline mocked-download, source-integrity, API, provenance and full-workflow-link tests; 56 backend tests passed at packaging time.
+- See `docs/v016-evidence-grounded-requirements.md`.
+
 ## v0.15 — 01–09 full-run workflow with explicit human review and single ZIP
 
 - Replace UI step 10 with a complete 01–09 execution path, starting from a new brief and seed rather than requiring a preexisting R1 experiment.
