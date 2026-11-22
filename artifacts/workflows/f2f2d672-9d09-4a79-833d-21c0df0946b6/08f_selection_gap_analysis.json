@@ -1,0 +1,104 @@
+{
+  "version": "POST-SELECT-LEXICOGRAPHIC-GAP-v0.29.0",
+  "status": "NO_RELATIVE_LEXICOGRAPHIC_GAP_DETECTED_IN_FIXTURES",
+  "objective_contract": {
+    "order": [
+      "min_missed_deadlines",
+      "min_unassigned_cases"
+    ],
+    "feasibility": "Every compared allocation must independently pass constraints",
+    "solver_certificate": "OPTIMAL required; FEASIBLE/TIME_LIMIT are inconclusive",
+    "secondary": "Compare unassigned only where missed_deadlines tie"
+  },
+  "selected_engine": "skill_deadline_scarcity",
+  "random_seed_root": 1613474951,
+  "dev_selection_rationale": "skill_deadline_scarcity",
+  "dev_selection_rule_consistent": true,
+  "comparisons": [
+    {
+      "candidate": "fifo",
+      "aligned": true,
+      "certified_cases": 4,
+      "fully_comparable_lexicographic_cases": 4,
+      "selected_better": 3,
+      "selected_worse": 0,
+      "ties": 1,
+      "primary_ties_secondary_losses": 0,
+      "primary_ties_secondary_wins": 0,
+      "selected_excess_missed": -5,
+      "selected_excess_unassigned_on_primary_ties": 0,
+      "excluded_uncertified_cases": 0,
+      "excluded_secondary_unknown_cases": 0,
+      "objective_order": [
+        "min_missed_deadlines",
+        "min_unassigned_cases"
+      ]
+    },
+    {
+      "candidate": "deadline",
+      "aligned": true,
+      "certified_cases": 4,
+      "fully_comparable_lexicographic_cases": 4,
+      "selected_better": 0,
+      "selected_worse": 0,
+      "ties": 4,
+      "primary_ties_secondary_losses": 0,
+      "primary_ties_secondary_wins": 0,
+      "selected_excess_missed": 0,
+      "selected_excess_unassigned_on_primary_ties": 0,
+      "excluded_uncertified_cases": 0,
+      "excluded_secondary_unknown_cases": 0,
+      "objective_order": [
+        "min_missed_deadlines",
+        "min_unassigned_cases"
+      ]
+    },
+    {
+      "candidate": "skill_deadline_scarcity",
+      "aligned": true,
+      "certified_cases": 4,
+      "fully_comparable_lexicographic_cases": 4,
+      "selected_better": 0,
+      "selected_worse": 0,
+      "ties": 4,
+      "primary_ties_secondary_losses": 0,
+      "primary_ties_secondary_wins": 0,
+      "selected_excess_missed": 0,
+      "selected_excess_unassigned_on_primary_ties": 0,
+      "excluded_uncertified_cases": 0,
+      "excluded_secondary_unknown_cases": 0,
+      "objective_order": [
+        "min_missed_deadlines",
+        "min_unassigned_cases"
+      ]
+    },
+    {
+      "candidate": "skill_bounded_beam",
+      "aligned": true,
+      "certified_cases": 4,
+      "fully_comparable_lexicographic_cases": 4,
+      "selected_better": 0,
+      "selected_worse": 0,
+      "ties": 4,
+      "primary_ties_secondary_losses": 0,
+      "primary_ties_secondary_wins": 0,
+      "selected_excess_missed": 0,
+      "selected_excess_unassigned_on_primary_ties": 0,
+      "excluded_uncertified_cases": 0,
+      "excluded_secondary_unknown_cases": 0,
+      "objective_order": [
+        "min_missed_deadlines",
+        "min_unassigned_cases"
+      ]
+    }
+  ],
+  "selected_optimal_cases": 4,
+  "selected_oracle_gap_cases": 0,
+  "selected_primary_optimal_cases": 4,
+  "selected_certified_cases": 4,
+  "change_selected_engine": false,
+  "fed_back_to_model": false,
+  "fed_back_to_dev_selection": false,
+  "requires_human_review": false,
+  "scope": "Postselection synthetic 08f. Primary+conditional secondary objective; no selection/model feedback or production guarantee."
+}

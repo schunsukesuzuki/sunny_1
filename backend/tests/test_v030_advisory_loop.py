@@ -26,10 +26,13 @@ def fake_draft():
             'customer_problem_hypotheses':[{'statement':'通知が遅れている可能性がある','evidence_status':'hypothesis_unverified','source_refs':[],'unknowns':'顧客実態は未確認'}],
             'constraints_and_unknowns':['予算・人員・納期は未確定'],
             'technical_options':[{'label':'low_complexity','solution':'定型通知をルールベースで実装する','necessary_roles':['engineer'],
-              'fit_to_constraints':'未確認','estimated_cost_basis':'顧客入力なしのため金額算定不可','main_tradeoffs':['柔軟性'],'validation':'通知遅延を実測'},
+              'fit_to_constraints':'未確認','estimated_cost_basis':'顧客入力なしのため金額算定不可','main_tradeoffs':['柔軟性'],'validation':'通知遅延を実測','target_requirement_ids':['UNVERIFIED_REQUIREMENT'],'direct_requirement_coverage':'direct','relative_effort':'low','delivery_risk':'unknown'},
               {'label':'balanced','solution':'既存フローと例外処理だけLLMを統合','necessary_roles':['engineer'],
-              'fit_to_constraints':'要確認','estimated_cost_basis':'未見積','main_tradeoffs':['監査負荷'],'validation':'例外ケースを検査'}],
+              'fit_to_constraints':'要確認','estimated_cost_basis':'未見積','main_tradeoffs':['監査負荷'],'validation':'例外ケースを検査','target_requirement_ids':['UNVERIFIED_REQUIREMENT'],'direct_requirement_coverage':'direct','relative_effort':'medium','delivery_risk':'unknown'},
+              {'label':'research_option','solution':'長期的には通知状態の予測を試す','necessary_roles':['research engineer'],
+               'fit_to_constraints':'研究予算は未確定','estimated_cost_basis':'小規模で検証','main_tradeoffs':['データ収集'],'validation':'通知の事後監査','target_requirement_ids':['UNVERIFIED_REQUIREMENT'],'direct_requirement_coverage':'prerequisite_only','relative_effort':'high','delivery_risk':'high'}],
             'recommended_next_experiment':'進捗通知の遅延時間と宛先不一致を測定する',
+            'next_experiments':[{'goal':'通知遅延の観測','procedure':'少量データで通知履歴を検査','success_measure':'遅延時間と漏れ率','owner_role':'開発担当','evidence_ref':'workflow.json'}],
             'questions_for_customer':['通知が遅れる理由は何か'],
             'pm_and_engineer_review_points':['予算の仮置きと影響'],
             'next_iteration_inputs':['顧客ヒアリング済みのデータ'],
@@ -74,7 +77,7 @@ def test_auto_proposal_version_review_and_zip(tmp_path,monkeypatch):
         for name in (f'workflows/{wid}/10p_advisory_v0001.json',f'workflows/{wid}/10p_advisory_v0002.json',
                      f'workflows/{wid}/10p_review_v0001.json'):
             assert name in z.namelist()
-        assert json.loads(z.read('manifest.json'))['producer_version']=='0.30.0'
+        assert json.loads(z.read('manifest.json'))['producer_version']=='0.31.0'
     assert client.get(f'/api/full-run/{wid}/report').json()['business_assessment'] is None
 
 

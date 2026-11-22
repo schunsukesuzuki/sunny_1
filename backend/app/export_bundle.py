@@ -43,7 +43,7 @@ def make_manifest(artifact_dir: Path, export_id: str, identifiers: dict,
             files.append(entry)
             total+=size
     incomplete=bool(missing or skipped or any(stage.get('status') not in ('COMPLETED','COMPLETED_WITH_FINDINGS') for stage in stages))
-    return {'format_version':'AUDIT-EXPORT-v0.25.0', 'producer_version':'0.30.0', 'export_id':export_id,
+    return {'format_version':'AUDIT-EXPORT-v0.25.0', 'producer_version':'0.31.0', 'export_id':export_id,
             'created_at':created_at,'status':'PARTIAL' if incomplete else 'COMPLETE',
             'experiment_id':identifiers.get('experiments'),
             'linked_ids':identifiers,'stages':stages,'files':files,'missing':missing,
@@ -53,7 +53,7 @@ def make_manifest(artifact_dir: Path, export_id: str, identifiers: dict,
 
 
 def make_intro(manifest:dict, assessment:dict|None)->str:
-    lines=['# Claims Operations Planner — v0.30 Human-in-the-loop Technical Proposal + Independent Evaluation Audit Package','',
+    lines=['# Claims Operations Planner — v0.31 Human-in-the-loop Technical Proposal + Independent Evaluation Audit Package','',
            f"- Export: `{manifest['export_id']}`",
            f"- Original experiment: `{manifest['experiment_id']}`",
            f"- Export completeness: **{manifest['status']}**",

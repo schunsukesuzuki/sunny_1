@@ -1,0 +1,351 @@
+{
+  "attempt": 0,
+  "code_sha256": "3d9d7c30276fd7cdcd205463b4067802477989139cc55265242aa57998694b19",
+  "evaluation": {
+    "valid": false,
+    "missed_total": null,
+    "unassigned_total": null,
+    "worked_hours_total": null,
+    "deadline_hit_rate": null,
+    "all_claims_completed": false,
+    "violations": [
+      "Unknown/duplicate claim: C007",
+      "Unknown/duplicate claim: C010",
+      "Unknown/duplicate claim: C016",
+      "Unknown/duplicate claim: C008",
+      "Unknown/duplicate claim: C017",
+      "Unknown/duplicate claim: C011",
+      "Unknown/duplicate claim: C013",
+      "Unknown/duplicate claim: C005",
+      "Unknown/duplicate claim: C014",
+      "Unknown/duplicate claim: C004"
+    ],
+    "seeds": [
+      142,
+      143,
+      144
+    ]
+  },
+  "metrics": [
+    {
+      "valid": false,
+      "violations": [
+        "Unknown/duplicate claim: C007",
+        "Unknown/duplicate claim: C010",
+        "Unknown/duplicate claim: C016",
+        "Unknown/duplicate claim: C008",
+        "Unknown/duplicate claim: C017",
+        "Unknown/duplicate claim: C011",
+        "Unknown/duplicate claim: C013",
+        "Unknown/duplicate claim: C005",
+        "Unknown/duplicate claim: C014",
+        "Unknown/duplicate claim: C004",
+        "Unknown/duplicate claim: C001"
+      ],
+      "missed_deadlines": 3,
+      "on_time": 15,
+      "completed": 17,
+      "assigned_hours": 28,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 1,
+      "deadline_hit_rate": 0.83333,
+      "seed": 142,
+      "sandbox_id": "i0gcxumktsfcc0l1201w6",
+      "source_sha256": "3d9d7c30276fd7cdcd205463b4067802477989139cc55265242aa57998694b19",
+      "output_sha256": "2bf72cc16b533fec4cb4bf6d5270ec1b0de539bb424e3fbff7bde7d3cafd9227",
+      "dataset_sha256": "448d3ad7876d740e2756419cb8d45eb846cc5182cb9f0327ee95158cfc27cea4",
+      "elapsed_seconds": 0.391,
+      "stderr": ""
+    },
+    {
+      "valid": false,
+      "violations": [
+        "Unknown/duplicate claim: C007",
+        "Unknown/duplicate claim: C016",
+        "Unknown/duplicate claim: C008",
+        "Unknown/duplicate claim: C010",
+        "Unknown/duplicate claim: C013",
+        "Unknown/duplicate claim: C011",
+        "Unknown/duplicate claim: C014",
+        "Unknown/duplicate claim: C017",
+        "Unknown/duplicate claim: C005",
+        "Unknown/duplicate claim: C004"
+      ],
+      "missed_deadlines": 0,
+      "on_time": 18,
+      "completed": 18,
+      "assigned_hours": 32,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 1.0,
+      "seed": 143,
+      "sandbox_id": "i0gcxumktsfcc0l1201w6",
+      "source_sha256": "3d9d7c30276fd7cdcd205463b4067802477989139cc55265242aa57998694b19",
+      "output_sha256": "26ab87299c92a233e2cc8fc89a6cfc5443a0a5684f4bc25ed43ab360b69dad95",
+      "dataset_sha256": "6a62c88e044b7a09eb8633e38c07e9165f03370bc92620c15d0a05895be5d618",
+      "elapsed_seconds": 0.329,
+      "stderr": ""
+    },
+    {
+      "valid": false,
+      "violations": [
+        "Unknown/duplicate claim: C010",
+        "Unknown/duplicate claim: C016",
+        "Unknown/duplicate claim: C008",
+        "Unknown/duplicate claim: C007",
+        "Unknown/duplicate claim: C011",
+        "Unknown/duplicate claim: C013",
+        "Unknown/duplicate claim: C017",
+        "Unknown/duplicate claim: C005",
+        "Unknown/duplicate claim: C014",
+        "Unknown/duplicate claim: C002"
+      ],
+      "missed_deadlines": 3,
+      "on_time": 15,
+      "completed": 16,
+      "assigned_hours": 32,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 2,
+      "deadline_hit_rate": 0.83333,
+      "seed": 144,
+      "sandbox_id": "i0gcxumktsfcc0l1201w6",
+      "source_sha256": "3d9d7c30276fd7cdcd205463b4067802477989139cc55265242aa57998694b19",
+      "output_sha256": "99ce98c4b280a2967d354e0c4f31125e6668b6c59929b65a40bdcc15456f8f6d",
+      "dataset_sha256": "ce8763d22d707c696c13199c1518ec2f4fab33a89975bcbcd21a03e4f30bdd82",
+      "elapsed_seconds": 0.328,
+      "stderr": ""
+    }
+  ],
+  "passes_fixed_hours_and_deadline": false,
+  "selection_gate": {
+    "gate_version": "R1-DEV-SELECTION-GATE-v0.19.0",
+    "eligible": false,
+    "reasons": [
+      "DEV_CONSTRAINT_INVALID",
+      "BEHAVIORAL_PROBE_FAIL_OR_IDENTITY_MISMATCH",
+      "STRESS_CONSTRAINT_INVALID",
+      "STRESS_REGRESSION_VS_FIXED_REFERENCE"
+    ],
+    "dev_cases": 3,
+    "behavioral_probes_pass": false,
+    "stress_scenarios_checked": 4,
+    "selection_rule": "Require valid DEV, strict improvement over FIFO on at least one DEV seed, equal hours, two behavioral probes and no stress regression against the fixed heuristic.",
+    "holdout_used_for_selection": false
+  },
+  "behavioral_probes": [
+    {
+      "seed": 900001,
+      "scenario": "deadline_risk_probe",
+      "dataset_sha256": "5575eb9625e7050872d5f7cf582afd8cac3afa69270b3caabea8b79125e54cde",
+      "valid": true,
+      "checks": {
+        "urgent_served_on_due_day": true,
+        "both_cases_served": true
+      },
+      "pass": true,
+      "missed_deadlines": 0,
+      "unassigned_cases": 0,
+      "violations": [],
+      "execution_error": null
+    },
+    {
+      "seed": 900002,
+      "scenario": "scarce_qualification_probe",
+      "dataset_sha256": "152f675fe5e0514271365f4aaa711a15de12aa7266f46756994ccdbf8d4595df",
+      "valid": false,
+      "checks": {
+        "scarce_case_uses_sole_specialist": false,
+        "common_case_preserves_specialist_capacity": true,
+        "all_cases_served": false
+      },
+      "pass": false,
+      "missed_deadlines": 1,
+      "unassigned_cases": 1,
+      "violations": [
+        "Unknown/duplicate claim: COMMON"
+      ],
+      "execution_error": null
+    }
+  ],
+  "stress_checks": [
+    {
+      "seed": 910000,
+      "scenario": "capacity_pressure",
+      "generated": {
+        "valid": false,
+        "missed": 9,
+        "unassigned": 4
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      }
+    },
+    {
+      "seed": 910001,
+      "scenario": "skill_bottleneck",
+      "generated": {
+        "valid": false,
+        "missed": 8,
+        "unassigned": 4
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 1,
+        "unassigned": 1
+      }
+    },
+    {
+      "seed": 910002,
+      "scenario": "deadline_compression",
+      "generated": {
+        "valid": false,
+        "missed": 11,
+        "unassigned": 1
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      }
+    },
+    {
+      "seed": 910003,
+      "scenario": "arrival_reordering",
+      "generated": {
+        "valid": false,
+        "missed": 1,
+        "unassigned": 1
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      }
+    }
+  ],
+  "robustness_dev_rows": [
+    {
+      "valid": false,
+      "violations": [
+        "Unknown/duplicate claim: C016",
+        "Unknown/duplicate claim: C007",
+        "Unknown/duplicate claim: C010",
+        "Unknown/duplicate claim: C013",
+        "Unknown/duplicate claim: C004",
+        "Unknown/duplicate claim: C001"
+      ],
+      "missed_deadlines": 3,
+      "on_time": 15,
+      "completed": 16,
+      "assigned_hours": 29,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 2,
+      "deadline_hit_rate": 0.83333,
+      "seed": 920000,
+      "sandbox_id": "i0gcxumktsfcc0l1201w6",
+      "source_sha256": "3d9d7c30276fd7cdcd205463b4067802477989139cc55265242aa57998694b19",
+      "output_sha256": "47ed86b9afaad1ca081644540b4af6898863332ffeb670e49b99b92abb7c0689",
+      "dataset_sha256": "6fd1900cf339d31b6ecb7bbca6d33ab5f9fb09ba83168233d02b9d916e63d1f1",
+      "elapsed_seconds": 0.373,
+      "stderr": ""
+    },
+    {
+      "valid": false,
+      "violations": [
+        "Unknown/duplicate claim: C016",
+        "Unknown/duplicate claim: C007",
+        "Unknown/duplicate claim: C008",
+        "Unknown/duplicate claim: C010",
+        "Unknown/duplicate claim: C017",
+        "Unknown/duplicate claim: C013",
+        "Unknown/duplicate claim: C014",
+        "Unknown/duplicate claim: C011",
+        "Unknown/duplicate claim: C005"
+      ],
+      "missed_deadlines": 2,
+      "on_time": 16,
+      "completed": 17,
+      "assigned_hours": 26,
+      "total_cases": 18,
+      "planned_capacity_hours": 42,
+      "unassigned_cases": 1,
+      "deadline_hit_rate": 0.88889,
+      "seed": 920001,
+      "sandbox_id": "i0gcxumktsfcc0l1201w6",
+      "source_sha256": "3d9d7c30276fd7cdcd205463b4067802477989139cc55265242aa57998694b19",
+      "output_sha256": "f4992f3ff41716dee5b7c10ca564174b4c0ef0bf0fe0ffda889b31779d2b0210",
+      "dataset_sha256": "6ec9c702532ca9be96d700d44ec97d2b94c44ef733d9b15d23a7b08c2aa40908",
+      "elapsed_seconds": 0.35,
+      "stderr": ""
+    },
+    {
+      "valid": false,
+      "violations": [
+        "Unknown/duplicate claim: C008",
+        "Unknown/duplicate claim: C007",
+        "Unknown/duplicate claim: C010",
+        "Unknown/duplicate claim: C011",
+        "Unknown/duplicate claim: C013",
+        "Unknown/duplicate claim: C016",
+        "Unknown/duplicate claim: C017",
+        "Unknown/duplicate claim: C005",
+        "Unknown/duplicate claim: C014",
+        "Unknown/duplicate claim: C001",
+        "Unknown/duplicate claim: C002"
+      ],
+      "missed_deadlines": 5,
+      "on_time": 13,
+      "completed": 18,
+      "assigned_hours": 31,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 0.72222,
+      "seed": 920002,
+      "sandbox_id": "i0gcxumktsfcc0l1201w6",
+      "source_sha256": "3d9d7c30276fd7cdcd205463b4067802477989139cc55265242aa57998694b19",
+      "output_sha256": "72e441940652fe43876b17a7b8749670607b99cb5d67e770e8d54afcaafd1b1a",
+      "dataset_sha256": "c9006f5c743c4a5e4325fc1d44d08638964287884a71772b2c309945702b71a6",
+      "elapsed_seconds": 0.33,
+      "stderr": ""
+    },
+    {
+      "valid": false,
+      "violations": [
+        "Unknown/duplicate claim: C016",
+        "Unknown/duplicate claim: C007",
+        "Unknown/duplicate claim: C008",
+        "Unknown/duplicate claim: C011",
+        "Unknown/duplicate claim: C010",
+        "Unknown/duplicate claim: C013",
+        "Unknown/duplicate claim: C017",
+        "Unknown/duplicate claim: C014",
+        "Unknown/duplicate claim: C005",
+        "Unknown/duplicate claim: C001",
+        "Unknown/duplicate claim: C004",
+        "Unknown/duplicate claim: C002"
+      ],
+      "missed_deadlines": 0,
+      "on_time": 18,
+      "completed": 18,
+      "assigned_hours": 29,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 1.0,
+      "seed": 920003,
+      "sandbox_id": "i0gcxumktsfcc0l1201w6",
+      "source_sha256": "3d9d7c30276fd7cdcd205463b4067802477989139cc55265242aa57998694b19",
+      "output_sha256": "2f8ba73606655572100c1a7653cbedca092c82fead654ea91bb7c562c24226bf",
+      "dataset_sha256": "e36ec748ac823282e1066155a7749fbda22370d28a334d3803c9c7933a3aa3de",
+      "elapsed_seconds": 0.328,
+      "stderr": ""
+    }
+  ]
+}

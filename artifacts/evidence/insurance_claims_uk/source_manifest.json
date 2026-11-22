@@ -4,23 +4,23 @@
   "publisher": "Financial Conduct Authority / Financial Ombudsman Service",
   "kind": "REGULATORY_RESEARCH_AND_CASE_STUDIES",
   "notice": "英国の監督当局・オンブズマンの公表資料です。顧客ヒアリング逐語録やドイツ保険会社の運用記録ではありません。遅延という課題を示唆してもFIFOや資格配分が原因という証拠ではありません。著作権・利用条件を確認。",
-  "downloaded_at_utc": "2026-11-22T03:01:27+00:00",
+  "downloaded_at_utc": "2026-11-22T03:58:22+00:00",
   "files": [
     {
       "name": "fca_claims_review.html",
-      "sha256_raw": "9e77874260a45e843fb9cc623df423d5282d3db00c64b86d6007d1a06ada7073",
-      "bytes": 239795,
+      "sha256_raw": "5c8fdddf9455beab3f27b892e6cd332d97c96e4dd50d734262fc716c99edc30b",
+      "bytes": 239796,
       "url": "https://www.fca.org.uk/publications/good-and-poor-practice/home-travel-claims-handling-arrangements"
     },
     {
       "name": "fos_claims_delay.html",
-      "sha256_raw": "f6cd7a3b01c1bc08b58cecf3df69b3a85678c9bdbc7b42ea28a68709ba19463f",
+      "sha256_raw": "23aa06d4e2163c2264f655baf50e2e468341d41b5ac66a44339dad85f6db56c5",
       "bytes": 94130,
       "url": "https://www.financial-ombudsman.org.uk/businesses/resolving-complaint/case-studies/took-insurer-four-months-settle-medical-insurance-claim"
     },
     {
       "name": "fos_insurance_delays.html",
-      "sha256_raw": "14c7639e25a9481d157b065719d54dddb8aabc0cd45f846a98e67c6803280af1",
+      "sha256_raw": "2054ac167e63e2cb13a08adb24a407b90741e326e428f9134f4c38e792869e80",
       "bytes": 104961,
       "url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication"
     }

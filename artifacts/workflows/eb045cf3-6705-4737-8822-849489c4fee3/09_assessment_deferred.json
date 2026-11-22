@@ -1,8 +1,0 @@
-{
-  "status": "SKIPPED_DIAGNOSTIC_DEPENDENCY",
-  "reason": "08 diagnostic incomplete; 09 requires a completed benchmark or an explicit independent assessment path",
-  "benchmark_id": "118f645f-1fe0-484b-96c6-d05cc610d68a",
-  "benchmark_status": "INCOMPLETE_TIMEOUT",
-  "experiment_id": "7b517ab8-2bf8-4975-b4e1-e3e876f56f4a",
-  "production_go": false
-}

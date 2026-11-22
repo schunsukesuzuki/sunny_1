@@ -1,3 +1,14 @@
+## v0.31.0 — Source-Locked Advisory / Evidence-Coupled Technical Options (2026-11-22)
+
+- 10R's AI proposal now fingerprints the canonical workflow, latest benchmark and 09 assessment, feature acceptance/requirement trace, selected evidence and 08f, then stores `source_snapshot` and `source_hash` per version. Export ZIP repacks no longer change workflow `updated_at`. Old proposals from PARTIAL or before diagnostic retry are `STALE_ADVISORY` and cannot receive new reviews until explicitly regenerated from current data.
+- `REQ-PUBLIC-001`/`claim_progress_updates`, `PUB-*` selected source IDs, notification acceptance test IDs, diagnostic quality HOLD, non-discriminating DEV (0 cases), and incomplete service integration are sent as scoped inputs. Fabricated source IDs and assignment-only alternatives masquerading as notification features are rejected; public evidence remains background context, not actual customer proof.
+- Typed Japanese proposals require exactly three comparable alternatives (low-complexity / balanced / research), each with requirement alignment, necessary roles, relative effort, delivery risk, cost basis, tradeoffs and validation. Next experiment suggestions include ownership, success measures and evidence refs; unknown budget does not authorize invented prices.
+- Keep deterministic `required_attention` separate from LLM advice. Store `revision_diff` between versions, including changed assumptions and source state; do not interpret a structural difference as improved quality or ROI.
+- UI order unchanged: **10 → 10R AI proposal → 10R outcome analysis → 00 → 01..09**. Existing Dogwood, DEV/HOLDOUT, CP-SAT, independent diagnostics, 09 decision and audit ZIP format are preserved. AI proposal generation, history, review and retry never auto-run a new workflow or CI/CD job.
+- 175 Python regression tests passed; TypeScript parse/transpile and layout checker passed with global TypeScript. Test-mode replay of the user's v0.30 audit ZIP loaded `REQ-PUBLIC-001`, three selected PUB refs, notification non-integration, diagnostic HOLD, 2 retries and correctly classified the original draft as stale. Native Rust/Docker, full Vite and real Ollama/E2B are not verified.
+
+See `docs/v031-advisory-source-alignment-and-review.md`.
+
 ## v0.30.0 — Post-run presales advisory draft (human-loop)
 
 - Step 10R now starts with an LLM-generated **unapproved** customer problem and technology proposal, followed by the existing independent per-stage outcome analysis. Screen order: **10 → 10R proposal → 10R results → 00 → 01–09**.

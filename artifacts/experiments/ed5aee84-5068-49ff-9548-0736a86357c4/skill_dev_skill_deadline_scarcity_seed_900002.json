@@ -1,0 +1,28 @@
+{
+  "name": "skill_deadline_scarcity",
+  "seed": 900002,
+  "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+  "sandbox_id": "isvjl8d7e0c6fjfh2lzie",
+  "elapsed_seconds": 0.341,
+  "stdout": "",
+  "stderr": "",
+  "output": {
+    "assignments": [
+      {
+        "case_id": "SCARCE",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "COMMON",
+        "reviewer_id": "R-B",
+        "day": 0,
+        "hours": 1
+      }
+    ],
+    "unassigned_case_ids": []
+  },
+  "output_sha256": "701325c1ba98d1def550f374dc5c2607c451d76e137d0d96ebbab95ed5290e6d",
+  "error": null
+}

@@ -88,7 +88,10 @@ function AdvisoryPanel({advisory, constraints, onConstraintsChange, onGenerate, 
     <div className="button-row"><button type="button" onClick={onGenerate} disabled={busy||advisory?.status==='RUNNING'}>
       {advisory?.status==='RUNNING'?'提案を生成中…': draft?'修正した前提で提案を再生成':'技術提案を生成'}</button></div>
     {advisory?.status==='RUNNING' && <p role="status" className="notice">基盤モデルが提案を生成しています。10Rの下の評価結果は閲覧できます。Macの性能によって時間がかかります。</p>}
+    {(advisory?.status==='STALE_ADVISORY'||advisory?.freshness_status==='STALE_SOURCE') && <div className="notice" role="alert"><strong>STALE_ADVISORY：提案の根拠が古くなっています。</strong> {advisory?.freshness_warning || '保存された評価結果が更新されました。'} 最新の08診断・09事業評価から「提案を再生成」してください。下の評価レポートは最新の保存済み成果物です。旧提案は監査履歴として保持され、レビューは受け付けません。</div>}
     {advisory?.status==='GENERATION_FAILED' && <div className="notice" role="alert"><strong>提案生成に失敗：</strong>{advisory?.error?.message || '詳細不明'}。評価レポートは影響を受けません。必要なら再生成してください。</div>}
+    {advisory?.primary_requirement && <p className="muted"><strong>主たる要件:</strong> {advisory.primary_requirement.requirement_id} ／{advisory.primary_requirement.type} ／{advisory.primary_requirement.feature_id}（顧客未承認）</p>}
+    {advisory?.required_attention?.length>0 && <div className="notice"><strong>検証結果に基づく必須の確認事項（LLM生成ではない）</strong><ul>{advisory.required_attention.map((a:Dict,i:number)=><li key={i}>{a.finding}：{a.suggested_test}（{a.source_ref}）</li>)}</ul></div>}
     {error && <div className="error" role="alert">{error}</div>}
     {draft && <div className="advisory-draft">
       <h4>{draft.title}</h4><p>{draft.executive_direction}</p>
@@ -99,12 +102,22 @@ function AdvisoryPanel({advisory, constraints, onConstraintsChange, onGenerate, 
       <h4>技術的な選択肢（予算・人員・期間に対する仮説）</h4>
       <div className="advisory-options">{(draft.technical_options||[]).map((o:Dict,i:number)=><article className="assessment-item" key={i}>
         <strong>{o.label==='low_complexity'?'A：低コスト・シンプル案':o.label==='balanced'?'B：標準案':'C：研究開発案'}</strong>
-        <p>{o.solution}</p><p><strong>制約適合:</strong> {o.fit_to_constraints}</p>
+        <p>{o.solution}</p><p><strong>対象要件:</strong> {o.target_requirement_ids?.join('、')||'未照合'} ／ <strong>機能への対応:</strong> {o.direct_requirement_coverage||'未照合'}</p>
+        <p><strong>相対工数／提供リスク:</strong> {o.relative_effort||'未比較'} ／ {o.delivery_risk||'未比較'}</p><p><strong>制約適合:</strong> {o.fit_to_constraints}</p>
         <p><strong>費用見積の根拠:</strong> {o.estimated_cost_basis}</p>
         <p><strong>必要な役割:</strong> {o.necessary_roles?.join('、')||'未確認'}</p>
         <p><strong>トレードオフ:</strong> {o.main_tradeoffs?.join('／')||'未確認'}</p>
         <p><strong>追加検証:</strong> {o.validation}</p></article>)}</div>
       <h4>推奨する次の検証</h4><p>{draft.recommended_next_experiment}</p>
+      <div className="advisory-options">{(draft.next_experiments||[]).map((e:Dict,i:number)=><article className="assessment-item" key={i}>
+        <strong>{e.goal}</strong><p>{e.procedure}</p><p><strong>合否指標:</strong> {e.success_measure}</p>
+        <p><strong>担当:</strong> {e.owner_role} ／ <strong>参照:</strong> {e.evidence_ref}</p></article>)}</div>
+      {advisory?.revision_diff?.previous_version && <div className="assessment-item"><h4>前版（v{advisory.revision_diff.previous_version}）からの変更</h4>
+        <p><strong>評価スナップショット変更:</strong> {advisory.revision_diff.source_changed?'あり':'なし'}</p>
+        <p><strong>変わった提案項目:</strong> {advisory.revision_diff.changed_fields?.join('、')||'なし'}</p>
+        <Disclosure title="予算・人員・納期などの前提変更の詳細" data={advisory.revision_diff.changed_constraints}/>
+        <p className="muted">{advisory.revision_diff.note}</p></div>}
+      <Disclosure title="提案生成元の評価スナップショット／ハッシュ" data={advisory?.source_snapshot}/>
       <div className="two-cols"><div><h4>顧客に確認すべきこと</h4><ul>{(draft.questions_for_customer||[]).map((x:string,i:number)=><li key={i}>{x}</li>)}</ul></div>
       <div><h4>PM・技術者が見直す前提</h4><ul>{(draft.pm_and_engineer_review_points||[]).map((x:string,i:number)=><li key={i}>{x}</li>)}</ul></div></div>
       <Disclosure title="制約・未知事項・次の反復入力・提案の限界（監査用JSON）" data={{constraints:draft.constraints_and_unknowns,next_iteration_inputs:draft.next_iteration_inputs,limitations:draft.limitations,source_hash:advisory?.source_hash}}/>
@@ -112,7 +125,7 @@ function AdvisoryPanel({advisory, constraints, onConstraintsChange, onGenerate, 
         <label htmlFor="advisory-actor">レビュー担当者</label><input id="advisory-actor" value={actor} onChange={e=>setActor(e.target.value)}/>
         <label htmlFor="advisory-review-reason">判断・修正の理由</label><textarea id="advisory-review-reason" rows={2} value={reviewReason} onChange={e=>setReviewReason(e.target.value)}/>
         <label htmlFor="advisory-next-brief">次回の顧客ブリーフ案（人間が編集）</label><textarea id="advisory-next-brief" rows={3} value={nextBrief} onChange={e=>setNextBrief(e.target.value)}/>
-        <div className="button-row"><button type="button" disabled={busy||actor.trim().length<2||reviewReason.trim().length<10} onClick={onReview}>
+        <div className="button-row"><button type="button" disabled={busy||advisory?.status!=='DRAFT_UNAPPROVED'||advisory?.freshness_status==='STALE_SOURCE'||actor.trim().length<2||reviewReason.trim().length<10} onClick={onReview}>
           レビューを履歴に保存（次回実行はしない）</button>
           <button type="button" className="secondary" onClick={onApplyBrief} disabled={busy||nextBrief.trim().length<20}>
             編集したブリーフを01・10の入力欄へ反映</button></div>
@@ -359,7 +372,7 @@ export default function App() {
       } catch(e) { if(live) setAdvisoryError(e instanceof Error?e.message:String(e)); }
     })();
     return ()=>{live=false;};
-  },[fullRun?.workflow_id,fullRun?.status]);
+  },[fullRun?.workflow_id,fullRun?.status,fullRun?.updated_at]);
 
   useEffect(()=>{
     if (!fullRun?.workflow_id || advisory?.status!=='RUNNING') return;
@@ -432,7 +445,7 @@ export default function App() {
 
   return <div className="app-shell">
     <header className="masthead">
-      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.30.0</div>
+      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.31.0</div>
       <h1>Claims Operations <span>Planner</span></h1>
       <p className="lead">German InsurTech事業開発：審査人員を増やさず、保険金請求の期限超過を減らせるか。</p>
       <div className="tags"><span>架空顧客 / 合成請求データ</span><span>Qwen3-Coder + ODA-Fin-RL-8B · Ollama / Metal</span><span>E2B isolated execution</span><span>R0 → R1 requirement refinement</span></div>
@@ -555,7 +568,7 @@ export default function App() {
         },!fullRunId.trim(),'secondary')}
       </div>
       {fullRun && <section className="assessment-report" aria-label="00〜09 一括実行状況">
-        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.30.0</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
+        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.31.0</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
           <Status good={fullRun.status==='COMPLETE'}>{fullRun.status}</Status></div>
         {fullRun.topic_alignment && <div className="notice"><strong>公開資料と保険請求課題の対応:</strong> {fullRun.topic_alignment.status} — {fullRun.topic_alignment.reason}。一致は原文の意味的支持・因果の証明ではありません。</div>}
         {fullRun.grounded_contract_status && <p className="muted">担当者割当KPIの検証: {fullRun.grounded_contract_status}（該当要件のみ）</p>}

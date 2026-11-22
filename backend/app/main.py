@@ -1,4 +1,4 @@
-"""Claims Operations Planner v0.30: auditable LLM and pinned Domain Skill comparison."""
+"""Claims Operations Planner v0.31: auditable LLM and pinned Domain Skill comparison."""
 from __future__ import annotations
 
 import asyncio
@@ -80,7 +80,7 @@ def store(kind: str, id_: str, filename: str, data: object):
     return target
 
 
-app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.30.0")
+app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.31.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                    allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
@@ -286,7 +286,7 @@ def claims_allocation_skill_manifest():
 
 @app.get("/api/sample")
 def sample():
-    return {"title": "Claims Operations Planner", "version": "0.30.0", "customer_profile": "German InsurTech SaaS (fictional)",
+    return {"title": "Claims Operations Planner", "version": "0.31.0", "customer_profile": "German InsurTech SaaS (fictional)",
             "brief": BRIEF, "contract_r0": CONTRACT_R0, "contract_r1": CONTRACT_R1,
             "service_design_r0": SERVICE_R0, "service_design_r1": SERVICE_R1,
             "synthetic_counterexample": SIMULATED_EVIDENCE,
@@ -299,7 +299,7 @@ def sample():
 
 @app.get("/api/health")
 async def health():
-    return {"app": "ok", "version": "0.30.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
+    return {"app": "ok", "version": "0.31.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
             "ollama": await llm.status()}
 
 
@@ -333,7 +333,7 @@ async def run_r0(body: R0Request):
     held_metrics = {name: _aggregate([m for m in metrics if m["seed"] in holdout]) for name, metrics in results.items()}
     if not dev_metrics["fifo"]["valid"] or not held_metrics["fifo"]["valid"]:
         raise HTTPException(502, "R0 FIFOの独立評価が失敗しました。")
-    data = {"run_id": rid, "created_at": now(), "version": "0.30.0", "contract": CONTRACT_R0,
+    data = {"run_id": rid, "created_at": now(), "version": "0.31.0", "contract": CONTRACT_R0,
             "service_design": body.service_design or SERVICE_R0, "brief": body.brief,
             "seed": body.seed, "dev_seeds": dev, "holdout_seeds": holdout,
             "development": dev_metrics, "holdout": held_metrics,
@@ -1227,7 +1227,7 @@ def benchmark_fixtures():
 
 
 def _benchmark_report(record: dict) -> str:
-    lines = ["# Claims Operations Planner v0.30 — Diagnostic Benchmark", "",
+    lines = ["# Claims Operations Planner v0.31 — Diagnostic Benchmark", "",
         "> **合成フィクスチャの独立採点です。実顧客要件の正しさ・EU規制適合性を検証しません。**", "",
         f"- Benchmark ID: `{record['benchmark_id']}`", f"- Date: {record['created_at']}",
         f"- Fixtures: `{record['fixture_version']}` / Rubric: `{record['rubric_version']}`",
