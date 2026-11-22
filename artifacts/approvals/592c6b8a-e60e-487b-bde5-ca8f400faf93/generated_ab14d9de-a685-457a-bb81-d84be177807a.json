@@ -1,0 +1,10 @@
+{
+  "source_sha256": "eaea67789bb8cd9b1fdca4f42c9bf7031ceb4e9848d4d623b472d594d3fdc666",
+  "rationale": "This solution implements a greedy assignment algorithm that prioritizes cases by deadline (EDD - Earliest Deadline First) to minimize missed deadlines. It follows these key steps:\n\n1. Loads input data from input.json\n2. Sorts cases by deadline day (earliest first) to prioritize urgent cases\n3. For each day, attempts to assign available cases to reviewers\n4. For each case, finds the best reviewer with matching skill and sufficient capacity\n5. Uses a greedy approach that prefers reviewers with less remaining capacity to prevent over-allocation\n6. Updates reviewer capacities after assignment\n7. Saves results to output.json\n\nThe algorithm ensures:\n- Each case is assigned at most once\n- Reviewers don't exceed their daily capacity\n- Skill requirements are met\n- Cases are prioritized by deadline (EDD heuristic)\n- No overtime is allowed\n- All cases are either assigned or explicitly unassigned\n\nThis approach balances the business objective of minimizing deadline misses while respecting the hard constraints of fixed reviewer capacity and skill matching, without increasing total reviewer hours beyond what would be required with a FIFO approach.",
+  "created_at": "2026-11-21T23:31:14+00:00",
+  "coding_model": "qwen3-coder:30b",
+  "finance_model": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+  "domain_review_sha256": "d5964f437c202096d2a9e2b6ca25f3c86b02017f71bf525d9ba5c82d0c9008ef",
+  "domain_review_used_as_advisory": true,
+  "human_adjudication_used_instead": false
+}

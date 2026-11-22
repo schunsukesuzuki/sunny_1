@@ -1,4 +1,4 @@
-"""User-initiated 01..09 batch orchestration with explicit human decision gate.
+"""User-initiated 00..09 batch orchestration with explicit human decision gate.
 
 This workflow does not autonomously approve changes. Long-running tasks are run via
 FastAPI BackgroundTasks; state is persisted after each step for polling and audit.
@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 from typing import Callable
 
-from fastapi import BackgroundTasks, HTTPException
+from fastapi import BackgroundTasks, HTTPException, Header
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from typing import Literal
@@ -25,6 +25,11 @@ from . import blind_optimality as bo
 from . import artifact_readiness as ar
 from . import boundary_assurance as ba
 from . import dogwood_authorization as da
+from . import authorization_ledger as al
+from . import diagnostic_reliability as dr
+from . import feature_acceptance as fa
+from . import dogwood_negative_audit as dna
+from . import selection_gap_analysis as sga
 
 # The endpoints are registered by register(app, main_module) to keep the
 # existing 01..09 handlers as the single implementation of each operation.
@@ -120,7 +125,7 @@ def register(app, m) -> None:
     def summarize(state:dict) -> dict:
         result = {key:state.get(key) for key in (
             "workflow_id", "export_id", "created_at", "updated_at", "status", "phase", "stages",
-            "linked_ids", "error", "service_design", "evidence_mode", "r1_mode", "topic_alignment", "grounded_contract_status", "requirement_type", "requirement_trace_status", "boundary_status")}
+            "linked_ids", "error", "service_design", "evidence_mode", "r1_mode", "topic_alignment", "grounded_contract_status", "requirement_type", "requirement_trace_status", "feature_acceptance_status", "boundary_status", "diagnostic_reliability_status", "diagnostic_execution_status")}
         dogwood_file=folder(state["workflow_id"])/"05_dogwood_authorization.json"
         if dogwood_file.is_file():
             result["dogwood_authorization"]=json.loads(dogwood_file.read_text(encoding="utf-8"))
@@ -163,7 +168,7 @@ def register(app, m) -> None:
             'retrieval_status': statuses.get('00_evidence_grounded_requirements', 'NOT_STARTED'),
             'review_status': statuses.get('00b_evidence_review', 'NOT_STARTED'),
             'requirement_type': state.get('requirement_type'),
-            'feature_acceptance':state.get('requirement_trace_status','NOT_RUN'),
+            'feature_acceptance':state.get('feature_acceptance_status','NOT_RUN'),
             'semantic_support': 'UNVERIFIED',
             'real_customer_approval': 'NOT_OBTAINED',
         }
@@ -263,6 +268,85 @@ def register(app, m) -> None:
         temp.write_text(json.dumps({"created_at":m.now(),"linked_artifacts":inventory},ensure_ascii=False,indent=2),encoding="utf-8")
         os.replace(temp,target)
 
+    def complete_business_assessment(state:dict, wid:str, inp:FullRunStart)->None:
+        """Deterministic stage 09; callable after a completed diagnostic replay.
+
+        Never calls an LLM or R1 evaluation. Public evidence restrictions and
+        synthetic requirement trace augmentation remain identical to stage 09.
+        """
+        bid=state["linked_ids"].get("benchmarks")
+        benchmark_path=m.path_for('benchmarks',bid)/'benchmark.json' if bid else None
+        if not (benchmark_path and benchmark_path.is_file()):
+            bid=None
+        assess=m.generate_business_assessment(m.BusinessAssessmentRequest(
+            experiment_id=state["linked_ids"]["experiments"],
+            policy_validation_id=state["linked_ids"].get("policy_validations")
+              if any(x["name"]=="08b_policy_and_stress" and x["status"]=="COMPLETED_WITH_FINDINGS" for x in state["stages"]) else None,
+            benchmark_id=bid))
+        if inp.evidence_mode=="public":
+            result=m.load("assessments",assess["assessment_id"],"assessment.json")
+            aligned=state.get("topic_alignment",{})
+            contract_eval=m.load("workflows",wid,"08c_grounded_kpi_verification.json") if (folder(wid)/"08c_grounded_kpi_verification.json").exists() else None
+            trace=m.load('workflows',wid,'00c_requirement_trace.json')
+            trace_verification=(m.load('workflows',wid,'08e_requirement_trace.json')
+                if (folder(wid)/'08e_requirement_trace.json').exists() else None)
+            result['requirement_trace']={'mapping':trace,'evaluation':trace_verification}
+            acceptance_path=folder(wid)/'08e_feature_acceptance.json'
+            acceptance=json.loads(acceptance_path.read_text(encoding='utf-8')) if acceptance_path.is_file() else None
+            result['feature_acceptance']=acceptance
+            result["public_evidence_context"]={"dataset_id":inp.dataset_id,"rag_id":state.get("rag_id"),"topic_alignment":aligned,
+                "grounded_contract_evaluation":contract_eval,"customer_validation":"UNVERIFIED","causal_FIFO_explanation":"UNVERIFIED"}
+            result["source_register"].append({"id":"E08","source":f"workflows/{wid}/00b_human_evidence_review.json", 
+                "provenance":"PUBLIC_PROBLEM_CONTEXT_ONLY","description":"Official/public source excerpts and human-reviewed hypothetical claim problem",
+                "validity":"Published problem context, not current client evidence, not proof of FIFO/skill scheduling"})
+            for entry in result["source_register"]:
+                if entry["id"]=="E05":
+                    entry["source"]="No direct customer business data or authorized claims workflow attached (public contextual evidence is E08)"
+                    entry["description"]="Customer-specific demand, ROI, and real process evidence remain missing"
+            for crit in result["axes"][0]["criteria"]:
+                if crit["id"]=="BV-04":
+                    crit["finding"]="公開された問題背景はE08に収録。実顧客の需要・支払意思・保険案件の処理フローは未検証"
+            result["axes"][0]["criteria"].append({"id":"BV-06","title":"外部証拠と当該事業課題の整合（限定的）",
+                "status":"PUBLIC_PROBLEM_CONTEXT_ONLY" if aligned.get("status")=="TOPIC_MATCH_REVIEW_REQUIRED" else "HOLD",
+                "finding":"原文の課題領域のみ確認。FIFO因果・顧客固有SLA・要件導出は実証していない",
+                "evidence_refs":["E08"],"next_action":"当事者の一次資料と業務観測で問題原因を確認"})
+            result["axes"][1]["criteria"].append({"id":"AI-09","title":"要件種別に対応する合成受入評価",
+                "status":(trace_verification or {}).get('trace_status','HOLD'),
+                "finding":('進捗通知は独立した通知プロトタイプのみ。R1の担当者割当結果はこの要件の証明に使用しない' if trace['type']==rt.NOTIFICATION
+                    else '担当者割当は固定合成HOLDOUTと独立プローブでのみ評価'),
+                "evidence_refs":["E08","E04","E06"],"next_action":"顧客承認済みの受入条件と実業務APIで再検証"})
+            if trace['type']==rt.NOTIFICATION:
+                result['decision'].update({'status':'HOLD','code':'HOLD_NOTIFICATION_NOT_INTEGRATED',
+                    'stage':'TECHNICAL_VALIDATION','production_status':'NO_GO',
+                    'production_go':False,'customer_business_go':False,
+                    'description':'公開資料と進捗通知の仮説はトレース済み。独立した合成通知プロトタイプのみを検証。R1担当者割当は当該通知要件を検証しておらず、顧客連携・実運用は未実装。'})
+            elif not contract_eval or contract_eval.get("status")!="SUPPORTED_SYNTHETIC" or not acceptance or acceptance.get('synthetic_pass') is not True:
+                result["decision"].update({"status":"HOLD","code":"HOLD_GROUNDED_CONTRACT","stage":"TECHNICAL_VALIDATION",
+                    "description":"公開問題背景は取得済みだが、合成データでの人間設定KPI・仕様検証がHOLD。顧客事業価値は未検証。"})
+            else:
+                result["decision"]["description"]+=" 公開根拠は問題背景に限定。固定の合成実験が人間設定の閾値を満たすだけで、公開事例の因果や顧客価値を証明しません。"
+            assessment_dir=m.path_for("assessments",assess["assessment_id"])
+            for name,content in (("assessment.json",json.dumps(result,ensure_ascii=False,indent=2)),
+                                 ("report.md",m.ba.markdown(result)+"\n## v0.21 Requirement trace\n\n"+rt.markdown(trace,trace_verification))):
+                tmp=assessment_dir/(name+".tmp")
+                tmp.write_text(content,encoding="utf-8")
+                os.replace(tmp,assessment_dir/name)
+        # Explicitly record the separate boundary risk conclusion without
+        # upgrading any customer/production decision to GO.
+        assessment_dir=m.path_for("assessments",assess["assessment_id"])
+        assessment_record=m.load("assessments",assess["assessment_id"],"assessment.json")
+        boundary_record=m.load("workflows",wid,"08g_boundary_assurance.json")
+        assessment_record["boundary_assurance"]={"status":boundary_record["status"],
+            "contract_version":boundary_record["version"],
+            "scope":"cross-stage integrity only, not service or customer correctness"}
+        assessment_record["decision"]["production_go"]=False
+        assessment_record["decision"]["production_status"]="NO_GO"
+        new_path=assessment_dir/"assessment.json.tmp"
+        new_path.write_text(json.dumps(assessment_record,ensure_ascii=False,indent=2),encoding="utf-8")
+        os.replace(new_path,assessment_dir/"assessment.json")
+        state["linked_ids"]["assessments"]=assess["assessment_id"]
+        step(state,"09_business_delivery_assessment","COMPLETED_WITH_FINDINGS", "Production remains NO-GO; public source is contextual")
+
     async def second_half(wid:str) -> None:
         state=read(wid)
         inp=FullRunStart(**state["inputs"])
@@ -285,12 +369,18 @@ def register(app, m) -> None:
                     (folder(wid)/name).write_bytes(source.read_bytes())
                 except OSError:
                     pass  # Missing source will fail closed in da.check.
-            # v0.24: independent Dogwood temporal permit/forbid verdict.
+            # v0.25: verified durable approval snapshot + independent Dogwood permit/forbid.
             # Enforce only AFTER existing lineage check, but BEFORE LLM/E2B R1.
             # If the existing gate failed, we do not forge a Dogwood approval event.
             if approval_gate["status"] == "PASS":
                 dogwood_record=da.check(wid, state["linked_ids"].get("proposals"),
-                                        approval_id, approval_record)
+                                        approval_id, approval_record, ledger_root=m.ARTIFACT_DIR)
+                try:
+                    journal_proof=al.audit(m.ARTIFACT_DIR, approval_record)
+                    add_file(wid, "05_authorization_ledger.json", journal_proof)
+                except (al.LedgerError, OSError, ValueError) as audit_error:
+                    dogwood_record={**dogwood_record, "status":"ERROR", "decision":"ERROR",
+                        "reason":"Authorization journal verification failed: "+type(audit_error).__name__}
             else:
                 dogwood_record={"version":da.VERSION,"status":"DENY",
                     "decision":"DENY","reason":"Python approval/lineage contract failed before Dogwood",
@@ -347,8 +437,14 @@ def register(app, m) -> None:
                     enable_repair=inp.diagnostic_repair,
                     blind_generalization=inp.diagnostic_blind_cases))
                 state["linked_ids"]["benchmarks"]=bench["benchmark_id"]
-                st="COMPLETED_WITH_FINDINGS" if bench["status"]=="COMPLETED" else "FAILED"
-                step(state,current,st,"summary counts are evidence, not model reliability")
+                reliability = bench.get("reliability_gate") or dr.assess(bench)
+                add_file(wid,"08_diagnostic_reliability_gate.json",reliability)
+                state["diagnostic_reliability_status"] = reliability["status"]
+                state["diagnostic_execution_status"] = reliability.get('execution_status','UNKNOWN')
+                st=('COMPLETED_WITH_FINDINGS' if bench['status']=='COMPLETED' else
+                    'INCOMPLETE' if bench['status'] in ('INCOMPLETE_TIMEOUT','INCOMPLETE_EXECUTION','INCOMPLETE') else 'FAILED')
+                step(state,current,st,'execution: '+reliability.get('execution_status','UNKNOWN')+
+                    '; diagnostic quality: '+reliability['status']+'; raw scores only')
             except Exception as exc:
                 marker=folder(wid)/"08_benchmark_started.json"
                 if marker.is_file():
@@ -425,7 +521,20 @@ def register(app, m) -> None:
                     trace=m.load('workflows',wid,'00c_requirement_trace.json')
                     assignment=m.load('workflows',wid,'08c_grounded_kpi_verification.json') if trace['type']==rt.ASSIGNMENT and (folder(wid)/'08c_grounded_kpi_verification.json').exists() else None
                     notification=m.load('workflows',wid,'08d_notification_prototype.json') if trace['type']==rt.NOTIFICATION and (folder(wid)/'08d_notification_prototype.json').exists() else None
-                    traced=rt.trace_evaluation(trace,assignment_result=assignment,notification_result=notification)
+                    policy=None; experiment=None
+                    if trace['type']==rt.ASSIGNMENT:
+                        eid=state['linked_ids'].get('experiments')
+                        pid=state['linked_ids'].get('policy_validations')
+                        if eid and (m.path_for('experiments',eid)/'experiment.json').is_file():
+                            experiment=m.load('experiments',eid,'experiment.json')
+                        if pid and (m.path_for('policy_validations',pid)/'validation.json').is_file():
+                            policy=m.load('policy_validations',pid,'validation.json')
+                    acceptance=fa.assess(trace,assignment=assignment,notification=notification,
+                                         policy=policy,experiment=experiment)
+                    add_file(wid,'08e_feature_acceptance.json',acceptance)
+                    state['feature_acceptance_status']=acceptance['status']
+                    traced=rt.trace_evaluation(trace,assignment_result=assignment,
+                                               notification_result=notification,acceptance=acceptance)
                     add_file(wid,'08e_requirement_trace.json',traced)
                     (folder(wid)/'08e_requirement_trace.md').write_text(rt.markdown(trace,traced),encoding='utf-8')
                     state['requirement_trace_status']=traced['trace_status']
@@ -462,7 +571,12 @@ def register(app, m) -> None:
                         opt=baseline[seed].copy()
                         add_file(wid,f'08f_exact_{seed}.json',opt)
                     m.store_raw_e2b('workflows',wid,'08f_raw',raw)
+                    selection_gap=sga.analyze(selected_engine=exp_record.get('selected_engine'),
+                        dev_audit=m.load('experiments',eid,'dev_selection_audit.json'),
+                        blind_metrics=metrics, random_seed=root_seed)
+                    add_file(wid,'08f_selection_gap_analysis.json',selection_gap)
                     report={'version':bo.VERSION,'status':'COMPLETED_WITH_FINDINGS',
+                           'selection_gap_analysis':selection_gap,
                            'seed_root':root_seed,'suite_size':len(suite),
                            'post_selection_only':True,'used_for_generation':False,
                            'used_for_selection':False,'selected_engine':exp_record.get('selected_engine'),
@@ -485,7 +599,14 @@ def register(app, m) -> None:
                     if isinstance(data,dict) and "boundary" in data and "status" in data:
                         checkpoints.append(data)
                 suite=ba.regression_scenarios()
+                negative=dna.run(m.ARTIFACT_DIR, workflow_id=wid,
+                                 approval_id=state['linked_ids'].get('approvals'))
+                add_file(wid,'08g_dogwood_negative_audit.json',negative)
                 audit=ba.report(state,checkpoints,suite)
+                audit['dogwood_negative_audit']={'status':negative['status'],
+                    'native_checked':negative['native_checked'],
+                    'passed':negative['passed'], 'planned':negative['planned'],
+                    'scope':'Synthetic denial probes, not proof of original production approval'}
                 dogwood_file=folder(wid)/"05_dogwood_authorization.json"
                 if dogwood_file.is_file():
                     saved_auth=json.loads(dogwood_file.read_text(encoding="utf-8"))
@@ -513,75 +634,18 @@ def register(app, m) -> None:
             assessment_input=check_experiment(state,"09")
             if ar.record_is_complete(assessment_input) and state.get("boundary_status")=="PASS_CONTROLLED":
                 try:
-                    bid=state["linked_ids"].get("benchmarks")
-                    benchmark_path=m.path_for('benchmarks',bid)/'benchmark.json' if bid else None
-                    if not (benchmark_path and benchmark_path.is_file()):
-                        bid=None
-                    assess=m.generate_business_assessment(m.BusinessAssessmentRequest(
-                        experiment_id=state["linked_ids"]["experiments"],
-                        policy_validation_id=state["linked_ids"].get("policy_validations")
-                          if any(x["name"]=="08b_policy_and_stress" and x["status"]=="COMPLETED_WITH_FINDINGS" for x in state["stages"]) else None,
-                        benchmark_id=bid))
-                    if inp.evidence_mode=="public":
-                        result=m.load("assessments",assess["assessment_id"],"assessment.json")
-                        aligned=state.get("topic_alignment",{})
-                        contract_eval=m.load("workflows",wid,"08c_grounded_kpi_verification.json") if (folder(wid)/"08c_grounded_kpi_verification.json").exists() else None
-                        trace=m.load('workflows',wid,'00c_requirement_trace.json')
-                        trace_verification=(m.load('workflows',wid,'08e_requirement_trace.json')
-                            if (folder(wid)/'08e_requirement_trace.json').exists() else None)
-                        result['requirement_trace']={'mapping':trace,'evaluation':trace_verification}
-                        result["public_evidence_context"]={"dataset_id":inp.dataset_id,"rag_id":state.get("rag_id"),"topic_alignment":aligned,
-                            "grounded_contract_evaluation":contract_eval,"customer_validation":"UNVERIFIED","causal_FIFO_explanation":"UNVERIFIED"}
-                        result["source_register"].append({"id":"E08","source":f"workflows/{wid}/00b_human_evidence_review.json", 
-                            "provenance":"PUBLIC_PROBLEM_CONTEXT_ONLY","description":"Official/public source excerpts and human-reviewed hypothetical claim problem",
-                            "validity":"Published problem context, not current client evidence, not proof of FIFO/skill scheduling"})
-                        for entry in result["source_register"]:
-                            if entry["id"]=="E05":
-                                entry["source"]="No direct customer business data or authorized claims workflow attached (public contextual evidence is E08)"
-                                entry["description"]="Customer-specific demand, ROI, and real process evidence remain missing"
-                        for crit in result["axes"][0]["criteria"]:
-                            if crit["id"]=="BV-04":
-                                crit["finding"]="公開された問題背景はE08に収録。実顧客の需要・支払意思・保険案件の処理フローは未検証"
-                        result["axes"][0]["criteria"].append({"id":"BV-06","title":"外部証拠と当該事業課題の整合（限定的）",
-                            "status":"PUBLIC_PROBLEM_CONTEXT_ONLY" if aligned.get("status")=="TOPIC_MATCH_REVIEW_REQUIRED" else "HOLD",
-                            "finding":"原文の課題領域のみ確認。FIFO因果・顧客固有SLA・要件導出は実証していない",
-                            "evidence_refs":["E08"],"next_action":"当事者の一次資料と業務観測で問題原因を確認"})
-                        result["axes"][1]["criteria"].append({"id":"AI-09","title":"要件種別に対応する合成受入評価",
-                            "status":(trace_verification or {}).get('trace_status','HOLD'),
-                            "finding":('進捗通知は独立した通知プロトタイプのみ。R1の担当者割当結果はこの要件の証明に使用しない' if trace['type']==rt.NOTIFICATION
-                                else '担当者割当は固定合成HOLDOUTと独立プローブでのみ評価'),
-                            "evidence_refs":["E08","E04","E06"],"next_action":"顧客承認済みの受入条件と実業務APIで再検証"})
-                        if trace['type']==rt.NOTIFICATION:
-                            result['decision'].update({'status':'HOLD','code':'HOLD_NOTIFICATION_NOT_INTEGRATED',
-                                'stage':'TECHNICAL_VALIDATION','production_status':'NO_GO',
-                                'production_go':False,'customer_business_go':False,
-                                'description':'公開資料と進捗通知の仮説はトレース済み。独立した合成通知プロトタイプのみを検証。R1担当者割当は当該通知要件を検証しておらず、顧客連携・実運用は未実装。'})
-                        elif not contract_eval or contract_eval.get("status")!="SUPPORTED_SYNTHETIC":
-                            result["decision"].update({"status":"HOLD","code":"HOLD_GROUNDED_CONTRACT","stage":"TECHNICAL_VALIDATION",
-                                "description":"公開問題背景は取得済みだが、合成データでの人間設定KPI・仕様検証がHOLD。顧客事業価値は未検証。"})
-                        else:
-                            result["decision"]["description"]+=" 公開根拠は問題背景に限定。固定の合成実験が人間設定の閾値を満たすだけで、公開事例の因果や顧客価値を証明しません。"
-                        assessment_dir=m.path_for("assessments",assess["assessment_id"])
-                        for name,content in (("assessment.json",json.dumps(result,ensure_ascii=False,indent=2)),
-                                             ("report.md",m.ba.markdown(result)+"\n## v0.21 Requirement trace\n\n"+rt.markdown(trace,trace_verification))):
-                            tmp=assessment_dir/(name+".tmp")
-                            tmp.write_text(content,encoding="utf-8")
-                            os.replace(tmp,assessment_dir/name)
-                    # Explicitly record the separate boundary risk conclusion without
-                    # upgrading any customer/production decision to GO.
-                    assessment_dir=m.path_for("assessments",assess["assessment_id"])
-                    assessment_record=m.load("assessments",assess["assessment_id"],"assessment.json")
-                    boundary_record=m.load("workflows",wid,"08g_boundary_assurance.json")
-                    assessment_record["boundary_assurance"]={"status":boundary_record["status"],
-                        "contract_version":boundary_record["version"],
-                        "scope":"cross-stage integrity only, not service or customer correctness"}
-                    assessment_record["decision"]["production_go"]=False
-                    assessment_record["decision"]["production_status"]="NO_GO"
-                    new_path=assessment_dir/"assessment.json.tmp"
-                    new_path.write_text(json.dumps(assessment_record,ensure_ascii=False,indent=2),encoding="utf-8")
-                    os.replace(new_path,assessment_dir/"assessment.json")
-                    state["linked_ids"]["assessments"]=assess["assessment_id"]
-                    step(state,current,"COMPLETED_WITH_FINDINGS", "Production remains NO-GO; public source is contextual")
+                    bid=state['linked_ids'].get('benchmarks')
+                    bench=m.load('benchmarks',bid,'benchmark.json') if bid else None
+                    if bench is not None and bench.get('status')!='COMPLETED':
+                        add_file(wid,'09_assessment_deferred.json',{
+                            'status':'SKIPPED_DIAGNOSTIC_DEPENDENCY',
+                            'reason':'08 diagnostic incomplete; 09 requires a completed benchmark or an explicit independent assessment path',
+                            'benchmark_id':bid, 'benchmark_status':bench.get('status'),
+                            'experiment_id':state['linked_ids'].get('experiments'),
+                            'production_go':False})
+                        step(state,current,'SKIPPED','08 diagnostic incomplete; 09 deferred until replay')
+                    else:
+                        complete_business_assessment(state,wid,inp)
                 except Exception as exc:
                     add_file(wid,"09_assessment_failure.json",{"error_type":type(exc).__name__,
                         "detail":str(getattr(exc,'detail',exc))[:600],
@@ -601,7 +665,7 @@ def register(app, m) -> None:
                     for x in state["stages"]) for name in required_steps(state))
             state["status"]="COMPLETE" if all_good else "PARTIAL"
             if not all_good and not state.get("error"):
-                first_issue=next((x for x in state["stages"] if x["status"] in ("FAILED","SKIPPED")),None)
+                first_issue=next((x for x in state["stages"] if x["status"] in ("FAILED","INCOMPLETE","SKIPPED")),None)
                 if first_issue:
                     state["error"]=first_issue["name"]+": "+first_issue.get("detail", "")
             state["phase"]="DONE"
@@ -660,7 +724,7 @@ def register(app, m) -> None:
         wid, export_id=m.fresh_id(), m.fresh_id()
         public = body.evidence_mode == "public"
         record={"workflow_id":wid,"export_id":export_id,"created_at":m.now(),
-            "updated_at":m.now(),"version":"0.23.0","evidence_mode":body.evidence_mode,"r1_mode":body.r1_mode,
+            "updated_at":m.now(),"version":"0.25.0","evidence_mode":body.evidence_mode,"r1_mode":body.r1_mode,
             "status":"RUNNING","phase":"00_evidence_grounded_requirements" if public else "02_service_design",
             "inputs":body.model_dump(),"service_design":None,"linked_ids":{k:None for k in KINDS},
             "stages":[],"bundle_ready":False}
@@ -798,7 +862,8 @@ def register(app, m) -> None:
         return summarize(state)
 
     @app.post("/api/full-run/approve-and-continue")
-    async def full_run_review(body:FullRunReview, background_tasks:BackgroundTasks):
+    async def full_run_review(body:FullRunReview, background_tasks:BackgroundTasks,
+                              x_reviewer_token: str | None = Header(default=None)):
         state=read(body.workflow_id)
         if state["status"]!="AWAITING_APPROVAL":
             raise HTTPException(409,"Human review is not pending for this workflow")
@@ -806,7 +871,8 @@ def register(app, m) -> None:
         if payload.get("proposal_id")!=state["linked_ids"]["proposals"]:
             raise HTTPException(409,"Approval does not belong to the pending workflow")
         # All business/domain safeguards from step 05 apply unchanged.
-        approval=m.approve(m.ApprovalRequest(**payload))
+        approval=(m.approve(m.ApprovalRequest(**payload), x_reviewer_token=x_reviewer_token)
+                  if x_reviewer_token is not None else m.approve(m.ApprovalRequest(**payload)))
         state["linked_ids"]["approvals"]=approval["approval_id"]
         step(state,"05_human_approval","COMPLETED" if approval["decision"]=="approved" else "REJECTED",
              "explicit human decision; original ODA HOLD remains preserved")
@@ -823,6 +889,141 @@ def register(app, m) -> None:
             background_tasks.add_task(second_half,body.workflow_id)
         return summarize(state)
 
+    @app.post('/api/full-run/{workflow_id}/retry-diagnostic-timeouts')
+    async def full_run_retry_diagnostics(workflow_id:str):
+        """Re-run only transport-incomplete 08 calls; never repeat 05, 06, or 08f.
+
+        Prior ZIP is saved before replacement. R1 and other completed stages
+        stay untouched. Original raw diagnoses/fixture inputs remain auditable.
+        """
+        state=read(workflow_id)
+        if state.get('phase')!='DONE' or state.get('status')!='PARTIAL':
+            raise HTTPException(409,'Only a finished PARTIAL workflow can retry incomplete diagnostics')
+        bid=state.get('linked_ids',{}).get('benchmarks')
+        if not bid: raise HTTPException(409,'No saved diagnostic benchmark')
+        old_stage=next((x for x in state['stages'] if x['name']=='08_diagnostic_benchmark'),{})
+        if old_stage.get('status') not in ('FAILED','INCOMPLETE'):
+            raise HTTPException(409,'Diagnostic benchmark is not incomplete')
+        retry=await m.retry_incomplete_benchmark(m.BenchmarkRetryRequest(benchmark_id=bid))
+        reliability=retry['reliability_gate']
+        state['diagnostic_reliability_status']=reliability['status']
+        state['diagnostic_execution_status']=reliability['execution_status']
+        add_file(workflow_id,'08_diagnostic_retry_status_'+m.fresh_id()+'.json',{
+            'version':'REPLAY-INCOMPLETE-v0.26.0','benchmark_id':bid,
+            'status':retry['status'],'execution_status':reliability['execution_status'],
+            'quality_status':reliability['status'],
+            'retry_is_blind_fresh':False,'created_at':m.now()})
+        add_file(workflow_id,'08_diagnostic_reliability_retry_'+m.fresh_id()+'.json',reliability)
+        st=('COMPLETED_WITH_FINDINGS' if retry['status']=='COMPLETED' else 'INCOMPLETE'
+            if retry['status'] in ('INCOMPLETE','INCOMPLETE_TIMEOUT','INCOMPLETE_EXECUTION') else 'FAILED')
+        step(state,'08_diagnostic_benchmark',st,
+             'execution: '+reliability['execution_status']+'; quality: '+reliability['status']+
+             '; retry only incomplete calls')
+        old_09=next((x for x in state['stages'] if x['name']=='09_business_delivery_assessment'),{})
+        dependent_09=(old_09.get('status')=='SKIPPED' and '08 diagnostic' in old_09.get('detail','') or
+            old_09.get('status')=='FAILED' and 'Benchmark not completed' in old_09.get('detail',''))
+        if retry['status']=='COMPLETED' and dependent_09 and state.get('boundary_status')=='PASS_CONTROLLED':
+            experiment_ready=check_experiment(state,'09_retry')
+            if ar.record_is_complete(experiment_ready):
+                try:
+                    complete_business_assessment(state,workflow_id,FullRunStart(**state['inputs']))
+                    snapshot_index(state)
+                    # The provenance topology is derived data and must reflect the new assessment ID.
+                    dag_path=folder(workflow_id)/'09_final_provenance_dag.json'
+                    dag_tmp=dag_path.with_suffix('.json.tmp')
+                    dag_tmp.write_text(json.dumps(ba.topology(state['linked_ids'],workflow_id),ensure_ascii=False,indent=2),encoding='utf-8')
+                    os.replace(dag_tmp,dag_path)
+                    add_file(workflow_id,'09_assessment_recovery_'+m.fresh_id()+'.json',{
+                        'status':'COMPLETED_WITH_FINDINGS',
+                        'reason':'08 retry finished; deterministic stage 09 refreshed; R1 and Dogwood unchanged',
+                        'benchmark_id':bid,'assessment_id':state['linked_ids'].get('assessments')})
+                except Exception as exc:
+                    step(state,'09_business_delivery_assessment','FAILED',
+                         '09 recovery failed: '+str(getattr(exc,'detail',exc))[:350])
+        good=all(any(x['name']==step_name and x['status'] in ('COMPLETED','COMPLETED_WITH_FINDINGS')
+                     for x in state['stages']) for step_name in required_steps(state))
+        state['status']='COMPLETE' if good else 'PARTIAL'
+        first_issue=next((x for x in state['stages'] if x['status'] in ('FAILED','INCOMPLETE','SKIPPED')),None)
+        state['error']=None if good else (first_issue['name']+': '+first_issue.get('detail','') if first_issue else None)
+        state['phase']='DONE'
+        write(workflow_id,state)
+        # Preserve the original PARTIAL export before regenerating the current one.
+        import shutil
+        destination=m.path_for('exports',state['export_id'])
+        previous=destination/'complete_audit_package.zip'
+        if previous.is_file():
+            shutil.copy2(previous,destination/('before_diagnostic_retry_'+m.fresh_id()+'.zip'))
+        save_archive(state)
+        return summarize(state)
+
+    def build_report(state: dict) -> dict:
+        """Read-only, workflow-scoped report for inline UI display.
+
+        This is a view over persisted evidence only. It never substitutes a
+        missing 09 assessment with a success marker or recomputes an experiment.
+        """
+        if state.get('status') not in ('COMPLETE', 'PARTIAL'):
+            raise HTTPException(409, 'Workflow has not finished; report is not available yet')
+        ids = state.get('linked_ids') or {}
+        stages = state.get('stages') or []
+        counts = {
+            'total': len(stages),
+            'completed': sum(x.get('status') in ('COMPLETED','COMPLETED_WITH_FINDINGS') for x in stages),
+            'failed': sum(x.get('status') in ('FAILED','INCOMPLETE') for x in stages),
+            'skipped': sum(x.get('status') == 'SKIPPED' for x in stages),
+        }
+        assessment = None
+        if ids.get('assessments'):
+            assessment = m.load('assessments', ids['assessments'], 'assessment.json')
+            if assessment.get('assessment_id') != ids['assessments']:
+                raise HTTPException(409, 'Assessment ID mismatch')
+            if ids.get('experiments') and assessment.get('experiment_id') != ids['experiments']:
+                raise HTTPException(409, 'Assessment experiment ID mismatch')
+            if ids.get('benchmarks') and assessment.get('benchmark_id') not in (ids['benchmarks'], None):
+                raise HTTPException(409, 'Assessment benchmark ID mismatch')
+        benchmark = None
+        if ids.get('benchmarks'):
+            benchmark = m.load('benchmarks', ids['benchmarks'], 'benchmark.json')
+            if benchmark.get('benchmark_id') != ids['benchmarks']:
+                raise HTTPException(409, 'Benchmark ID mismatch')
+        dogwood_file = folder(state['workflow_id']) / '05_dogwood_authorization.json'
+        authorization = json.loads(dogwood_file.read_text(encoding='utf-8')) if dogwood_file.is_file() else None
+        gate = (benchmark or {}).get('reliability_gate') or {}
+        return {
+            'report_version': '0.27.0',
+            'workflow_id': state['workflow_id'],
+            'updated_at': state.get('updated_at'),
+            'status': state['status'],
+            'phase': state.get('phase'),
+            'stages': stages,
+            'stage_counts': counts,
+            'linked_ids': ids,
+            'authorization_status': (authorization or {}).get('status'),
+            'requirement_type': state.get('requirement_type'),
+            'requirement_trace_status': state.get('requirement_trace_status'),
+            'feature_acceptance': json.loads((folder(state['workflow_id'])/'08e_feature_acceptance.json').read_text(encoding='utf-8')) if (folder(state['workflow_id'])/'08e_feature_acceptance.json').is_file() else None,
+            'selection_gap_analysis': json.loads((folder(state['workflow_id'])/'08f_selection_gap_analysis.json').read_text(encoding='utf-8')) if (folder(state['workflow_id'])/'08f_selection_gap_analysis.json').is_file() else None,
+            'dogwood_negative_audit': json.loads((folder(state['workflow_id'])/'08g_dogwood_negative_audit.json').read_text(encoding='utf-8')) if (folder(state['workflow_id'])/'08g_dogwood_negative_audit.json').is_file() else None,
+            'boundary_status': state.get('boundary_status'),
+            'diagnostic': {
+                'execution_status': state.get('diagnostic_execution_status') or gate.get('execution_status'),
+                'quality_status': state.get('diagnostic_reliability_status') or gate.get('quality_status'),
+                'benchmark_summary': (benchmark or {}).get('summary'),
+                'reliability_gate': gate or None,
+            },
+            'business_assessment': assessment,
+            'sources': {
+                'workflow': f'workflows/{state["workflow_id"]}/workflow.json',
+                'assessment': f'assessments/{ids["assessments"]}/assessment.json' if ids.get('assessments') else None,
+                'benchmark': f'benchmarks/{ids["benchmarks"]}/benchmark.json' if ids.get('benchmarks') else None,
+                'dogwood': f'workflows/{state["workflow_id"]}/05_dogwood_authorization.json' if authorization else None,
+            },
+        }
+
+    @app.get('/api/full-run/{workflow_id}/report')
+    def full_run_report(workflow_id: str):
+        return build_report(read(workflow_id))
+
     @app.get("/api/full-run/{workflow_id}")
     def full_run_status(workflow_id:str):
         return summarize(read(workflow_id))
@@ -833,5 +1034,5 @@ def register(app, m) -> None:
         file=m.path_for("exports",state["export_id"])/"complete_audit_package.zip"
         if not file.is_file():
             raise HTTPException(409,"ZIP is not ready; check workflow status")
-        return FileResponse(file,filename=f"claims_full_run_v024_{workflow_id}.zip",media_type="application/zip")
+        return FileResponse(file,filename=f"claims_full_run_v027_{workflow_id}.zip",media_type="application/zip")
 

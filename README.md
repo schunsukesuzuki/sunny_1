@@ -1,3 +1,7 @@
+> **v0.26 — Diagnostic execution + quality split:** ODAのタイムアウトとRAW診断不合格を別々に報告し、未完了の試行だけを同一モデル・同一入力で最大2回再実行できます。再実行したBlindケースは新規の独立評価と見なしません。08の回復後には必要な09の決定的評価だけを復旧します。元の06/Dogwood評価はそのまま。詳細: `docs/v026-diagnostic-execution-and-replay.md`。
+
+> **v0.25 — persistent local authorization journal + revocation + diagnostic reliability gate:** Local SQLite now records APPROVED/REVOKED events, with chain verification before every R1 authorization. Dogwood still performs its real Rust temporal decision using *per-invocation replay*; this is **not** a continuously running Dogwood store or verified human identity. Optional shared reviewer-token and HMAC key support local integrity, not production authorization. Diagnostics now surface `HOLD_HUMAN_ADJUDICATION` when fixed/raw or fresh-blind cases fail, without misrepresenting a Domain Skill win as LLM autonomy. See `docs/v025-durable-journal-and-diagnostic-gates.md`.
+
 > **v0.24.1 build hotfix**: Rust API compile errors (`E0308`, `E0277`) were patched in `backend/dogwood_gate/src/main.rs`; authorization/audit contracts remain v0.24.0. Native Rust compilation still requires a Docker build on your machine. See `CHANGELOG.md`.
 
 > **v0.24 — Dogwood Temporal Approval Gate（小規模PoC）**：AWSが公開する実物のRust製`dogwood-local-engine`（v1.1）を用い、05の承認が06のR1生成・評価より先に成立したことをDogwoodの`permit`/`forbid`で検査します。Pythonの境界・証拠・業務KPI検査は残します。**標準DockerビルドはRustソースをコンパイルし、Rustのポリシー反例テストを実行**します。判定不能・DENY・タイムアウト時はR1を遮断し、PARTIAL監査ZIPに判定とポリシーSHA256を残します。`DOGWOOD_MODE=off`は既存Python単体テスト専用で、**認可は実行されません**。この実装は保存済み承認を毎回一時ストアへ再生する方式であり、長期間継続する監査イベントストリーム・認証済み本人確認・本番の認可サービスではありません。詳細：`docs/v024-dogwood-approval-gate.md`。
@@ -36,9 +40,13 @@
 
 > **v0.10:** 要件診断の多軸独立採点・Qwen/ODAの合成ベンチマーク・過去ログ再採点を追加。詳細は `docs/v010-requirement-diagnostic-benchmark.md`。
 
-# Claims Operations Planner — AI Venture Feasibility Studio v0.24
+# Claims Operations Planner — AI Venture Feasibility Studio v0.27.0
 
 ドイツの保険業務SaaS企業（**架空**）の事業開発PoC。**Qwen3-Coder 30B** はサービス設計・Pythonコード生成、**OpenDataArena/ODA-Fin-RL-8B** は金融ドメイン要件診断を担当。E2Bは生成コードを隔離して実行し、独立した決定的評価器で審査割当・期限・資格・稼働上限を検証します。v0.8にあったMarkdown結果保存を維持し、生成コード・差分・各試行のE2B実行証跡・履歴取得を拡張しました。
+
+> **v0.27.0 — 型付き機能受入・診断の意味整合・DEV選択監査・Dogwood拒否証跡:** 人間が選択した `claim_progress_updates` は通知機能固有の4受入テストに束縛し、担当者割当のKPIでは代替できません（`08e_feature_acceptance.json`）。RAW診断の分類・根拠・改訂対象・行動の矛盾を検査します（真の意味的正しさの証明ではありません）。候補選択はDEVの期限超過数→未割当数に固定し、08fの選択後独立比較ではR1を再選択しません（`08f_selection_gap_analysis.json`）。Dogwoodの未承認・ID不一致・取消のネイティブ否定ケースと、期限切れ・SQLite証跡不一致を別途監査します（`08g_dogwood_negative_audit.json`）。Dockerビルド時にRustテストログを保存します。00→10→01の画面順序、画面10のインラインレポートを継承します。詳細は `docs/v027-feature-contract-diagnostic-selection-dogwood.md`。
+
+> **v0.26.1 — 画面10を00の直後・01の前に移動**：00で公開データの設定を行った後、そのまま10の一括実行を操作できます。10の中で顧客ブリーフ・DEV seed・04の模擬条件・R1比較方式を編集できます（個別画面と同一state）。00bと05の人間承認は引き続き必須です。工程がCOMPLETEまたはPARTIALで終了すると、**同じ画面10内に実行レポートを自動表示**します（Dogwood判定・診断実行とRAW品質・09意思決定・合成HOLDOUT指標・未検証事項）。以前のWorkflow IDを読み込んだ場合も表示可能です。レポートは保存済みファイルから読み取るだけで、LLM・E2Bの再実行や自動承認は行いません。API: `GET /api/full-run/{workflow_id}/report`。Markdownと証跡ZIPの既存ダウンロード機能も維持しています。
 
 > **技術デモです**：架空の商談と合成案件が中心です。00画面では別途、公開された第三者の金融サービス利用者発言・苦情を検索できますが、想定顧客の実際の要求を裏付けるものではなく、EU法令検索も行いません。ODA-Fin-RL-8Bは金融推論モデルであり、EU保険規制への専門適合が実証されたモデルではありません。請求の支払可否・不正判定や法的判断は自動化しません。モデルの評価は合成データと模擬顧客証拠に限定されます。
 
@@ -58,7 +66,7 @@
 ## Mac Studioでの実行環境
 
 - macOSでネイティブのOllamaを実行（利用可能ならMetal加速）。Dockerコンテナから `host.docker.internal:11434` に接続。
-- Docker Compose：FastAPI + React/Vite。**v0.24は追加のRustビルドを必要としますが、Dogwoodの常駐サーバは追加しません**。E2B Python SDKには `E2B_API_KEY` 必須。
+- Docker Compose：FastAPI + React/Vite。**v0.26.1も追加のRustビルドを必要としますが、Dogwoodの常駐サーバは追加しません**。E2B Python SDKには `E2B_API_KEY` 必須。
 - **2モデルが必要**。ODAだけの評価に置換してQwenの生成処理を削除したものではありません。
 
 ### 1. Ollamaにモデルを準備
@@ -89,7 +97,7 @@ docker compose up --build
 
 既にOllamaアプリが常駐している場合、別途 `ollama serve` は不要です。`bash scripts/preflight-mac.sh` で接続とモデル有無を確認できます。
 
-### 3. UI操作（v0.20）
+### 3. UI操作（v0.26.1）
 
 0. **Evidence-grounded Requirements RAG**：保険請求の合成実験に接続する場合は `insurance_claims_uk`（FCA/FOS）を選択します。`community_credit`と`cfpb_sample`は個人向け金融業務の資料であり、保険請求案件の証拠として承認できません。手動取得・別ZIPダウンロード・索引化・検索も可能ですが、**10の公開データモードでは事前操作不要**です。
 1. **顧客課題とR0サービス設計**：架空ブリーフ・seedを選択。
@@ -100,7 +108,13 @@ docker compose up --build
 6. **レポートと全証跡ZIP**：成功・失敗の記録をMac側 `./artifacts/` へ保存。「保存した実験と監査証跡」から過去の結果を読み直せます。
 7. **08診断品質ベンチマーク**：QwenとODAへ同じ合成ケース・同じschemaを与えて独立採点。過去のproposal IDを再採点可能（非破壊）。
 8. **09 Business & Delivery Assessment**：R1実験IDを入力（06から自動入力、または07の履歴から選択）、二軸評価を生成。**v0.14の新しい仕様・ストレス・ベンチマークをまだ紐づけていない場合、HOLD_POLICY**となります。
-9. **10 一括実行＋保存**：公開データモードでは **00データ取得/索引化/関連性検査 → 00bで出典/問題背景の支持範囲を人間確認 → 00cで合成実験に適用するKPI閾値を設定 → 01〜04 → 05で独立した人間承認 → 06〜08b → 08cで人間設定KPIを独立判定 → 09の事業評価**。銀行資料との領域不一致、関連する問題の出典不足、却下の場合は01へ進みません。公開資料の原本も単一ZIPに含めます。実顧客の要件・原因の正しさは未検証。合成モードは明示選択した場合のみ。
+9. **10 一括実行＋保存（00の直後に配置）**：公開データモードでは **00データ取得/索引化/関連性検査 → 00bで出典/問題背景の支持範囲を人間確認 → 00cで合成実験に適用するKPI閾値を設定 → 01〜04 → 05で独立した人間承認 → 06〜08b → 08cで人間設定KPIを独立判定 → 09の事業評価**。銀行資料との領域不一致、関連する問題の出典不足、却下の場合は01へ進みません。公開資料の原本も単一ZIPに含めます。実顧客の要件・原因の正しさは未検証。合成モードは明示選択した場合のみ。
+
+### 10の実行後に表示されるレポート
+
+10の一括実行が `COMPLETE` または `PARTIAL` になったとき、画面10内に「一括実行レポート」が表示されます。`RUNNING` と人間承認待ち（`AWAITING_EVIDENCE_REVIEW`, `AWAITING_APPROVAL`）では最終レポートは出しません。PARTIALの場合は未実行工程が残ると明示し、未完了の09事業判断を勝手に作りません。
+
+レポートは認可のALLOW/DENY、診断の実行状態と品質状態、要求機能とのトレース、R1合成HOLDOUT、09の二軸判断（根拠・次アクション付き）を独立して表示します。元のZIPや09 Markdownも取得できます。以前のワークフローは画面10のWorkflow ID入力から読み込めます。新API `GET /api/full-run/{workflow_id}/report` は保存済み成果物の**read-only**合成ビューであり、実験・承認・監査履歴は変更しません。
 
 ### v0.20のSkill専用実行
 

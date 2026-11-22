@@ -118,7 +118,7 @@ def test_full_run_intercepts_dogwood_deny_before_r1_and_exports_zip(client, monk
     assert stages['06_r1_generation_and_evaluation']=='SKIPPED'
     assert stages['08g_boundary_assurance']=='FAILED'
     with zipfile.ZipFile(io.BytesIO(client.get(final['bundle_url']).content)) as z:
-        assert json.loads(z.read('manifest.json'))['format_version']=='AUDIT-EXPORT-v0.24.0'
+        assert json.loads(z.read('manifest.json'))['format_version']=='AUDIT-EXPORT-v0.25.0'
         gate=next(n for n in z.namelist() if n.endswith('/boundary_05_to_06_dogwood.json'))
         assert json.loads(z.read(gate))['status']=='HOLD'
         decision=next(n for n in z.namelist() if n.endswith('/05_dogwood_authorization.json'))

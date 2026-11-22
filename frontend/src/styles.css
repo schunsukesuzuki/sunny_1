@@ -154,3 +154,15 @@ footer { margin-top: 35px; padding: 22px 5px; border-top: 1px solid #d4e1dd; col
 .evidence-select span { display: block; min-width: 0; }
 .evidence-select small { display: block; color: #657b75; font-size: 11px; }
 .quoted-evidence { display: block; color: #334f56; font-size: 12px; white-space: pre-wrap; margin-top: 8px; line-height: 1.6; overflow-wrap: anywhere; }
+
+/* v0.26.1 — Step 10 appears before 01; full-run report renders inline. */
+.full-run-quick-settings { background: #f4f8f6; margin-bottom: 16px; }
+.full-run-quick-settings h3 { font-size: 15px; margin: 0 0 14px; color: #284e53; }
+.full-run-inline-report { margin: 21px 0; }
+.workflow-report { border: 1px solid #b8d7cb; border-radius: 12px; background: #f6fbf8; padding: 20px; }
+.workflow-report h4 { margin: 19px 0 9px; color: #294d51; }
+.workflow-report .assessment-item { background: #fff; }
+.workflow-report .assessment-report-head { margin-bottom: 15px; }
+.workflow-report .top-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media(max-width:940px) { .workflow-report .top-stats { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media(max-width:680px) { .workflow-report { padding: 14px; } .workflow-report .top-stats { grid-template-columns: 1fr; } }

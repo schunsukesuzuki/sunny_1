@@ -1,4 +1,4 @@
-"""v0.24 Dogwood Local Engine gate: verified local approval -> temporal policy.
+"""v0.25 Dogwood Local Engine gate: verified local approval -> temporal policy.
 
 The Rust program uses *the actual* dogwood-local-engine crate. It replays only
 server-persisted approval evidence into an isolated temporary store; this is not
@@ -16,8 +16,9 @@ import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from . import authorization_ledger as al
 
-VERSION = "DOGWOOD-APPROVAL-GATE-v0.24.0"
+VERSION = "DOGWOOD-APPROVAL-GATE-v0.25.0"
 DEFAULT_BINARY = "/usr/local/bin/claims-dogwood-gate"
 POLICY_PATH = Path(__file__).resolve().parent.parent / "dogwood_gate/policy/policy.dw"
 SCHEMA_PATH = Path(__file__).resolve().parent.parent / "dogwood_gate/policy/schema.cedarschema"
@@ -44,13 +45,14 @@ def _record(decision: str, reason: str, workflow_id: str, expected_proposal_id: 
         "approval_id": expected_approval_id, "configured_mode": mode or configured_mode(),
         "engine": engine, "history_events": history_events, "elapsed_ms": elapsed_ms,
         "policy_sha256": _sha(POLICY_PATH), "schema_sha256": _sha(SCHEMA_PATH),
-        "scope": "EPHEMERAL_REPLAY_OF_LOCAL_APPROVAL; NO_AUTHENTICATED_IDENTITY_OR_CONTINUOUS_HISTORY",
+        "scope": "SQLITE_PERSISTED_LOCAL_EVIDENCE; EPHEMERAL_DOGWOOD_REPLAY; NOT_CONTINUOUS_AUTHORIZATION",
         "production_authorization": False,
     }
 
 
 def check(workflow_id: str, expected_proposal_id: str, expected_approval_id: str,
-          approval_record: dict | None, *, revoked: bool = False) -> dict[str, Any]:
+          approval_record: dict | None, *, revoked: bool = False,
+          ledger_root: Path | None = None) -> dict[str, Any]:
     """Checks local lineage and makes a *real Rust Dogwood authorization call*.
 
     This is synchronous and safe to run from an async FastAPI handler because
@@ -87,7 +89,18 @@ def check(workflow_id: str, expected_proposal_id: str, expected_approval_id: str
             return base("DENY", "Approval outside accepted 24h window")
     except (AttributeError, TypeError, ValueError, OverflowError):
         return base("DENY", "Invalid or missing approval timestamp")
+    # Source of truth is persisted SQLite evidence; the Rust engine still
+    # executes a bounded replay. No request may forge past events.
+    journal = None
+    if ledger_root is not None:
+        try:
+            journal = al.audit(ledger_root, approval_record)
+            revoked = revoked or bool(journal["revoked"])
+        except (al.LedgerError, OSError, ValueError, __import__("sqlite3").Error) as exc:
+            return base("ERROR", "Approval journal unavailable or tampered: " + type(exc).__name__)
     if mode == "off":
+        if revoked:
+            return base("DENY", "Persisted approval has been revoked, even in offline mode")
         return base("NOT_ENFORCED", "Explicit test/development bypass. NO Dogwood authorization executed")
 
     binary = os.getenv("DOGWOOD_BINARY", DEFAULT_BINARY)
@@ -119,6 +132,8 @@ def check(workflow_id: str, expected_proposal_id: str, expected_approval_id: str
                 or result.get("policy_sha256") != _sha(POLICY_PATH)
                 or result.get("schema_sha256") != _sha(SCHEMA_PATH)):
             return base("ERROR", "Unexpected Dogwood response schema; rejecting")
+        if revoked and result["decision"] != "DENY":
+            return base("ERROR", "Dogwood failed to enforce the persisted revocation")
         return base(result["decision"], "Dogwood temporal policy verdict",
                     engine=result["engine"], history_events=result["history_events"])
     except (OSError, subprocess.TimeoutExpired, ValueError, TypeError) as exc:

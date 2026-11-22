@@ -95,7 +95,7 @@ def test_full_batch_carries_boundary_report_and_dag_in_single_zip(client,monkeyp
         assert z.testzip() is None
         man=json.loads(z.read('manifest.json'))
         assert man['status']=='COMPLETE'
-        assert man['format_version']=='AUDIT-EXPORT-v0.24.0'
+        assert man['format_version']=='AUDIT-EXPORT-v0.25.0'
         for suffix in ('08g_boundary_assurance.json','08g_boundary_regression.json',
                        '08g_provenance_dag.json','boundary_05_to_06.json','boundary_08b_lineage.json'):
             assert any(x.endswith('/'+suffix) for x in z.namelist()),suffix

@@ -87,15 +87,21 @@ def compile_trace(*,requirement:str,evidence_ids:list[str],requirement_type:str,
     }
 
 
-def trace_evaluation(trace:dict, *,assignment_result:dict|None=None,notification_result:dict|None=None)->dict:
+def trace_evaluation(trace:dict, *,assignment_result:dict|None=None,notification_result:dict|None=None,acceptance:dict|None=None)->dict:
     kind=trace['type']
     target=notification_result if kind==NOTIFICATION else assignment_result
     passed=bool(target and target.get('synthetic_pass') is True)
+    if acceptance is not None:
+        passed=bool(acceptance.get('synthetic_pass') is True and
+                    acceptance.get('feature_id') == trace.get('feature_id') and
+                    acceptance.get('feature_type') == kind)
     return {
         'version':VERSION,'requirement_id':trace['requirement_id'],'type':kind,
         'feature_id':trace['feature_id'],'acceptance_test_ids':trace['acceptance_test_ids'],
         'target_used':trace['test_target'], 'result_status': target.get('status') if target else 'NOT_EXECUTED',
         'evaluator_executed':bool(target),'synthetic_pass':passed,
+        'acceptance_version':acceptance.get('version') if acceptance else None,
+        'feature_contract_pass':acceptance.get('synthetic_pass') if acceptance else None,
         'unrelated_r1_does_not_prove_notification':kind==NOTIFICATION,
         'customer_accepted':False,'production_ready':False,
         'trace_status':'SYNTHETIC_PROTOTYPE_ONLY' if passed and kind==NOTIFICATION else

@@ -101,6 +101,14 @@ def test_public_notification_hypothesis_not_scored_as_assignment(fixed_insurance
     assert review['status']=='NOT_APPLICABLE_TO_NOTIFICATION'
     trace=main.load('workflows',st['workflow_id'],'08e_requirement_trace.json')
     assert trace['unrelated_r1_does_not_prove_notification']
+    feature=main.load('workflows',st['workflow_id'],'08e_feature_acceptance.json')
+    assert feature['status']=='PASS_SYNTHETIC_FEATURE_ONLY'
+    assert feature['feature_type']=='claim_progress_updates'
+    assert set(feature['required_test_ids'])=={x['test_id'] for x in feature['test_results']}
+    assert not feature['integrated_service_acceptance'] and not feature['customer_acceptance']
+    in_ui=client.get('/api/full-run/'+st['workflow_id']+'/report')
+    assert in_ui.status_code==200
+    assert in_ui.json()['feature_acceptance']['contract_sha256']==feature['contract_sha256']
     ass=main.load('assessments',fin['linked_ids']['assessments'],'assessment.json')
     assert ass['decision']['code']=='HOLD_NOTIFICATION_NOT_INTEGRATED'
     assert ass['decision']['production_go'] is False
@@ -109,7 +117,8 @@ def test_public_notification_hypothesis_not_scored_as_assignment(fixed_insurance
         assert manifest['status']=='COMPLETE'
         for suffix in ('00c_requirement_trace.json','00c_requirement_trace.md',
                        '08c_grounded_kpi_verification.json','08d_notification_prototype.json',
-                       '08e_requirement_trace.json','08e_requirement_trace.md'):
+                       '08e_requirement_trace.json','08e_requirement_trace.md',
+                       '08e_feature_acceptance.json'):
             assert any(n.endswith('/'+suffix) for n in z.namelist()),suffix
         for entry in manifest['files']:
             assert hashlib.sha256(z.read(entry['path'])).hexdigest()==entry['sha256_raw_bytes']

@@ -90,7 +90,7 @@ def test_full_run_06_started_only_is_partial_not_08b_404(client, monkeypatch):
         assert z.testzip() is None
         man=json.loads(z.read('manifest.json'))
         assert man['status']=='PARTIAL'
-        assert man['format_version']=='AUDIT-EXPORT-v0.24.0'
+        assert man['format_version']=='AUDIT-EXPORT-v0.25.0'
         assert set(['06_r1_generation_and_evaluation','08b_policy_and_stress',
                     '08f_blind_optimality','09_business_delivery_assessment']).issubset(man['pending_or_failed_steps'])
         assert any(n.endswith('/06_r1_failure.json') for n in z.namelist())

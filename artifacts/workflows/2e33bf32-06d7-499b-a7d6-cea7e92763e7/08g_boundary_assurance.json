@@ -1,0 +1,110 @@
+{
+  "version": "BOUNDARY-ASSURANCE-v0.24.0",
+  "status": "PASS_CONTROLLED",
+  "checks": [
+    {
+      "boundary": "00b_to_01",
+      "status": "PASS",
+      "violations": []
+    },
+    {
+      "boundary": "05_to_06",
+      "status": "PASS",
+      "violations": []
+    },
+    {
+      "boundary": "05_to_06_dogwood",
+      "status": "PASS",
+      "violations": []
+    },
+    {
+      "boundary": "06_to_downstream",
+      "status": "PASS",
+      "violations": []
+    },
+    {
+      "boundary": "06_to_downstream",
+      "status": "PASS",
+      "violations": []
+    },
+    {
+      "boundary": "06_to_downstream",
+      "status": "PASS",
+      "violations": []
+    },
+    {
+      "boundary": "06_to_downstream",
+      "status": "PASS",
+      "violations": []
+    }
+  ],
+  "realization_certificates": [],
+  "risk_axes": {
+    "structural_opportunity": "TESTED_WITH_SYNTHETIC_FIXTURES",
+    "process_anomaly_count": 0,
+    "realized_risk": "NOT_OBSERVED_POST_INTERCEPTION",
+    "terminal_harm": "NOT_ESTABLISHED; NO PRODUCTION EXECUTION",
+    "interceptions": 0,
+    "task_utility": "REPORTED_IN_R1_KPI_WHEN_AVAILABLE; NOT INFERRED_FROM_BOUNDARY_PASS"
+  },
+  "regression_suite": {
+    "version": "BOUNDARY-ASSURANCE-v0.24.0",
+    "status": "PASS",
+    "scenarios": [
+      {
+        "scenario_id": "cross_workflow_result",
+        "expected_detection": true,
+        "detected_as_expected": true,
+        "synthetic_fixture": true
+      },
+      {
+        "scenario_id": "unapproved_revision",
+        "expected_detection": true,
+        "detected_as_expected": true,
+        "synthetic_fixture": true
+      },
+      {
+        "scenario_id": "shared_capacity_oversubscription",
+        "expected_detection": true,
+        "detected_as_expected": true,
+        "synthetic_fixture": true
+      },
+      {
+        "scenario_id": "safe_shared_capacity",
+        "expected_detection": true,
+        "detected_as_expected": true,
+        "synthetic_fixture": true
+      },
+      {
+        "scenario_id": "healthy_approval",
+        "expected_detection": true,
+        "detected_as_expected": true,
+        "synthetic_fixture": true
+      }
+    ],
+    "scope": "Synthetic deterministic checks; no LLM or multi-agent risk rates"
+  },
+  "customer_validity": "UNVERIFIED",
+  "production_go": false,
+  "limits": [
+    "Local record consistency, not formal proof",
+    "Synthetic scenario detection is not a measured incident probability",
+    "Reviewer actor labels are unauthenticated",
+    "No GraphRAG, multi-agent deployment or trusted append-only storage",
+    "Dogwood is bounded replay, not a continuous authenticated authorizer"
+  ],
+  "dogwood_negative_audit": {
+    "status": "PASS_NATIVE_DENIAL_CASES",
+    "native_checked": true,
+    "passed": 8,
+    "planned": 8,
+    "scope": "Synthetic denial probes, not proof of original production approval"
+  },
+  "dogwood_authorization": {
+    "status": "ALLOW",
+    "engine": "dogwood-local-engine",
+    "policy_sha256": "1c87fd7c7629c7c1933f6088d6ed768575a927b966a3345e9dd7da068d03ba98",
+    "continuous_history": false,
+    "authentic_human_identity": false
+  }
+}

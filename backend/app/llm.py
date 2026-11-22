@@ -19,6 +19,7 @@ MODEL = os.getenv("OLLAMA_MODEL", "qwen3-coder:30b")
 FINANCE_MODEL = os.getenv("ODA_FIN_MODEL", "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M")
 FINANCE_MODEL_SOURCE = "OpenDataArena/ODA-Fin-RL-8B"
 TIMEOUT = int(os.getenv("OLLAMA_TIMEOUT_SECONDS", "240"))
+FINANCE_TIMEOUT = int(os.getenv("ODA_FIN_TIMEOUT_SECONDS", "480"))  # Cold model swaps can exceed Qwen budget.
 
 
 class Diagnosis(BaseModel):
@@ -85,7 +86,7 @@ async def query(schema: type[BaseModel], system: str, user: str, *, model: str |
     """Ollama schema-constrained call. Never silently substitute another model."""
     target = model or MODEL
     try:
-        async with httpx.AsyncClient(timeout=httpx.Timeout(TIMEOUT, connect=10)) as client:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(FINANCE_TIMEOUT if target == FINANCE_MODEL else TIMEOUT, connect=10)) as client:
             r = await client.post(f"{BASE_URL}/api/chat", json={
                 "model": target, "stream": False,
                 "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],

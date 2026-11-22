@@ -4,7 +4,9 @@ WORKDIR /dogwood
 COPY dogwood_gate/Cargo.toml ./Cargo.toml
 COPY dogwood_gate/src ./src
 COPY dogwood_gate/policy ./policy
-RUN cargo test --release && cargo build --release
+RUN cargo test --release --quiet > /tmp/dogwood-rust-tests.log 2>&1 \
+    || { cat /tmp/dogwood-rust-tests.log; exit 1; }
+RUN cargo build --release
 
 FROM python:3.12-slim-bookworm
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
@@ -16,6 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt \
 COPY app ./app
 COPY dogwood_gate/policy ./dogwood_gate/policy
 COPY --from=dogwood-builder /dogwood/target/release/claims-dogwood-gate /usr/local/bin/claims-dogwood-gate
+COPY --from=dogwood-builder /tmp/dogwood-rust-tests.log /opt/dogwood-rust-tests.log
 COPY skills ./skills
 EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

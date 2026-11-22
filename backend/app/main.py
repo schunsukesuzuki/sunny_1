@@ -1,4 +1,4 @@
-"""Claims Operations Planner v0.24: auditable LLM and pinned Domain Skill comparison."""
+"""Claims Operations Planner v0.27: auditable LLM and pinned Domain Skill comparison."""
 from __future__ import annotations
 
 import asyncio
@@ -14,7 +14,7 @@ import statistics
 import time
 import uuid
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from fastapi.responses import FileResponse, PlainTextResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -27,6 +27,12 @@ from .e2b_runner import run_in_e2b
 from . import llm
 from . import diagnostic_quality as dq
 from . import diagnostic_protocol as dp
+from . import authorization_ledger as al
+from . import diagnostic_reliability as dr
+from . import diagnostic_consistency as dc
+from . import diagnostic_semantics as ds
+from . import dev_selection_audit as dsa
+from . import diagnostic_execution as de
 from . import business_assessment as ba
 from . import policy_validation as pv
 from . import dev_selection as dsel
@@ -71,7 +77,7 @@ def store(kind: str, id_: str, filename: str, data: object):
     return target
 
 
-app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.23.0")
+app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.27.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                    allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
@@ -263,6 +269,7 @@ def _aggregate(rows: list[dict]) -> dict:
     valid = all(x["valid"] for x in rows)
     return {"valid": valid,
             "missed_total": sum(m["missed_deadlines"] for m in rows) if valid else None,
+            "unassigned_total": sum(m.get("unassigned_cases",0) for m in rows) if valid else None,
             "worked_hours_total": sum(m["assigned_hours"] for m in rows) if valid else None,
             "deadline_hit_rate": round(statistics.mean(m["deadline_hit_rate"] for m in rows), 5) if valid else None,
             "all_claims_completed": valid and all(m["completed"] == m["total_cases"] for m in rows),
@@ -276,7 +283,7 @@ def claims_allocation_skill_manifest():
 
 @app.get("/api/sample")
 def sample():
-    return {"title": "Claims Operations Planner", "version": "0.24.0", "customer_profile": "German InsurTech SaaS (fictional)",
+    return {"title": "Claims Operations Planner", "version": "0.27.0", "customer_profile": "German InsurTech SaaS (fictional)",
             "brief": BRIEF, "contract_r0": CONTRACT_R0, "contract_r1": CONTRACT_R1,
             "service_design_r0": SERVICE_R0, "service_design_r1": SERVICE_R1,
             "synthetic_counterexample": SIMULATED_EVIDENCE,
@@ -289,7 +296,7 @@ def sample():
 
 @app.get("/api/health")
 async def health():
-    return {"app": "ok", "version": "0.24.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
+    return {"app": "ok", "version": "0.27.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
             "ollama": await llm.status()}
 
 
@@ -323,7 +330,7 @@ async def run_r0(body: R0Request):
     held_metrics = {name: _aggregate([m for m in metrics if m["seed"] in holdout]) for name, metrics in results.items()}
     if not dev_metrics["fifo"]["valid"] or not held_metrics["fifo"]["valid"]:
         raise HTTPException(502, "R0 FIFOの独立評価が失敗しました。")
-    data = {"run_id": rid, "created_at": now(), "version": "0.24.0", "contract": CONTRACT_R0,
+    data = {"run_id": rid, "created_at": now(), "version": "0.27.0", "contract": CONTRACT_R0,
             "service_design": body.service_design or SERVICE_R0, "brief": body.brief,
             "seed": body.seed, "dev_seeds": dev, "holdout_seeds": holdout,
             "development": dev_metrics, "holdout": held_metrics,
@@ -466,15 +473,32 @@ def approved(aid: str) -> tuple[dict, dict, dict]:
     # temporal policy applied to the full workflow. Use approval ID as a
     # scoped synthetic workflow identity for standalone operations.
     from . import dogwood_authorization as dogwood
-    authorization = dogwood.check(aid, rec["proposal_id"], aid, rec)
+    authorization = dogwood.check(aid, rec["proposal_id"], aid, rec, ledger_root=ARTIFACT_DIR)
     if not dogwood.admitted(authorization):
         raise HTTPException(503 if authorization["status"] == "ERROR" else 403,
                             "Dogwood denied R1: " + authorization["reason"][:250])
     return rec, prop, run
 
 
+def reviewer_identity(actor: str, token: str | None) -> tuple[str, str]:
+    """Optional local shared-token check; not third-party identity verification."""
+    required = os.getenv("REVIEWER_API_TOKEN", "")
+    if not required:
+        return actor, "SELF_REPORTED"
+    import hmac as _hmac
+    if not isinstance(token, str) or not _hmac.compare_digest(token, required):
+        raise HTTPException(401, "Missing or invalid local reviewer token")
+    bound_actor = os.getenv("REVIEWER_ID", "").strip()
+    if not bound_actor:
+        raise HTTPException(503, "REVIEWER_ID must be configured with REVIEWER_API_TOKEN")
+    if actor != bound_actor:
+        raise HTTPException(403, "Approval actor must match the locally configured reviewer")
+    return bound_actor, "LOCAL_SHARED_TOKEN"
+
+
 @app.post("/api/approve")
-def approve(body: ApprovalRequest):
+def approve(body: ApprovalRequest, x_reviewer_token: str | None = Header(default=None)):
+    actor, auth_kind = reviewer_identity(body.actor, x_reviewer_token)
     proposal = load("proposals", body.proposal_id, "proposal.json")
     if body.decision == "approved" and proposal["condition"] != "counterexample":
         raise HTTPException(422, "Cannot approve a change without a counterexample")
@@ -507,7 +531,7 @@ def approve(body: ApprovalRequest):
     rid = fresh_id()
     rec = {"approval_id": rid, "proposal_id": body.proposal_id,
            "parent_run_id": proposal["parent_run_id"], "decision": body.decision,
-           "actor": body.actor, "rationale": body.rationale, "timestamp_utc": now(),
+           "actor": actor, "actor_authentication": auth_kind, "rationale": body.rationale, "timestamp_utc": now(),
            "contract_r0_sha256": sha256(CONTRACT_R0), "contract_r1_sha256": sha256(CONTRACT_R1),
            "service_sha256": sha256(SERVICE_R1), "evidence_sha256": sha256(proposal["evidence"]),
            "finance_diagnosis_sha256": sha256(proposal.get("finance_diagnosis", {})),
@@ -524,8 +548,52 @@ def approve(body: ApprovalRequest):
     except FileExistsError as exc:
         raise HTTPException(409, "Proposal already approved/rejected") from exc
     store("approvals", rid, "approval.json", rec)
+    try:
+        al.approve(ARTIFACT_DIR, rec)
+    except (OSError, ValueError, al.LedgerError, __import__("sqlite3").Error) as exc:
+        # Keep the written approval for forensics; downstream calls require
+        # a matching journal event, so this failed write can never authorize R1.
+        raise HTTPException(503, f"Authorization journal failure; approval not usable: {type(exc).__name__}") from exc
     return rec
 
+
+
+@app.get("/api/approvals/{approval_id}/authorization-status")
+def approval_authorization_status(approval_id: str):
+    rec = load("approvals", approval_id, "approval.json")
+    try:
+        return al.audit(ARTIFACT_DIR, rec)
+    except (al.LedgerError, OSError, ValueError, __import__("sqlite3").Error) as exc:
+        # Do not imply authorization success when the journal is corrupt/missing.
+        raise HTTPException(503, "Authorization evidence could not be verified") from exc
+
+
+class RevokeRequest(BaseModel):
+    actor: str = Field(min_length=2, max_length=100)
+    rationale: str = Field(min_length=10, max_length=1000)
+
+
+@app.post("/api/approvals/{approval_id}/revoke")
+def revoke_approval(approval_id: str, body: RevokeRequest,
+                    x_reviewer_token: str | None = Header(default=None)):
+    actor, auth_kind = reviewer_identity(body.actor, x_reviewer_token)
+    rec = load("approvals", approval_id, "approval.json")
+    try:
+        # Validate the original approval before appending a revocation.
+        current = al.audit(ARTIFACT_DIR, rec)
+        if current["revoked"]:
+            raise HTTPException(409, "Approval already revoked")
+        entry = al.revoke(ARTIFACT_DIR, rec, actor=actor,
+                          rationale=body.rationale, actor_authentication=auth_kind)
+    except (al.LedgerError, OSError, ValueError, __import__("sqlite3").Error) as exc:
+        raise HTTPException(503, f"Revocation journal failure: {type(exc).__name__}") from exc
+    # Persist an exportable per-approval receipt. Do not overwrite approval.json.
+    receipt = {"status":"REVOKED", "approval_id":approval_id,
+               "actor_claim":actor, "actor_authentication":auth_kind,
+               "rationale":body.rationale, "journal_entry":entry,
+               "revoked_at_utc":now(), "production_authorization":False}
+    store("approvals", approval_id, "revocation.json", receipt)
+    return receipt
 
 def domain_context_for_generation(rec: dict, prop: dict) -> dict:
     """Never feed a failed ODA diagnosis to the coder as an approved conclusion."""
@@ -651,8 +719,10 @@ async def evaluate_r1(body: EvaluateRequest):
                    "behavioral_probes":probes, "stress_checks":stress_checks}
         attempts.append(attempt)
         store("experiments", eid, f"attempt_{ix:02d}.json", attempt)
-        if meets_business and (selected_metric is None or agg["missed_total"] < selected_metric["missed_total"]):
+        if meets_business and (selected_metric is None or
+            dsa.score(agg,metrics) < dsa.score(selected_metric,selected_dev_rows)):
             selected, selected_metric = current_code, agg
+            selected_dev_rows = metrics
         # If already no missed deadlines on DEV, no benefit from repairs.
         if selected_metric and selected_metric["missed_total"] == 0:
             break
@@ -679,7 +749,7 @@ async def evaluate_r1(body: EvaluateRequest):
     skill_records = []
     skill_sources = {}
     selected_engine = 'llm_generated' if selected is not None else None
-    selected_dev_missed = selected_metric['missed_total'] if selected_metric else None
+    selected_dev_score = dsa.score(selected_metric, selected_dev_rows) if selected_metric else None
     if body.r1_mode in ('skill_only', 'compare'):
         skill_manifest=claims_skill.manifest()
         store('experiments',eid,'skill_manifest.json',skill_manifest)
@@ -724,10 +794,11 @@ async def evaluate_r1(body: EvaluateRequest):
             store('experiments',eid,f'{name}_dev_gate.json',row)
             # Predeclared DEV criterion; never select using HOLDOUT. Ties
             # keep existing LLM selection in compare mode for a fair contrast.
-            if skill_gate['eligible'] and (selected_dev_missed is None or skill_agg['missed_total'] < selected_dev_missed):
+            skill_score=dsa.score(skill_agg,dev_rows)
+            if skill_gate['eligible'] and (selected_dev_score is None or skill_score < selected_dev_score):
                 selected=skill_sources[name]
                 selected_metric=skill_agg
-                selected_dev_missed=skill_agg['missed_total']
+                selected_dev_score=skill_score
                 selected_engine=name
     held = None
     comparator_metrics = {}
@@ -812,7 +883,13 @@ async def evaluate_r1(body: EvaluateRequest):
                         "finance_diagnosis_sha256":sha256(prop["finance_diagnosis"]),
                         "service_design_sha256": sha256(SERVICE_R1), "r0_source_sha256": sha256(fifo),
                         "r1_source_sha256": sha256(selected) if selected else None}}
+    dev_candidates=dsa.compile_candidates(attempts,skill_records)
+    dev_selection_trace=dsa.select(dev_candidates, selected_engine,
+                                    selected_source_hash=sha256(selected) if selected else None)
+    store('experiments',eid,'dev_selection_rationale.json',dev_selection_trace)
+    result['dev_selection_rationale']=dev_selection_trace
     store("experiments", eid, "dev_selection_audit.json", {
+        'candidate_ranking':dev_selection_trace,
         'version':dsel.VERSION,'attempts':[{'attempt':a['attempt'],'source_sha256':a['code_sha256'],
             'selection_gate':a['selection_gate'], 'behavioral_probes':a['behavioral_probes'],
             'stress_checks':a['stress_checks']} for a in attempts],
@@ -1105,7 +1182,7 @@ def benchmark_fixtures():
 
 
 def _benchmark_report(record: dict) -> str:
-    lines = ["# Claims Operations Planner v0.21.2 — Diagnostic Benchmark", "",
+    lines = ["# Claims Operations Planner v0.27 — Diagnostic Benchmark", "",
         "> **合成フィクスチャの独立採点です。実顧客要件の正しさ・EU規制適合性を検証しません。**", "",
         f"- Benchmark ID: `{record['benchmark_id']}`", f"- Date: {record['created_at']}",
         f"- Fixtures: `{record['fixture_version']}` / Rubric: `{record['rubric_version']}`",
@@ -1116,6 +1193,14 @@ def _benchmark_report(record: dict) -> str:
         "| Model | completed | overall rubric PASS | mean criterion score |", "|---|---:|---:|---:|"]
     for name, val in record['summary'].items():
         lines.append(f"|{name}|{val['completed']}|{val['passed']}|{val['mean_score']}|")
+    lines += ["", "## Execution completeness (separate from answer quality)", "",
+              f"- Status: **{record.get('status', 'UNKNOWN')}**",
+              "- INCOMPLETE_TIMEOUT is an inference failure, not an incorrect model answer.",
+              "- A user-triggered retry runs only unfinished model calls and never upgrades rubric failures.",
+              "- A retry on a previously exposed blind case is a **replay**, not independent fresh-blind evidence.", "",
+              "| model | timeouts | completed | planned | structural raw consistency |", "|---|---:|---:|---:|---:|"]
+    for name, val in record['summary'].items():
+        lines.append(f"|{name}|{val.get('timeout_calls', 0)}|{val['completed']}|{val['planned']}|{val.get('structural_consistency_passed', 'n/a')}|")
     lines += ["", "## Trial-level evidence", "",
               "| case | repetition | model | classification | result | score | failures |",
               "|---|---:|---|---|---|---:|---|"]
@@ -1135,6 +1220,15 @@ def _benchmark_report(record: dict) -> str:
                   "| model | raw PASS | assisted PASS | grounded | completed | planned |", "|---|---:|---:|---:|---:|---:|"]
         for role,x in record['blind_generalization']['summary'].items():
             lines.append(f"|{role}|{x['passed']}|{x.get('assisted_passed',0)}|{x.get('grounding_applied',0)}|{x['completed']}|{x['planned']}|")
+    gate = record.get("reliability_gate") or {}
+    lines += ["", "## v0.27 raw diagnostic reliability gate", "",
+              f"- Status: **{gate.get('status', 'NOT_RUN')}**",
+              f"- Human adjudication required: **{gate.get('human_adjudication_required', True)}**",
+              f"- Prespecified criteria: {gate.get('predeclared_criteria', 'Not available')}",
+              f"- Quality failure codes: {', '.join(gate.get('quality_failure_codes', gate.get('failure_codes', []))) or 'None'}",
+              f"- Execution failure codes: {', '.join(gate.get('execution_failure_codes', [])) or 'None'}",
+              "- Raw test completion is distinct from synthetic R1 KPI; neither is production or legal validation.",
+              "- Semantic boundary: conservative RAW classification/evidence/revision checks; not a proof of natural-language truth."]
     lines += ["", "## Interpretation", "", "- 生回答・根拠ID補完後・再診断後を別々に保存。補完後PASSはモデル単独PASSではありません。",
               "- 元入力の単一証拠IDのみ、説明と整合するときに補助付与。欠落ID以外の診断・改訂方針は自動修正しません。", "- 分類だけでは合格しません。説明・改訂案・証拠ID・実装判定を独立採点します。",
               "- 同一アーキテクチャでもモデル差以外に量子化、ランダム性、応答形式の差が残ります。",
@@ -1172,11 +1266,14 @@ async def run_benchmark(body: BenchmarkRequest):
                     response=await llm.benchmark_diagnosis(payload,model=model)
                     data=response.model_dump()
                     raw_initial=dq.benchmark_score(data, fixture['oracle'])
+                    raw_consistency=dc.assess(data,payload)
+                    raw_semantics=ds.assess(data,payload)
                     grounded=dp.evidence_bind_from_input(payload,data)
                     tr['observable_fact_sheet']=dp.observable_fact_sheet(payload)
                     assisted_initial=dq.benchmark_score(grounded['assisted_answer'], fixture['oracle'])
                     tr.update({"status":"COMPLETED","initial_diagnosis":data,
-                               "initial_rubric":raw_initial,
+                               "initial_rubric":raw_initial,"initial_raw_consistency":raw_consistency,
+                               "initial_raw_semantics":raw_semantics,"raw_semantics":raw_semantics,
                                "initial_grounding":grounded,
                                "assisted_initial_rubric":assisted_initial,
                                "diagnosis":grounded['assisted_answer'],
@@ -1196,6 +1293,8 @@ async def run_benchmark(body: BenchmarkRequest):
                                 visible_feedback=critique['input_only_feedback'],model=model)
                             revised_data=revised.model_dump()
                             revised_score=dq.benchmark_score(revised_data,fixture['oracle'])
+                            revised_consistency=dc.assess(revised_data,payload)
+                            revised_semantics=ds.assess(revised_data,payload)
                             revised_grounded=dp.evidence_bind_from_input(payload,revised_data)
                             revised_assisted=dq.benchmark_score(revised_grounded['assisted_answer'],fixture['oracle'])
                             tr.update({'revised_diagnosis':revised_data,
@@ -1203,7 +1302,10 @@ async def run_benchmark(body: BenchmarkRequest):
                                        'revised_grounding':revised_grounded,
                                        'revised_assisted_rubric':revised_assisted,
                                        'latest_raw_diagnosis':revised_data,
-                                       'latest_raw_rubric':revised_score,
+                                       'latest_raw_rubric':revised_score,'raw_consistency':revised_consistency,
+                                       'revised_raw_consistency':revised_consistency,
+                                       'raw_semantics':revised_semantics,
+                                       'revised_raw_semantics':revised_semantics,
                                        'diagnosis':revised_grounded['assisted_answer'],
                                        'rubric':revised_assisted})
                         except Exception as repair_exc:
@@ -1212,31 +1314,14 @@ async def run_benchmark(body: BenchmarkRequest):
                     tr['final_assisted_passed']=tr['rubric']['passed']
                     tr['final_passed']=tr['rubric']['passed']
                 except Exception as exc:
+                    tr['status']=de.classify_error(exc)
                     tr["error_type"]=type(exc).__name__
                     tr["error"]=str(getattr(exc,"detail",exc))[:600]
                 tr["elapsed_seconds"]=round(time.perf_counter()-t0,2)
                 tr["created_at"]=now()
                 trials.append(tr)
                 store("benchmarks",bid,f"trial_{len(trials):02d}_{role}_{case}.json",tr)
-    summary={}
-    for role in versions:
-        subset=[t for t in trials if t['model_role']==role]
-        good=[t for t in subset if t['status']=='COMPLETED']
-        scores=[t['rubric']['score'] for t in good]
-        summary[role]={"model":versions[role],"planned":len(subset),"completed":len(good),
-                       "passed":sum(t['rubric']['passed'] for t in good),
-                       "initial_passed":sum(t.get('initial_rubric',{}).get('passed',False) for t in good),
-                       "raw_initial_passed":sum(t.get('initial_rubric',{}).get('passed',False) for t in good),
-                       "raw_final_passed":sum(t.get('latest_raw_rubric',{}).get('passed',False) for t in good),
-                       "assisted_initial_passed":sum(t.get('assisted_initial_rubric',{}).get('passed',False) for t in good),
-                       "assisted_final_passed":sum(t.get('rubric',{}).get('passed',False) for t in good),
-                       "grounding_applied":sum(t.get('initial_grounding',{}).get('applied',False) or
-                           t.get('revised_grounding',{}).get('applied',False) for t in good),
-                       "revised_calls":sum(t.get('repair_attempted',False) for t in good),
-                       "mean_score":round(statistics.mean(scores),4) if scores else None,
-                       "mean_raw_score":round(statistics.mean([t['latest_raw_rubric']['score'] for t in good]),4) if good else None,
-                       "mean_assisted_score":round(statistics.mean(scores),4) if scores else None,
-                       "failed_calls":len(subset)-len(good)}
+    summary=de.fixed_summary(trials,versions)
     # Blind diagnostic generalization has separate seeded cases. Do not use any
     # failure code, score or answer from these cases for prompt revision.
     blind_trials=[]; blind_summary={}
@@ -1255,32 +1340,193 @@ async def run_benchmark(body: BenchmarkRequest):
                     binding=dp.evidence_bind_from_input(challenge['input'],raw)
                     trial['observable_fact_sheet']=dp.observable_fact_sheet(challenge['input'])
                     trial.update({'status':'COMPLETED','diagnosis':raw,
+                                  'raw_consistency':dc.assess(raw,challenge['input']),
+                                  'raw_semantics':ds.assess(raw,challenge['input']),
                                   'rubric':dq.benchmark_score(raw,challenge['oracle']),
                                   'grounding':binding,
                                   'assisted_diagnosis':binding['assisted_answer'],
                                   'assisted_rubric':dq.benchmark_score(binding['assisted_answer'],challenge['oracle'])})
                 except Exception as exc:
+                    trial['status']=de.classify_error(exc)
                     trial['error']=str(getattr(exc,'detail',exc))[:500]
                 blind_trials.append(trial)
                 store('benchmarks',bid,f'blind_{case_id}_{role}.json',trial)
-        for role in versions:
-            xs=[x for x in blind_trials if x['model_role']==role]
-            blind_summary[role]={'planned':len(xs),'completed':sum(x['status']=='COMPLETED' for x in xs),
-                'passed':sum(x.get('rubric',{}).get('passed',False) for x in xs),
-                'assisted_passed':sum(x.get('assisted_rubric',{}).get('passed',False) for x in xs),
-                'grounding_applied':sum(x.get('grounding',{}).get('applied',False) for x in xs)}
+        blind_summary=de.blind_summary(blind_trials,versions)
         store('benchmarks',bid,'blind_cases.json',
             {'seed_root':root_seed,'cases':blind_cases,'scope':'Synthetic fresh cases; never used in revisions'})
-    data={**meta,"status":"COMPLETED_WITH_ERRORS" if any(t['status']!='COMPLETED' for t in trials+blind_trials) else "COMPLETED",
+    data={**meta,"status":de.status_of(trials,blind_trials),
           "summary":summary,"trials":trials,
           "blind_generalization":{'enabled':body.blind_generalization,'trials':blind_trials,
                                   'summary':blind_summary,'no_repair_feedback':True},
           "grounding_version":"EVIDENCE-BINDER-v0.21.2",
-          "methodology":"Two-layer audit: raw model prediction (unaltered), optional deterministic input-only evidence-ID binding, optional second model inference, and fresh blind raw+assisted scores. The fixture oracle grades ONLY, never enters model prompts or grounder. Assistance is not a model-level diagnostic success. Fixed rubric unchanged.",
+          "consistency_version":dc.VERSION,"semantic_version":ds.VERSION,"retry_protocol_version":"REPLAY-INCOMPLETE-v0.26.0",
+          "retry_history":[],
+          "methodology":"Two-layer audit: raw model prediction (unaltered), optional deterministic input-only evidence-ID binding, optional second model inference, and fresh blind raw+assisted scores. The fixture oracle grades ONLY, never enters model prompts or grounder. Assistance is not a model-level diagnostic success. Fixed rubric unchanged. Cross-field consistency is a separate check.",
           "caveat":"Rule-based checks, no gold-standard EU customer requirement or regulatory validation."}
+    data["reliability_gate"] = dr.assess(data)
+    store("benchmarks",bid,"diagnostic_reliability_gate.json",data["reliability_gate"])
     store("benchmarks",bid,"benchmark.json",data)
     store("benchmarks",bid,"report.md",_benchmark_report(data))
     return data
+
+
+class BenchmarkRetryRequest(BaseModel):
+    benchmark_id: str
+    include_fixed: bool = True
+    include_blind: bool = True
+    # An explicit retry is not an extra independent trial or a prompt revision.
+
+
+def _atomic_rewrite(kind: str, ident: str, filename: str, data: object) -> None:
+    """Only for DERIVED benchmark summary files. Immutable attempts use store(x)."""
+    dest=path_for(kind,ident)/filename
+    tmp=dest.with_name(filename+'.pending')
+    tmp.write_text(data if isinstance(data,str) else json.dumps(data,indent=2,ensure_ascii=False),encoding='utf-8')
+    os.replace(tmp,dest)
+
+
+def _transient_row(row: dict) -> bool:
+    if row.get('status') in de.RECOVERABLE:
+        return True
+    # v0.25 originally recorded all transport errors as FAILED.
+    detail=str(row.get('error') or '').lower()
+    return row.get('status')=='FAILED' and ('タイムアウト' in detail or 'timeout' in detail or 'ollamaに接続' in detail)
+
+
+@app.post('/api/diagnostic-benchmark/retry-incomplete')
+async def retry_incomplete_benchmark(body: BenchmarkRetryRequest):
+    """Explicit, bounded replay of INCOMPLETE inference calls only.
+
+    Completed responses are immutable; fixed-case oracles never enter prompts;
+    previous raw trials, blind inputs and models remain pinned. Replayed blind
+    cases are tagged NON-FRESH and cannot prove first-pass generalization.
+    """
+    bid=body.benchmark_id
+    folder=path_for('benchmarks',bid)
+    record=load('benchmarks',bid,'benchmark.json')
+    if not body.include_fixed and not body.include_blind:
+        raise HTTPException(422,'At least one group must be selected')
+    if record.get('fixture_version') != FIXTURE_VERSION:
+        raise HTTPException(409,'Fixture version changed; cannot replay inputs safely')
+    if record.get('models') != {'coding':llm.MODEL,'finance':llm.FINANCE_MODEL}:
+        raise HTTPException(409,'Model identity changed; replay requires identical model IDs')
+    if record.get('status') not in ('INCOMPLETE','INCOMPLETE_TIMEOUT','INCOMPLETE_EXECUTION','COMPLETED_WITH_ERRORS'):
+        raise HTTPException(409,'No incomplete benchmark calls available for replay')
+    rows=[]
+    if body.include_fixed:
+        for idx,row in enumerate(record.get('trials',[])):
+            if _transient_row(row): rows.append(('fixed',idx,row))
+    if body.include_blind:
+        for idx,row in enumerate(record.get('blind_generalization',{}).get('trials',[])):
+            if _transient_row(row): rows.append(('blind',idx,row))
+    if not rows:
+        raise HTTPException(409,'No recoverable failed model calls; completed rubric failures are never replayed')
+    existing=record.get('retry_history') or []
+    # Bound retries to two per target (not one global retry for the whole benchmark).
+    rows=[(kind,idx,row) for kind,idx,row in rows if sum(x.get('kind')==kind and x.get('model_role')==row.get('model_role') and
+        x.get('case_id')==row.get('case_id') and x.get('repetition',0)==row.get('repetition',0) for x in existing)<2]
+    if not rows:
+        raise HTTPException(409,'Retry limit reached for all incomplete calls (2 per target)')
+    blind_cases={}
+    if any(kind=='blind' for kind,_,_ in rows):
+        case_path=folder/'blind_cases.json'
+        if not case_path.exists(): raise HTTPException(409,'Pinned blind-case inputs absent')
+        source=json.loads(case_path.read_text(encoding='utf-8'))
+        blind_cases=source.get('cases') or {}
+    # Validate ALL preconditions before invoking any model.
+    for kind,_,row in rows:
+        case=row['case_id']
+        if kind=='fixed':
+            if case not in record.get('case_ids',[]) or case not in FIXTURES:
+                raise HTTPException(409,'Fixed-case identity mismatch')
+            payload=FIXTURES[case]['input']
+            pinned=row.get('prompt_input_sha256')
+        else:
+            if case not in blind_cases:
+                raise HTTPException(409,'Blind-case identity mismatch')
+            payload=blind_cases[case]['input']
+            pinned=row.get('input_sha256')
+        if sha256(payload)!=pinned or record['models'].get(row['model_role'])!=row.get('model_id'):
+            raise HTTPException(409,'Input fingerprint or model identity mismatch')
+    lock=folder/'.retry_in_progress'
+    try:
+        fd=os.open(str(lock),os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
+    except FileExistsError as exc:
+        raise HTTPException(409,'A diagnostic retry is already in progress') from exc
+    os.close(fd)
+    try:
+        # Revalidate after obtaining the exclusive lock: another worker may have
+        # completed a retry between our initial read and lock acquisition.
+        if sha256(load('benchmarks',bid,'benchmark.json'))!=sha256(record):
+            raise HTTPException(409,'Benchmark changed while obtaining retry lock; refresh it')
+        # The initial benchmark must remain recoverable even if the process is interrupted.
+        import copy
+        record=copy.deepcopy(record)
+        store('benchmarks',bid,f'retry_before_{fresh_id()}.json',record)
+        history=record.setdefault('retry_history',[])
+        for kind,idx,old in rows:
+            case=old['case_id']; role=old['model_role']; model=old['model_id']
+            fixture=FIXTURES[case] if kind=='fixed' else blind_cases[case]
+            payload=fixture['input']; t0=time.perf_counter()
+            attempt={'kind':kind,'case_id':case,'repetition':old.get('repetition',0),
+                     'model_role':role,'model_id':model,'input_sha256':sha256(payload),
+                     'original_status':old['status'],'retry_no':1+sum(x.get('kind')==kind and
+                         x.get('case_id')==case and x.get('model_role')==role and
+                         x.get('repetition',0)==old.get('repetition',0) for x in history),
+                     'created_at':now(),'retry_is_fresh_blind':False,
+                     'no_model_swap':True,'no_oracle_feedback':True}
+            try:
+                answer=(await llm.benchmark_diagnosis(payload,model=model)).model_dump()
+                bind=dp.evidence_bind_from_input(payload,answer)
+                raw_rubric=dq.benchmark_score(answer,fixture['oracle'])
+                assisted_rubric=dq.benchmark_score(bind['assisted_answer'],fixture['oracle'])
+                consistency=dc.assess(answer,payload)
+                semantic=ds.assess(answer,payload)
+                new=dict(old)
+                new.update({'status':'COMPLETED','error':None,'error_type':None,
+                            'raw_consistency':consistency,'raw_semantics':semantic,
+                            'replayed_after_incomplete':True,
+                            'replay_origin_attempt':attempt['retry_no']})
+                if kind=='fixed':
+                    new.update({'initial_diagnosis':answer,'initial_rubric':raw_rubric,
+                      'initial_raw_consistency':consistency,'initial_grounding':bind,
+                      'assisted_initial_rubric':assisted_rubric,'latest_raw_diagnosis':answer,
+                      'latest_raw_rubric':raw_rubric,'diagnosis':bind['assisted_answer'],
+                      'rubric':assisted_rubric,'final_model_raw_passed':raw_rubric['passed'],
+                      'final_assisted_passed':assisted_rubric['passed'],
+                      'final_passed':assisted_rubric['passed'],'repair_attempted':False,
+                      'repair_skipped_on_replay':'No hidden rubric feedback on retry'})
+                    record['trials'][idx]=new
+                else:
+                    new.update({'diagnosis':answer,'rubric':raw_rubric,'grounding':bind,
+                      'assisted_diagnosis':bind['assisted_answer'],'assisted_rubric':assisted_rubric,
+                      'revision_allowed':False})
+                    record['blind_generalization']['trials'][idx]=new
+                attempt.update({'status':'COMPLETED','raw_rubric':raw_rubric,
+                                'raw_consistency':consistency,'raw_semantics':semantic,'raw_answer':answer,
+                                'assisted_rubric':assisted_rubric})
+            except Exception as exc:
+                failure=de.classify_error(exc)
+                attempt.update({'status':failure,'error_type':type(exc).__name__,
+                                'error':str(getattr(exc,'detail',exc))[:600]})
+                if kind=='fixed': record['trials'][idx]['status']=failure
+                else: record['blind_generalization']['trials'][idx]['status']=failure
+            attempt['elapsed_seconds']=round(time.perf_counter()-t0,2)
+            history.append({k:v for k,v in attempt.items() if k not in ('raw_answer',)})
+            store('benchmarks',bid,f'retry_{fresh_id()}.json',attempt)
+            # Persist after each call so a long batch can be resumed after a crash.
+            record['summary']=de.fixed_summary(record['trials'],record['models'])
+            if record['blind_generalization']['enabled']:
+                record['blind_generalization']['summary']=de.blind_summary(
+                    record['blind_generalization']['trials'],record['models'])
+            record['status']=de.status_of(record['trials'],record['blind_generalization']['trials'])
+            record['reliability_gate']=dr.assess(record)
+            _atomic_rewrite('benchmarks',bid,'benchmark.json',record)
+            _atomic_rewrite('benchmarks',bid,'diagnostic_reliability_gate.json',record['reliability_gate'])
+            _atomic_rewrite('benchmarks',bid,'report.md',_benchmark_report(record))
+        return record
+    finally:
+        lock.unlink(missing_ok=True)
 
 
 @app.get("/api/diagnostic-benchmark/{benchmark_id}/report")

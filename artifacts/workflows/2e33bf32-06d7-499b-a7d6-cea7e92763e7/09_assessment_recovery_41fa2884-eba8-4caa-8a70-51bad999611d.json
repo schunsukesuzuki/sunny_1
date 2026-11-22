@@ -1,0 +1,6 @@
+{
+  "status": "COMPLETED_WITH_FINDINGS",
+  "reason": "08 retry finished; deterministic stage 09 refreshed; R1 and Dogwood unchanged",
+  "benchmark_id": "7824e5df-0578-4241-b8d4-702b4ab90646",
+  "assessment_id": "47a6785c-d57b-4db3-8010-c8949c8e99d7"
+}

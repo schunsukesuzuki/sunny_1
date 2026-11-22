@@ -1,4 +1,5 @@
-//! Real Dogwood Local Engine; *bounded replay*, NOT a persistent enterprise authorizer.
+//! Real Dogwood Local Engine; bounded replay from an independently durable local journal.
+//! The journal lives in Python/SQLite; this Rust process itself remains ephemeral.
 //! Every invocation replays server-validated approval evidence into an isolated, temporary
 //! durable Dogwood store. The Python API retains the source of truth and audit trail.
 //! See docs/v024-dogwood-approval-gate.md for trust boundaries and limitations.
@@ -149,10 +150,30 @@ mod tests {
             (Some(good.clone()), None, ident("other", "proposal1", "approval1"), false),
             (Some(good.clone()), None, ident("workflow1", "proposal1", "other"), false),
             (Some(good.clone()), Some(good.clone()), good.clone(), false),
+            (Some(good.clone()), Some(ident("workflow1", "other", "approval1")), good.clone(), true),
+            (Some(good.clone()), Some(ident("other", "proposal1", "approval1")), good.clone(), true),
+            (None, Some(good.clone()), good.clone(), false),
         ];
         for (approved_event, revoked_event, generate_request, expected) in variants {
             let output = decide(Request { approved_event, revoked_event, generate_request }).unwrap();
             assert_eq!(output.decision == "ALLOW", expected);
         }
     }
+    #[test]
+    fn invalid_identifiers_fail_closed() {
+        let long = "a".repeat(129);
+        for bad in ["", "a/b", "a:b", "å", " spaced", "a.b", long.as_str()] {
+            assert!(!valid_identifier(bad));
+        }
+        let req = Request { approved_event: Some(ident("workflow1", "proposal1", "approval1")),
+            revoked_event: None, generate_request: ident("workflow1", "proposal1", "bad/actor") };
+        assert!(decide(req).is_err());
+    }
+
+    #[test]
+    fn malformed_json_and_unexpected_fields_rejected() {
+        assert!(serde_json::from_str::<Request>(r#"{"generate_request":{"workflow_id":"a"}}"#).is_err());
+        assert!(serde_json::from_str::<Request>(r#"{"approved_event":null,"revoked_event":null,"generate_request":{"workflow_id":"w","proposal_id":"p","approval_id":"a","permit":true}}"#).is_err());
+    }
+
 }

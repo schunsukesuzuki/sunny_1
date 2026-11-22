@@ -1,3 +1,53 @@
+# v0.27.0 — Typed feature acceptance, semantic diagnosis, DEV selection and Dogwood negative audit (2026-11-22)
+
+- Bind each human-approved feature to an explicit acceptance contract; `claim_progress_updates` passes only its own four notification prototype tests and never via R1 assignment KPIs. Store `08e_feature_acceptance.json` and show it in step-10 report. Keep production `NO_GO` where notification integration is absent.
+- Add conservative oracle-free RAW diagnostic cross-field checks across classification, visible evidence, stated cause, proposed revision and scheduling precedence. Preserve model original answers, separate diagnostic quality HOLD from execution status.
+- Record predeclared DEV-only lexicographic candidate ranking (missed deadlines, unassigned, stable tie). After selection, compare on 08f randomized synthetic cases without reselecting or feeding results into the model or DEV (`08f_selection_gap_analysis.json`). Uncertified comparisons are marked INCONCLUSIVE.
+- Record synthetic Dogwood native denial probes (unapproved, workflow/proposal/approval ID mismatches, revocation), a valid approval positive control, expired approval DENY and isolated journal-tamper ERROR. Capture Docker build Rust `cargo test` output; native binary/log unavailability stays explicit and never becomes PASS.
+- Preserve v0.26.1 screen order `00 → 10 → 01..09` and inline report. `AUDIT-EXPORT-v0.25.0` remains the backward-compatible ZIP schema; `producer_version=0.27.0` identifies the producing app.
+- Regression: **152 Python tests passed**, TSX syntax parse passed. Native Cargo/Docker, full Vite and real E2B/Ollama not executed in this packaging environment.
+- Limitations: synthetic-only acceptance and optimization, lexical consistency cannot prove semantic correctness, Dogwood actor identity and ongoing distributed authorization remain unproven; no production approval.
+
+See `docs/v027-feature-contract-diagnostic-selection-dogwood.md`.
+
+---
+
+# v0.26.1 — Step 10 first, inline persisted workflow report (2026-11-22)
+
+- Move step **10** from the bottom to **immediately after step 00 and before step 01** (the guide's order matches the rendered sections). All 00–09 operations and numbers remain unchanged.
+- Add step-10 quick settings for the shared brief, seed, 04 diagnosis condition and R1 mode, plus a reviewer token field at the step-10 human approval gate. No new bypass for human approval.
+- Add a read-only `GET /api/full-run/{workflow_id}/report` endpoint over persisted workflow, assessment, benchmark and Dogwood artifacts, including cross-checks for linked experiment/assessment/benchmark IDs. In-progress workflows return HTTP 409; complete/partial workflows disclose exact incomplete stage counts without fabricating an assessment.
+- Render a multi-section report **inside step 10** automatically after COMPLETE or PARTIAL and after loading a saved Workflow ID. Show status, stage counts, Dogwood, diagnosis execution vs RAW quality, requirement trace, business decision, synthetic R0/R1 KPI, detailed criteria and next actions. Retain Markdown and ZIP downloads.
+- Preserve core policy/diagnostic/optimizer logic and existing evidence ZIP schema. V0.26.1 is a UI/reporting-only incremental release; the existing workflow data format remains compatible.
+- Validation: Python tests **142 passed**; v0.26 audit ZIP reused to confirm report returns 18/18, `ALLOW`, `HOLD_HUMAN_ADJUDICATION`, `NO_GO`. TSX syntax parser and step order checks passed. Native Rust/Docker compilation and full Vite build were not available in packaging environment.
+
+---
+
+# v0.26.0 — Diagnostic Execution vs Quality, Selective Timeout Replay (2026-11-21)
+
+- Separate per-call inference timeouts (HTTP 504 -> `INCOMPLETE_TIMEOUT`) from RAW misclassification/consistency HOLD, with separate quality and execution codes.
+- Deterministic, oracle-free cross-field checks across classification, implementation validity, synthetic fit, requirement change and input evidence IDs. Original 8-criterion benchmark rubric and RAW outputs stay unchanged.
+- Explicit bounded retry endpoint for unfinished model calls only; same pinned model and input hash, replay artifacts, original snapshots, two retry attempts per target, best-effort local exclusive file lock, no automatic model substitution.
+- Retried blind samples are labelled non-fresh and cannot create a first-pass generalization claim. No prompt feedback derived from gold labels or benchmark scores.
+- Full workflow PARTIAL recovery: defer 09 if 08 execution is incomplete; after a successful replay, recompute deferred diagnostic-dependent 09 without rerunning Dogwood/06/R1/08f. Preserve original ZIP and prior audit records. Fix misleading 06 failure warning when only 08 timed out.
+- Allow `ODA_FIN_TIMEOUT_SECONDS` (default 480s) distinct from Qwen's `OLLAMA_TIMEOUT_SECONDS` (default 240s).
+- Python pytest regression: **138 passed** including selective timeout retry, immutable completed trials, integrity mismatch, blind replay and full-run ZIP recovery. v0.25 uploaded archive replayed locally with a stubbed model: workflow became COMPLETE, quality stayed HOLD. Rust/Docker/native Ollama and full Vite build were NOT executed in this environment; TSX syntax parsing passed.
+- Production authorization remains NO-GO; this is synthetic-model diagnosis screening, not customer/legal validation.
+
+---
+
+# v0.25.0 — Durable Approval Journal, Native DENY Regression, Diagnostic Reliability Gate (2026-11-21)
+
+- New persistent local SQLite append-only approval/revocation journal, SHA256 chain with optional keyed HMAC, full-chain verification and approval-record linkage before Dogwood; revoked/missing/tampered/stale approval blocks both standalone and full-run R1.
+- New `POST /api/approvals/{approval_id}/revoke`, optional single-reviewer shared HTTP header token (`X-Reviewer-Token`) and optional server-side HMAC env configuration. Actor labels without a token remain self-reported, and shared secrets are not a production identity provider.
+- Native Rust test fixtures now cover unrelated revocation, missing approval, malformed JSON/IDs and mismatched workflow/proposal/approval IDs. Existing pinned crates and v0.24.1 Rust API fixes retained.
+- Step 08 and direct benchmark now report raw-model diagnostic reliability separately from E2B R1 technical success: fixed and fresh blind raw failures force `HOLD_HUMAN_ADJUDICATION`; assisted scores never substitute for raw. The benchmark remains a post-R1 synthetic audit, not a step 06 authorization prerequisite.
+- Exports add `05_authorization_ledger.json` scoped receipt and `08_diagnostic_reliability_gate.json`, retain v0.24 lineage and source SHA256; the global SQLite database and tokens are not bundled. Updated UI with revoke control, reviewer token and gate warnings.
+- Python test results from packaging environment: 132 passing (including revoke and reviewer-token API integration). **Cargo/Docker unavailable; native Rust and frontend Vite build not verified here.**
+- Scope limit: SQLite is durable, *Dogwood itself remains ephemeral per-decision replay*. Revocation does not retroactively undo already running or completed R1. No external identity, multi-tenant security, formal legal-causation proof or production authorization.
+
+---
+
 # v0.24.1 — Rust/Dogwood compile hotfix (2026-11-21)
 
 - Fixed `E0308`: pass `&principal` to `EventBuilder::principal(&str)`.

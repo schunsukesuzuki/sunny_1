@@ -1,0 +1,47 @@
+{
+  "purpose": "POST_DEV_SELECTION_COMPARISON_NOT_SELECTION",
+  "selected_engine": "skill_deadline_scarcity",
+  "metrics": {
+    "skill_bounded_beam": [
+      {
+        "valid": true,
+        "violations": [],
+        "missed_deadlines": 0,
+        "on_time": 18,
+        "completed": 18,
+        "assigned_hours": 33,
+        "total_cases": 18,
+        "planned_capacity_hours": 60,
+        "unassigned_cases": 0,
+        "deadline_hit_rate": 1.0,
+        "seed": 20042,
+        "sandbox_id": "idfblervtpkjol89un7tl",
+        "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+        "output_sha256": "ee13e1eba87cd29ea14ff9083ee643ca9d0e2a4d2e0c37753fa74c512b1dbdbd",
+        "dataset_sha256": "c8bdd00103b9d5910e5dcdaa3f7949ec78242959b55e643a78fd18b3007d2533",
+        "elapsed_seconds": 0.46,
+        "stderr": ""
+      },
+      {
+        "valid": true,
+        "violations": [],
+        "missed_deadlines": 0,
+        "on_time": 18,
+        "completed": 18,
+        "assigned_hours": 35,
+        "total_cases": 18,
+        "planned_capacity_hours": 60,
+        "unassigned_cases": 0,
+        "deadline_hit_rate": 1.0,
+        "seed": 20043,
+        "sandbox_id": "idfblervtpkjol89un7tl",
+        "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+        "output_sha256": "9484eff95b50b36d37958ab65ce032f6ec1037427bc59ae96d5932882ea681fe",
+        "dataset_sha256": "f158d687eb3f08d48ac722ef39e523478290913c08aef10cae6c4fb0130b85fc",
+        "elapsed_seconds": 0.367,
+        "stderr": ""
+      }
+    ]
+  },
+  "no_holdout_feedback_to_llm": true
+}

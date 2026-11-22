@@ -1,0 +1,44 @@
+{
+  "version": "FEATURE-ACCEPTANCE-CONTRACT-v0.27.0",
+  "status": "PASS_SYNTHETIC_FEATURE_ONLY",
+  "feature_type": "claim_progress_updates",
+  "feature_id": "FEATURE-CLAIM-PROGRESS-NOTIFICATION",
+  "requirement_id": "REQ-PUBLIC-001",
+  "contract_sha256": "3973824837e4d74d997243c9e825722552accc5ccd72d1c5834c7fb3ce242173",
+  "result_sha256": "ecffda8abcf28f78735d6052a7e7713910736acd1374b320a930b704b8658745",
+  "required_test_ids": [
+    "NOTIFY-ON-STATUS-CHANGE",
+    "NOTIFY-WITHIN-THRESHOLD",
+    "NOTIFY-CORRECT-RECIPIENT",
+    "NEGATIVE-CONTROL-NO-UPDATE"
+  ],
+  "test_results": [
+    {
+      "test_id": "NOTIFY-ON-STATUS-CHANGE",
+      "passed": true,
+      "evaluator": "app.notification_demo.evaluate_notifications"
+    },
+    {
+      "test_id": "NOTIFY-WITHIN-THRESHOLD",
+      "passed": true,
+      "evaluator": "app.notification_demo.evaluate_notifications"
+    },
+    {
+      "test_id": "NOTIFY-CORRECT-RECIPIENT",
+      "passed": true,
+      "evaluator": "app.notification_demo.evaluate_notifications"
+    },
+    {
+      "test_id": "NEGATIVE-CONTROL-NO-UPDATE",
+      "passed": true,
+      "evaluator": "app.notification_demo.evaluate_notifications"
+    }
+  ],
+  "acceptance_test_coverage": true,
+  "synthetic_pass": true,
+  "failure_codes": [],
+  "unrelated_feature_proves_requirement": false,
+  "integrated_service_acceptance": false,
+  "customer_acceptance": false,
+  "scope": "Pinned synthetic feature evaluation only. No integration/causal/legal proof."
+}

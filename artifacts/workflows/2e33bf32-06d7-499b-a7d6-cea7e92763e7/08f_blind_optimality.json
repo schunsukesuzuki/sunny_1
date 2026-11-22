@@ -1,0 +1,318 @@
+{
+  "version": "BLIND-OPTIMALITY-v0.21.0",
+  "status": "COMPLETED_WITH_FINDINGS",
+  "selection_gap_analysis": {
+    "version": "POST-SELECT-INDEPENDENT-GAP-v0.27.0",
+    "status": "POST_SELECTION_GAP_DETECTED",
+    "selected_engine": "skill_deadline_scarcity",
+    "random_seed_root": 1332721007,
+    "dev_selection_rationale": "skill_deadline_scarcity",
+    "dev_selection_rule_consistent": true,
+    "comparisons": [
+      {
+        "candidate": "fifo",
+        "aligned": true,
+        "certified_cases": 4,
+        "selected_better": 1,
+        "selected_worse": 0,
+        "ties": 3,
+        "selected_excess_missed": -2,
+        "excluded_uncertified_cases": 0
+      },
+      {
+        "candidate": "deadline",
+        "aligned": true,
+        "certified_cases": 4,
+        "selected_better": 0,
+        "selected_worse": 0,
+        "ties": 4,
+        "selected_excess_missed": 0,
+        "excluded_uncertified_cases": 0
+      },
+      {
+        "candidate": "skill_deadline_scarcity",
+        "aligned": true,
+        "certified_cases": 4,
+        "selected_better": 0,
+        "selected_worse": 0,
+        "ties": 4,
+        "selected_excess_missed": 0,
+        "excluded_uncertified_cases": 0
+      },
+      {
+        "candidate": "skill_bounded_beam",
+        "aligned": true,
+        "certified_cases": 4,
+        "selected_better": 0,
+        "selected_worse": 1,
+        "ties": 3,
+        "selected_excess_missed": 1,
+        "excluded_uncertified_cases": 0
+      }
+    ],
+    "selected_optimal_cases": 3,
+    "selected_certified_cases": 4,
+    "change_selected_engine": false,
+    "fed_back_to_model": false,
+    "fed_back_to_dev_selection": false,
+    "requires_human_review": true,
+    "scope": "Read-only after DEV selection; small synthetic randomized cases, objective gaps only when oracle OPTIMAL."
+  },
+  "seed_root": 1332721007,
+  "suite_size": 4,
+  "post_selection_only": true,
+  "used_for_generation": false,
+  "used_for_selection": false,
+  "selected_engine": "skill_deadline_scarcity",
+  "solver_status": {
+    "2000000": "OPTIMAL",
+    "2000001": "OPTIMAL",
+    "2000002": "OPTIMAL",
+    "2000003": "OPTIMAL"
+  },
+  "metrics": {
+    "fifo": {
+      "cases": [
+        {
+          "seed": 2000000,
+          "input_sha256": "09fade14bbdf56895071b932b764704cff5eac6203a0c0dd701f2211be27c20a",
+          "valid": true,
+          "missed_deadlines": 2,
+          "unassigned": 1,
+          "optimality_gap_missed_cases": 1,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.4
+        },
+        {
+          "seed": 2000001,
+          "input_sha256": "429321d2df74e250be879bf13ccac8cb55bf9c7b354a12a2a16178c68ac6740a",
+          "valid": true,
+          "missed_deadlines": 0,
+          "unassigned": 0,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.322
+        },
+        {
+          "seed": 2000002,
+          "input_sha256": "1466b339c08088cd7ff397485bde99dc56113cf966e7b3ec8f48205028549179",
+          "valid": true,
+          "missed_deadlines": 2,
+          "unassigned": 1,
+          "optimality_gap_missed_cases": 2,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.339
+        },
+        {
+          "seed": 2000003,
+          "input_sha256": "86362a1fe86295c0e539279971c0972e42ad7bda39a223cb0e020103b73fc4c2",
+          "valid": true,
+          "missed_deadlines": 2,
+          "unassigned": 2,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.325
+        }
+      ],
+      "valid_count": 4,
+      "proven_optimal_cases": 2,
+      "total_proven_gap": 3,
+      "all_proven": true
+    },
+    "deadline": {
+      "cases": [
+        {
+          "seed": 2000000,
+          "input_sha256": "09fade14bbdf56895071b932b764704cff5eac6203a0c0dd701f2211be27c20a",
+          "valid": true,
+          "missed_deadlines": 2,
+          "unassigned": 1,
+          "optimality_gap_missed_cases": 1,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.395
+        },
+        {
+          "seed": 2000001,
+          "input_sha256": "429321d2df74e250be879bf13ccac8cb55bf9c7b354a12a2a16178c68ac6740a",
+          "valid": true,
+          "missed_deadlines": 0,
+          "unassigned": 0,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.329
+        },
+        {
+          "seed": 2000002,
+          "input_sha256": "1466b339c08088cd7ff397485bde99dc56113cf966e7b3ec8f48205028549179",
+          "valid": true,
+          "missed_deadlines": 0,
+          "unassigned": 0,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.323
+        },
+        {
+          "seed": 2000003,
+          "input_sha256": "86362a1fe86295c0e539279971c0972e42ad7bda39a223cb0e020103b73fc4c2",
+          "valid": true,
+          "missed_deadlines": 2,
+          "unassigned": 2,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.32
+        }
+      ],
+      "valid_count": 4,
+      "proven_optimal_cases": 3,
+      "total_proven_gap": 1,
+      "all_proven": true
+    },
+    "selected": {
+      "cases": [
+        {
+          "seed": 2000000,
+          "input_sha256": "09fade14bbdf56895071b932b764704cff5eac6203a0c0dd701f2211be27c20a",
+          "valid": true,
+          "missed_deadlines": 2,
+          "unassigned": 1,
+          "optimality_gap_missed_cases": 1,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.405
+        },
+        {
+          "seed": 2000001,
+          "input_sha256": "429321d2df74e250be879bf13ccac8cb55bf9c7b354a12a2a16178c68ac6740a",
+          "valid": true,
+          "missed_deadlines": 0,
+          "unassigned": 0,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.335
+        },
+        {
+          "seed": 2000002,
+          "input_sha256": "1466b339c08088cd7ff397485bde99dc56113cf966e7b3ec8f48205028549179",
+          "valid": true,
+          "missed_deadlines": 0,
+          "unassigned": 0,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.344
+        },
+        {
+          "seed": 2000003,
+          "input_sha256": "86362a1fe86295c0e539279971c0972e42ad7bda39a223cb0e020103b73fc4c2",
+          "valid": true,
+          "missed_deadlines": 2,
+          "unassigned": 2,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.334
+        }
+      ],
+      "valid_count": 4,
+      "proven_optimal_cases": 3,
+      "total_proven_gap": 1,
+      "all_proven": true
+    },
+    "skill_deadline_scarcity": {
+      "cases": [
+        {
+          "seed": 2000000,
+          "input_sha256": "09fade14bbdf56895071b932b764704cff5eac6203a0c0dd701f2211be27c20a",
+          "valid": true,
+          "missed_deadlines": 2,
+          "unassigned": 1,
+          "optimality_gap_missed_cases": 1,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.391
+        },
+        {
+          "seed": 2000001,
+          "input_sha256": "429321d2df74e250be879bf13ccac8cb55bf9c7b354a12a2a16178c68ac6740a",
+          "valid": true,
+          "missed_deadlines": 0,
+          "unassigned": 0,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.329
+        },
+        {
+          "seed": 2000002,
+          "input_sha256": "1466b339c08088cd7ff397485bde99dc56113cf966e7b3ec8f48205028549179",
+          "valid": true,
+          "missed_deadlines": 0,
+          "unassigned": 0,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.339
+        },
+        {
+          "seed": 2000003,
+          "input_sha256": "86362a1fe86295c0e539279971c0972e42ad7bda39a223cb0e020103b73fc4c2",
+          "valid": true,
+          "missed_deadlines": 2,
+          "unassigned": 2,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.331
+        }
+      ],
+      "valid_count": 4,
+      "proven_optimal_cases": 3,
+      "total_proven_gap": 1,
+      "all_proven": true
+    },
+    "skill_bounded_beam": {
+      "cases": [
+        {
+          "seed": 2000000,
+          "input_sha256": "09fade14bbdf56895071b932b764704cff5eac6203a0c0dd701f2211be27c20a",
+          "valid": true,
+          "missed_deadlines": 1,
+          "unassigned": 1,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.452
+        },
+        {
+          "seed": 2000001,
+          "input_sha256": "429321d2df74e250be879bf13ccac8cb55bf9c7b354a12a2a16178c68ac6740a",
+          "valid": true,
+          "missed_deadlines": 0,
+          "unassigned": 0,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.344
+        },
+        {
+          "seed": 2000002,
+          "input_sha256": "1466b339c08088cd7ff397485bde99dc56113cf966e7b3ec8f48205028549179",
+          "valid": true,
+          "missed_deadlines": 0,
+          "unassigned": 0,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.339
+        },
+        {
+          "seed": 2000003,
+          "input_sha256": "86362a1fe86295c0e539279971c0972e42ad7bda39a223cb0e020103b73fc4c2",
+          "valid": true,
+          "missed_deadlines": 2,
+          "unassigned": 2,
+          "optimality_gap_missed_cases": 0,
+          "exact_status": "OPTIMAL",
+          "execution_seconds": 0.343
+        }
+      ],
+      "valid_count": 4,
+      "proven_optimal_cases": 4,
+      "total_proven_gap": 0,
+      "all_proven": true
+    }
+  },
+  "scope": "Small randomized synthetic cases only. Gap certified only when exact solver returned OPTIMAL.",
+  "cp_sat_optional": true,
+  "no_performance_guarantee": true
+}

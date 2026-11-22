@@ -1,0 +1,48 @@
+{
+  "name": "selected",
+  "seed": 2000000,
+  "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+  "sandbox_id": "igakcei8wkxjqmj35wpqg",
+  "elapsed_seconds": 0.405,
+  "stdout": "",
+  "stderr": "",
+  "output": {
+    "assignments": [
+      {
+        "case_id": "BL00-01",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "BL00-04",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 2
+      },
+      {
+        "case_id": "BL00-03",
+        "reviewer_id": "R-B",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "BL00-02",
+        "reviewer_id": "R-B",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "BL00-00",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 1
+      }
+    ],
+    "unassigned_case_ids": [
+      "BL00-05"
+    ]
+  },
+  "output_sha256": "65f1edd40f27422dac55e4baa11b8db393d35c40661fbecbe8a3015b27a23f6d",
+  "error": null
+}
