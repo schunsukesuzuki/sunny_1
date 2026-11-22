@@ -1,0 +1,18 @@
+{
+  "classification": "requirement_mismatch",
+  "r0_implementation_assessment": "incorrect",
+  "business_requirement_assessment": "unverified",
+  "synthetic_requirement_fit": "mismatch",
+  "real_customer_validity": "unverified",
+  "scheduling_precedence": "deadline_first_fifo_tiebreak",
+  "supporting_evidence_ids": [
+    "SIM-SLA-001"
+  ],
+  "root_cause": "R0 contract mandates strict FIFO implementation while synthetic evidence demonstrates FIFO violates business objective of reducing deadline breaches",
+  "suggested_requirement_change": "Replace FIFO with deadline-first scheduling with arrival_order as tie-breaker for same-deadline cases",
+  "business_tradeoffs": [],
+  "compliance_questions": [
+    "Is FIFO implementation compatible with SLA-001 deadline objectives?"
+  ],
+  "remaining_uncertainty": "real_customer_validity=unverified"
+}

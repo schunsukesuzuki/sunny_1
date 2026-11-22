@@ -83,8 +83,14 @@ function WorkflowReportPanel({report}: {report: Dict}) {
         {report.feature_acceptance && <Disclosure title="要求された機能ごとの受入テストID・失敗理由" data={report.feature_acceptance}/>}
         <p><strong>06 DEV頑健性と選択安定性:</strong> {report.dev_robustness_preselection?.status || '未実行（旧ワークフロー）'}</p>
         {report.dev_robustness_preselection && <Disclosure title="DEV・4ストレス条件の候補別成績とLeave-One-Stress-Out（08fは選択に不使用）" data={report.dev_robustness_preselection}/>}
+        <p><strong>06 Skill選択の承認区分:</strong> {report.selection_review?.status || '未判定'}</p>
+        {report.selection_review?.requires_human_review && <div className="notice">DEV結果は同点・不安定・不足の可能性があります。現在のSkillは研究用の暫定選択であり、人間による選択レビューが必要です。本番承認ではありません。</div>}
+        {report.selection_review && <Disclosure title="選択の人間レビュー状態（研究実行と本番承認を区別）" data={report.selection_review}/>}
+        <p><strong>DEVケース識別力:</strong> {report.dev_case_discrimination?.status || '未評価'}（候補を識別したケース {report.dev_case_discrimination?.case_count_discriminative ?? '—'} 件）</p>
+        {report.dev_case_discrimination && <Disclosure title="DEV候補を識別する条件・識別できない条件（08fは不使用）" data={report.dev_case_discrimination}/>}
         <p><strong>08f 選択後ギャップ:</strong> {report.selection_gap_analysis?.status || '未実行'}</p>
-        {report.selection_gap_analysis && <Disclosure title="DEV選択と独立最適性評価の差（再選択には利用しない）" data={report.selection_gap_analysis}/>}
+        {report.selection_gap_analysis && <p className="muted">評価目的：期限超過を最小化し、同数の場合は未割当を最小化。08fはDEV選択に逆流しません。</p>}
+        {report.selection_gap_analysis && <Disclosure title="08f辞書式ギャップ：期限超過＋同点時未割当（再選択禁止）" data={report.selection_gap_analysis}/>}
         <p><strong>Dogwood否定経路:</strong> {report.dogwood_negative_audit?.status || '未実行'}</p>
         {report.dogwood_negative_audit && <Disclosure title="Rustビルドテスト・取消・ID不一致・履歴改ざんの証跡" data={report.dogwood_negative_audit}/>}
         <p><strong>08g 境界整合性:</strong> {report.boundary_status || '未検証'}</p>
@@ -134,6 +140,12 @@ function WorkflowReportPanel({report}: {report: Dict}) {
           <Disclosure title="軸別の失敗ケースと採点根拠" data={g.axes}/>
         </article>)}
       </div>
+    </>}
+    {report.diagnostic_targeted_repairs && <>
+      <h4>08 対象フィールド限定の修復監査</h4>
+      <p>修復モデル呼び出し: {report.diagnostic_targeted_repairs.fixed_repair_model_calls} ／採用: {report.diagnostic_targeted_repairs.fixed_adopted_repairs} ／Blind修復: {report.diagnostic_targeted_repairs.blind_repair_model_calls}</p>
+      <p className="muted">公開入力との矛盾から修復対象を選択。正解ラベルは修復へ渡さず、対象外フィールドは採用しません。</p>
+      <Disclosure title="フィールド別変更・破棄した修復案の監査結果" data={report.diagnostic_targeted_repairs}/>
     </>}
     {bench && <Disclosure title="08 診断の実行件数・RAW結果（モデル別）" data={{summary:bench,reliability_gate:diag.reliability_gate}}/>}
     {report.diagnostic_snapshot && <>
@@ -306,7 +318,7 @@ export default function App() {
 
   return <div className="app-shell">
     <header className="masthead">
-      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.28.0</div>
+      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.29.0</div>
       <h1>Claims Operations <span>Planner</span></h1>
       <p className="lead">German InsurTech事業開発：審査人員を増やさず、保険金請求の期限超過を減らせるか。</p>
       <div className="tags"><span>架空顧客 / 合成請求データ</span><span>Qwen3-Coder + ODA-Fin-RL-8B · Ollama / Metal</span><span>E2B isolated execution</span><span>R0 → R1 requirement refinement</span></div>
@@ -429,7 +441,7 @@ export default function App() {
         },!fullRunId.trim(),'secondary')}
       </div>
       {fullRun && <section className="assessment-report" aria-label="00〜09 一括実行状況">
-        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.28.0</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
+        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.29.0</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
           <Status good={fullRun.status==='COMPLETE'}>{fullRun.status}</Status></div>
         {fullRun.topic_alignment && <div className="notice"><strong>公開資料と保険請求課題の対応:</strong> {fullRun.topic_alignment.status} — {fullRun.topic_alignment.reason}。一致は原文の意味的支持・因果の証明ではありません。</div>}
         {fullRun.grounded_contract_status && <p className="muted">担当者割当KPIの検証: {fullRun.grounded_contract_status}（該当要件のみ）</p>}

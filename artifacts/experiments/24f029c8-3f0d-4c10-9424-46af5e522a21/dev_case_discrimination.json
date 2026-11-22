@@ -1,0 +1,316 @@
+{
+  "version": "DEV-CASE-DISCRIMINATION-v0.29.0",
+  "status": "NO_SEPARATING_CASES",
+  "eligible_candidate_count": 2,
+  "case_count_comparable": 11,
+  "case_count_discriminative": 0,
+  "case_count_nondiscriminative": 11,
+  "cohorts": [
+    {
+      "cohort": "base_dev",
+      "expected_seeds": [
+        142,
+        143,
+        144
+      ],
+      "comparable_seeds": [
+        142,
+        143,
+        144
+      ],
+      "missing_or_unaligned": [],
+      "case_rows": [
+        {
+          "seed": 142,
+          "case_discriminates_candidates": false,
+          "candidate_objective_pairs": {
+            "skill_deadline_scarcity": [
+              0,
+              0
+            ],
+            "skill_bounded_beam": [
+              0,
+              0
+            ]
+          },
+          "lexicographic_winners": [
+            "skill_deadline_scarcity",
+            "skill_bounded_beam"
+          ],
+          "objective_order": [
+            "missed_deadlines",
+            "unassigned_cases"
+          ]
+        },
+        {
+          "seed": 143,
+          "case_discriminates_candidates": false,
+          "candidate_objective_pairs": {
+            "skill_deadline_scarcity": [
+              0,
+              0
+            ],
+            "skill_bounded_beam": [
+              0,
+              0
+            ]
+          },
+          "lexicographic_winners": [
+            "skill_deadline_scarcity",
+            "skill_bounded_beam"
+          ],
+          "objective_order": [
+            "missed_deadlines",
+            "unassigned_cases"
+          ]
+        },
+        {
+          "seed": 144,
+          "case_discriminates_candidates": false,
+          "candidate_objective_pairs": {
+            "skill_deadline_scarcity": [
+              0,
+              0
+            ],
+            "skill_bounded_beam": [
+              0,
+              0
+            ]
+          },
+          "lexicographic_winners": [
+            "skill_deadline_scarcity",
+            "skill_bounded_beam"
+          ],
+          "objective_order": [
+            "missed_deadlines",
+            "unassigned_cases"
+          ]
+        }
+      ],
+      "discriminative_case_count": 0,
+      "nondiscriminative_case_count": 3,
+      "complete": true
+    },
+    {
+      "cohort": "extra_dev",
+      "expected_seeds": [
+        920000,
+        920001,
+        920002,
+        920003
+      ],
+      "comparable_seeds": [
+        920000,
+        920001,
+        920002,
+        920003
+      ],
+      "missing_or_unaligned": [],
+      "case_rows": [
+        {
+          "seed": 920000,
+          "case_discriminates_candidates": false,
+          "candidate_objective_pairs": {
+            "skill_deadline_scarcity": [
+              3,
+              2
+            ],
+            "skill_bounded_beam": [
+              3,
+              2
+            ]
+          },
+          "lexicographic_winners": [
+            "skill_deadline_scarcity",
+            "skill_bounded_beam"
+          ],
+          "objective_order": [
+            "missed_deadlines",
+            "unassigned_cases"
+          ]
+        },
+        {
+          "seed": 920001,
+          "case_discriminates_candidates": false,
+          "candidate_objective_pairs": {
+            "skill_deadline_scarcity": [
+              0,
+              0
+            ],
+            "skill_bounded_beam": [
+              0,
+              0
+            ]
+          },
+          "lexicographic_winners": [
+            "skill_deadline_scarcity",
+            "skill_bounded_beam"
+          ],
+          "objective_order": [
+            "missed_deadlines",
+            "unassigned_cases"
+          ]
+        },
+        {
+          "seed": 920002,
+          "case_discriminates_candidates": false,
+          "candidate_objective_pairs": {
+            "skill_deadline_scarcity": [
+              0,
+              0
+            ],
+            "skill_bounded_beam": [
+              0,
+              0
+            ]
+          },
+          "lexicographic_winners": [
+            "skill_deadline_scarcity",
+            "skill_bounded_beam"
+          ],
+          "objective_order": [
+            "missed_deadlines",
+            "unassigned_cases"
+          ]
+        },
+        {
+          "seed": 920003,
+          "case_discriminates_candidates": false,
+          "candidate_objective_pairs": {
+            "skill_deadline_scarcity": [
+              0,
+              0
+            ],
+            "skill_bounded_beam": [
+              0,
+              0
+            ]
+          },
+          "lexicographic_winners": [
+            "skill_deadline_scarcity",
+            "skill_bounded_beam"
+          ],
+          "objective_order": [
+            "missed_deadlines",
+            "unassigned_cases"
+          ]
+        }
+      ],
+      "discriminative_case_count": 0,
+      "nondiscriminative_case_count": 4,
+      "complete": true
+    },
+    {
+      "cohort": "stress_dev",
+      "expected_seeds": [
+        910000,
+        910001,
+        910002,
+        910003
+      ],
+      "comparable_seeds": [
+        910000,
+        910001,
+        910002,
+        910003
+      ],
+      "missing_or_unaligned": [],
+      "case_rows": [
+        {
+          "seed": 910000,
+          "case_discriminates_candidates": false,
+          "candidate_objective_pairs": {
+            "skill_deadline_scarcity": [
+              0,
+              0
+            ],
+            "skill_bounded_beam": [
+              0,
+              0
+            ]
+          },
+          "lexicographic_winners": [
+            "skill_deadline_scarcity",
+            "skill_bounded_beam"
+          ],
+          "objective_order": [
+            "missed_deadlines",
+            "unassigned_cases"
+          ]
+        },
+        {
+          "seed": 910001,
+          "case_discriminates_candidates": false,
+          "candidate_objective_pairs": {
+            "skill_deadline_scarcity": [
+              1,
+              1
+            ],
+            "skill_bounded_beam": [
+              1,
+              1
+            ]
+          },
+          "lexicographic_winners": [
+            "skill_deadline_scarcity",
+            "skill_bounded_beam"
+          ],
+          "objective_order": [
+            "missed_deadlines",
+            "unassigned_cases"
+          ]
+        },
+        {
+          "seed": 910002,
+          "case_discriminates_candidates": false,
+          "candidate_objective_pairs": {
+            "skill_deadline_scarcity": [
+              0,
+              0
+            ],
+            "skill_bounded_beam": [
+              0,
+              0
+            ]
+          },
+          "lexicographic_winners": [
+            "skill_deadline_scarcity",
+            "skill_bounded_beam"
+          ],
+          "objective_order": [
+            "missed_deadlines",
+            "unassigned_cases"
+          ]
+        },
+        {
+          "seed": 910003,
+          "case_discriminates_candidates": false,
+          "candidate_objective_pairs": {
+            "skill_deadline_scarcity": [
+              0,
+              0
+            ],
+            "skill_bounded_beam": [
+              0,
+              0
+            ]
+          },
+          "lexicographic_winners": [
+            "skill_deadline_scarcity",
+            "skill_bounded_beam"
+          ],
+          "objective_order": [
+            "missed_deadlines",
+            "unassigned_cases"
+          ]
+        }
+      ],
+      "discriminative_case_count": 0,
+      "nondiscriminative_case_count": 4,
+      "complete": true
+    }
+  ],
+  "source": "PRESELECTED_DEV_ONLY",
+  "08f_or_holdout_used": false,
+  "advisory": "If no cases distinguish candidates, fixed-order selection is only reproducible, not evidence of superior generalization. Never move 08f cases back into DEV."
+}

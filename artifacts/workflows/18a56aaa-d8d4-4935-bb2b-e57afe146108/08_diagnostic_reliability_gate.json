@@ -1,0 +1,59 @@
+{
+  "version": "DIAGNOSTIC-RELIABILITY-GATE-v0.27.0",
+  "status": "HOLD_HUMAN_ADJUDICATION",
+  "quality_status": "HOLD_HUMAN_ADJUDICATION",
+  "execution_status": "COMPLETE",
+  "human_adjudication_required": true,
+  "autonomous_diagnostic_reliability": false,
+  "no_unattended_requirement_rewrite": true,
+  "no_auto_repair_from_blind_oracle": true,
+  "predeclared_criteria": "Both models: >=2 fixed and >=2 fresh blind synthetic cases; all calls completed; 100% RAW rubric PASS and cross-field consistency. Replayed blind calls are not fresh.",
+  "models": {
+    "coding": {
+      "model_id": "qwen3-coder:30b",
+      "fixed_raw_passed": 0,
+      "fixed_total": 2,
+      "fixed_completed": 2,
+      "blind_raw_passed": 0,
+      "blind_total": 2,
+      "blind_completed": 2,
+      "assisted_passes_not_substituted": true,
+      "timeout_calls": 0
+    },
+    "finance": {
+      "model_id": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+      "fixed_raw_passed": 1,
+      "fixed_total": 2,
+      "fixed_completed": 2,
+      "blind_raw_passed": 1,
+      "blind_total": 2,
+      "blind_completed": 2,
+      "assisted_passes_not_substituted": true,
+      "timeout_calls": 0
+    }
+  },
+  "quality_failure_codes": [
+    "CODING_RAW_FIXED_DIAGNOSIS_FAILURE",
+    "CODING_RAW_BLIND_DIAGNOSIS_FAILURE",
+    "CODING_CROSS_FIELD_INCONSISTENCY",
+    "CODING_SEMANTIC_BOUNDARY_INCONSISTENCY",
+    "FINANCE_RAW_FIXED_DIAGNOSIS_FAILURE",
+    "FINANCE_RAW_BLIND_DIAGNOSIS_FAILURE",
+    "FINANCE_CROSS_FIELD_INCONSISTENCY",
+    "FINANCE_SEMANTIC_BOUNDARY_INCONSISTENCY"
+  ],
+  "execution_failure_codes": [],
+  "failure_codes": [
+    "CODING_RAW_FIXED_DIAGNOSIS_FAILURE",
+    "CODING_RAW_BLIND_DIAGNOSIS_FAILURE",
+    "CODING_CROSS_FIELD_INCONSISTENCY",
+    "CODING_SEMANTIC_BOUNDARY_INCONSISTENCY",
+    "FINANCE_RAW_FIXED_DIAGNOSIS_FAILURE",
+    "FINANCE_RAW_BLIND_DIAGNOSIS_FAILURE",
+    "FINANCE_CROSS_FIELD_INCONSISTENCY",
+    "FINANCE_SEMANTIC_BOUNDARY_INCONSISTENCY"
+  ],
+  "scope": "Small synthetic screen; no statistical, legal or real-customer validation",
+  "next_action": "Human reviews original RAW diagnosis and code-vs-contract evidence. Retry only incomplete calls with saved model/input; do not overwrite completed failures.",
+  "production_authorization": false
+}

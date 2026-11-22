@@ -28,6 +28,7 @@ from . import dogwood_authorization as da
 from . import authorization_ledger as al
 from . import diagnostic_reliability as dr
 from . import diagnostic_axes as dax
+from . import diagnostic_targeted_repair as dtr
 from . import feature_acceptance as fa
 from . import dogwood_negative_audit as dna
 from . import selection_gap_analysis as sga
@@ -442,7 +443,7 @@ def register(app, m) -> None:
                 add_file(wid,"08_diagnostic_reliability_gate.json",reliability)
                 add_file(wid,"08_diagnostic_axes.json",bench.get('diagnostic_axes') or dax.summarize(bench))
                 add_file(wid,"08_latest_state_index.json",{
-                    'version':'DIAGNOSTIC-CURRENT-SNAPSHOT-v0.28.0',
+                    'version':'DIAGNOSTIC-CURRENT-SNAPSHOT-v0.29.0',
                     'benchmark_id':bench['benchmark_id'],
                     'latest_source':f"benchmarks/{bench['benchmark_id']}/benchmark.json",
                     'current_execution_status':reliability.get('execution_status'),
@@ -589,6 +590,7 @@ def register(app, m) -> None:
                     add_file(wid,'08f_selection_gap_analysis.json',selection_gap)
                     report={'version':bo.VERSION,'status':'COMPLETED_WITH_FINDINGS',
                            'selection_gap_analysis':selection_gap,
+                           'lexicographic_objective':['min_missed_deadlines','min_unassigned_cases'],
                            'seed_root':root_seed,'suite_size':len(suite),
                            'post_selection_only':True,'used_for_generation':False,
                            'used_for_selection':False,'selected_engine':exp_record.get('selected_engine'),
@@ -932,7 +934,7 @@ def register(app, m) -> None:
         m._atomic_rewrite('workflows',workflow_id,'08_diagnostic_axes.json',
                           retry.get('diagnostic_axes') or dax.summarize(retry))
         m._atomic_rewrite('workflows',workflow_id,'08_latest_state_index.json',{
-            'version':'DIAGNOSTIC-CURRENT-SNAPSHOT-v0.28.0',
+            'version':'DIAGNOSTIC-CURRENT-SNAPSHOT-v0.29.0',
             'benchmark_id':bid,'latest_source':f'benchmarks/{bid}/benchmark.json',
             'current_execution_status':reliability.get('execution_status'),
             'current_quality_status':reliability.get('quality_status'),
@@ -1031,7 +1033,7 @@ def register(app, m) -> None:
                                state.get('diagnostic_execution_status')==gate.get('execution_status'))
         return {
             'report_version': '0.27.0', # backward-compatible view contract
-            'producer_version': '0.28.0',
+            'producer_version': '0.29.0',
             'workflow_id': state['workflow_id'],
             'updated_at': state.get('updated_at'),
             'status': state['status'],
@@ -1045,7 +1047,10 @@ def register(app, m) -> None:
             'feature_acceptance': json.loads((folder(state['workflow_id'])/'08e_feature_acceptance.json').read_text(encoding='utf-8')) if (folder(state['workflow_id'])/'08e_feature_acceptance.json').is_file() else None,
             'selection_gap_analysis': json.loads((folder(state['workflow_id'])/'08f_selection_gap_analysis.json').read_text(encoding='utf-8')) if (folder(state['workflow_id'])/'08f_selection_gap_analysis.json').is_file() else None,
             'dev_robustness_preselection':robustness,
+            'selection_review':(robustness or {}).get('selection_review'),
+            'dev_case_discrimination':(robustness or {}).get('case_discrimination'),
             'diagnostic_axes':benchmark_axes,
+            'diagnostic_targeted_repairs':(dtr.summarize(benchmark) if benchmark else None),
             'diagnostic_snapshot':{
                 'canonical_record': f'benchmarks/{ids["benchmarks"]}/benchmark.json' if ids.get('benchmarks') else None,
                 'current_index':index,

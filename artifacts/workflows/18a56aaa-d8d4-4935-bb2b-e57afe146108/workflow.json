@@ -1,0 +1,211 @@
+{
+  "workflow_id": "18a56aaa-d8d4-4935-bb2b-e57afe146108",
+  "export_id": "cb3b71a8-f53c-4dfa-9cd4-188bb3cf9141",
+  "created_at": "2026-11-22T01:46:30+00:00",
+  "updated_at": "2026-11-22T01:54:00+00:00",
+  "version": "0.25.0",
+  "evidence_mode": "public",
+  "r1_mode": "compare",
+  "status": "COMPLETE",
+  "phase": "DONE",
+  "inputs": {
+    "evidence_mode": "public",
+    "r1_mode": "compare",
+    "diagnostic_repair": true,
+    "blind_case_count": 4,
+    "diagnostic_blind_cases": true,
+    "dataset_id": "insurance_claims_uk",
+    "evidence_query": "insurance claim delays poor communication processing time",
+    "llm_extraction": true,
+    "brief": "想定顧客：ドイツ国内で実績があり欧州の複数国への展開を検討する保険業務SaaS企業（架空）。案件ごとに審査所要時間、期限、保険金請求額、必要資格が異なる。固定の審査人員・勤務時間で、先着順よりも期限超過を減らしたい。支払可否は人間が判断する。顧客固有のEU法規制適合は未検証。サービス設計→コード生成→E2B評価→要件改訂を再現可能な実験にする。",
+    "seed": 42,
+    "evidence_condition": "counterexample",
+    "case_ids": [
+      "fifo_sla_conflict",
+      "actual_fifo_implementation_bug"
+    ],
+    "repetitions": 1
+  },
+  "service_design": {
+    "product_scope": "保険業務SaaSプラットフォームのサービス設計",
+    "actors": [
+      "顧客（ドイツ国内で実績あり、欧州展開を検討）",
+      "審査担当者（固定人員・勤務時間）",
+      "システム（自動化されたケース割当・期限管理）"
+    ],
+    "use_cases": [
+      "案件の到着順に処理する（FIFO）",
+      "審査担当者の資格と勤務時間を考慮してケースを割当てる",
+      "期限超過を減らすための優先順位調整"
+    ],
+    "domain_entities": [
+      "案件情報（審査所要時間、期限、保険金請求額、必要資格）",
+      "審査担当者情報（資格、勤務時間、休日）",
+      "ルールエンジン（FIFO処理、割当ルール）"
+    ],
+    "service_flow": [
+      "案件到着 → システムに登録",
+      "FIFO順で案件をリストアップ",
+      "審査担当者の資格・勤務時間と照合",
+      "最適な担当者に自動割当",
+      "期限超過の監視と通知"
+    ],
+    "hard_constraints": [
+      "固定の審査人員・勤務時間",
+      "先着順（FIFO）のみを採用",
+      "期限超過を減らすことを目的とする",
+      "支払可否は人間が判断"
+    ],
+    "objectives": [
+      "FIFO処理を正確に実装",
+      "期限超過を減らす",
+      "顧客固有のEU法規制適合は未検証"
+    ],
+    "interfaces": [
+      "案件入力インターフェース",
+      "審査担当者割当インターフェース",
+      "期限超過通知インターフェース"
+    ],
+    "acceptance_tests": [
+      "FIFO順に処理されることを確認",
+      "期限超過が減ることを確認",
+      "人間による支払可否判断が可能であること"
+    ],
+    "alternatives": [
+      "期限超過を減らすための優先順位調整ルールの導入",
+      "審査担当者の勤務時間の柔軟性の導入"
+    ],
+    "external_validation_needed": [
+      "EU法規制適合性検証",
+      "顧客要件の再確認"
+    ],
+    "design_source": "qwen_draft_unapproved"
+  },
+  "linked_ids": {
+    "runs": "b317d1a3-9f4a-43be-abae-d0bff491095c",
+    "proposals": "dd4dd5fb-6769-425d-8e5e-474170e37ff3",
+    "approvals": "318879ff-1308-4feb-854d-844a0f4da34e",
+    "experiments": "24f029c8-3f0d-4c10-9424-46af5e522a21",
+    "policy_validations": "a985d19d-b7ac-4a44-b43b-2f26ce5e8cd1",
+    "benchmarks": "7fb1dd86-9162-4f3d-a35d-c927829cb09f",
+    "assessments": "5fea97af-99a5-44b8-9bc8-15bf8b7453c3",
+    "workflows": "18a56aaa-d8d4-4935-bb2b-e57afe146108"
+  },
+  "stages": [
+    {
+      "name": "00_evidence_grounded_requirements",
+      "status": "COMPLETED_WITH_FINDINGS",
+      "detail": "6 public excerpts; source hashes checked; semantic support unverified"
+    },
+    {
+      "name": "00b_evidence_review",
+      "status": "COMPLETED",
+      "detail": "Human selected public source pointers and a hypothetical requirement; NOT customer-approved"
+    },
+    {
+      "name": "00c_grounded_test_contract",
+      "status": "COMPLETED",
+      "detail": "Human-configured bounded KPI evaluator; pinned synthetic test fixture"
+    },
+    {
+      "name": "01_input",
+      "status": "COMPLETED",
+      "detail": "Evidence-reviewed hypothesis inserted into 01 brief; fixed synthetic R0 contract unchanged"
+    },
+    {
+      "name": "02_service_design",
+      "status": "COMPLETED",
+      "detail": "Qwen draft; not customer-approved"
+    },
+    {
+      "name": "03_r0_e2b",
+      "status": "COMPLETED",
+      "detail": "PASS"
+    },
+    {
+      "name": "04_independent_diagnoses",
+      "status": "COMPLETED_WITH_FINDINGS",
+      "detail": "ODA rubric: HOLD"
+    },
+    {
+      "name": "05_human_approval",
+      "status": "COMPLETED",
+      "detail": "explicit human decision; original ODA HOLD remains preserved"
+    },
+    {
+      "name": "06_r1_generation_and_evaluation",
+      "status": "COMPLETED_WITH_FINDINGS",
+      "detail": "R1 mode: compare; selected: skill_deadline_scarcity; KPI/HOLDOUT: True"
+    },
+    {
+      "name": "07_audit_index",
+      "status": "COMPLETED",
+      "detail": "saved evidence index; archived records retrievable by 07"
+    },
+    {
+      "name": "08_diagnostic_benchmark",
+      "status": "COMPLETED_WITH_FINDINGS",
+      "detail": "execution: COMPLETE; diagnostic quality: HOLD_HUMAN_ADJUDICATION; raw scores only"
+    },
+    {
+      "name": "08b_policy_and_stress",
+      "status": "COMPLETED_WITH_FINDINGS",
+      "detail": "R1 behavioral + stress evaluation"
+    },
+    {
+      "name": "08c_grounded_kpi_verification",
+      "status": "COMPLETED_WITH_FINDINGS",
+      "detail": "Typed assignment gate: NOT_APPLICABLE_TO_NOTIFICATION"
+    },
+    {
+      "name": "08d_notification_prototype",
+      "status": "COMPLETED_WITH_FINDINGS",
+      "detail": "SUPPORTED_SYNTHETIC_PROTOTYPE; deterministic example only, not R1"
+    },
+    {
+      "name": "08e_requirement_trace",
+      "status": "COMPLETED_WITH_FINDINGS",
+      "detail": "SYNTHETIC_PROTOTYPE_ONLY; customer not approved"
+    },
+    {
+      "name": "08f_blind_optimality",
+      "status": "COMPLETED_WITH_FINDINGS",
+      "detail": "Post-selection blind synthetic benchmark; solver status and gaps saved"
+    },
+    {
+      "name": "08g_boundary_assurance",
+      "status": "COMPLETED_WITH_FINDINGS",
+      "detail": "Boundary checks: PASS_CONTROLLED; simulated scenarios: PASS"
+    },
+    {
+      "name": "09_business_delivery_assessment",
+      "status": "COMPLETED_WITH_FINDINGS",
+      "detail": "Production remains NO-GO; public source is contextual"
+    }
+  ],
+  "bundle_ready": true,
+  "rag_id": "6c586c68-d97f-4395-875b-f6d4b7c07fe9",
+  "topic_alignment": {
+    "status": "TOPIC_MATCH_REVIEW_REQUIRED",
+    "target_domain": "insurance_claims",
+    "source_domain": "insurance_claims",
+    "topic_matching_evidence_ids": [
+      "PUB-001",
+      "PUB-002",
+      "PUB-003",
+      "PUB-004",
+      "PUB-005",
+      "PUB-006"
+    ],
+    "reason": "Topic match is lexical; it does not prove FIFO causation, customer approval, or requirements validity."
+  },
+  "bundle_status": "COMPLETE",
+  "requirement_type": "claim_progress_updates",
+  "execution_brief": "想定顧客：ドイツ国内で実績があり欧州の複数国への展開を検討する保険業務SaaS企業（架空）。案件ごとに審査所要時間、期限、保険金請求額、必要資格が異なる。固定の審査人員・勤務時間で、先着順よりも期限超過を減らしたい。支払可否は人間が判断する。顧客固有のEU法規制適合は未検証。サービス設計→コード生成→E2B評価→要件改訂を再現可能な実験にする。\n\n[PUBLIC EVIDENCE — HUMAN-REVIEWED HYPOTHESIS, NOT CUSTOMER APPROVAL]\nHypothesis: Insurers must identify and adapt communication for vulnerable consumers early in the claims process\nEvidence pointers (source statements only): PUB-006\nEvidence support, causal attribution, customer validity: UNVERIFIED. R0 FIFO and R1 contracts remain synthetic fixed test specifications.\n[END HUMAN-REVIEWED HYPOTHESIS]",
+  "diagnostic_reliability_status": "HOLD_HUMAN_ADJUDICATION",
+  "diagnostic_execution_status": "COMPLETE",
+  "grounded_contract_status": "NOT_APPLICABLE_TO_NOTIFICATION",
+  "feature_acceptance_status": "PASS_SYNTHETIC_FEATURE_ONLY",
+  "requirement_trace_status": "SYNTHETIC_PROTOTYPE_ONLY",
+  "boundary_status": "PASS_CONTROLLED"
+}

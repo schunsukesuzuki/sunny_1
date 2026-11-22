@@ -1,4 +1,4 @@
-"""Claims Operations Planner v0.28: auditable LLM and pinned Domain Skill comparison."""
+"""Claims Operations Planner v0.29: auditable LLM and pinned Domain Skill comparison."""
 from __future__ import annotations
 
 import asyncio
@@ -32,6 +32,7 @@ from . import diagnostic_reliability as dr
 from . import diagnostic_consistency as dc
 from . import diagnostic_semantics as ds
 from . import diagnostic_axes as dax
+from . import diagnostic_targeted_repair as dtr
 from . import dev_selection_audit as dsa
 from . import dev_robustness_fixtures as drf
 from . import diagnostic_execution as de
@@ -79,7 +80,7 @@ def store(kind: str, id_: str, filename: str, data: object):
     return target
 
 
-app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.28.0")
+app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.29.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                    allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
@@ -285,7 +286,7 @@ def claims_allocation_skill_manifest():
 
 @app.get("/api/sample")
 def sample():
-    return {"title": "Claims Operations Planner", "version": "0.28.0", "customer_profile": "German InsurTech SaaS (fictional)",
+    return {"title": "Claims Operations Planner", "version": "0.29.0", "customer_profile": "German InsurTech SaaS (fictional)",
             "brief": BRIEF, "contract_r0": CONTRACT_R0, "contract_r1": CONTRACT_R1,
             "service_design_r0": SERVICE_R0, "service_design_r1": SERVICE_R1,
             "synthetic_counterexample": SIMULATED_EVIDENCE,
@@ -298,7 +299,7 @@ def sample():
 
 @app.get("/api/health")
 async def health():
-    return {"app": "ok", "version": "0.28.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
+    return {"app": "ok", "version": "0.29.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
             "ollama": await llm.status()}
 
 
@@ -332,7 +333,7 @@ async def run_r0(body: R0Request):
     held_metrics = {name: _aggregate([m for m in metrics if m["seed"] in holdout]) for name, metrics in results.items()}
     if not dev_metrics["fifo"]["valid"] or not held_metrics["fifo"]["valid"]:
         raise HTTPException(502, "R0 FIFOの独立評価が失敗しました。")
-    data = {"run_id": rid, "created_at": now(), "version": "0.28.0", "contract": CONTRACT_R0,
+    data = {"run_id": rid, "created_at": now(), "version": "0.29.0", "contract": CONTRACT_R0,
             "service_design": body.service_design or SERVICE_R0, "brief": body.brief,
             "seed": body.seed, "dev_seeds": dev, "holdout_seeds": holdout,
             "development": dev_metrics, "holdout": held_metrics,
@@ -927,6 +928,10 @@ async def evaluate_r1(body: EvaluateRequest):
     store('experiments',eid,'dev_selection_rationale.json',dev_selection_trace)
     result['dev_selection_rationale']=dev_selection_trace
     result['dev_robustness_preselection']=preselection
+    result['selection_review']=preselection['selection_review']
+    result['dev_case_discrimination']=preselection['case_discrimination']
+    store('experiments',eid,'dev_case_discrimination.json',preselection['case_discrimination'])
+    store('experiments',eid,'selection_review.json',preselection['selection_review'])
     store("experiments", eid, "dev_selection_audit.json", {
         'candidate_ranking':dev_selection_trace,
         'version':dsel.VERSION,'attempts':[{'attempt':a['attempt'],'source_sha256':a['code_sha256'],
@@ -1076,7 +1081,7 @@ def report_r1(result: dict, parent: dict, proposal: dict) -> str:
 
 - DEV: `{result['dev_seeds']}`。Qwenに渡す修正指示はDEV由来のみ。
 - DEV candidate gate: **`{result['selection_status']}`** (`{result['selection_gate_version']}`) — KPI + deadline/qualification behavioral probes + four stress scenarios.
-- v0.28 preselection robustness: **`{result.get('dev_robustness_preselection', {}).get('status', 'NOT_RUN')}`**; selection uncertainty and leave-one-stress-out sensitivity are separately audited; NOT a statistical generalization guarantee.
+- v0.29 preselection robustness: **`{result.get('dev_robustness_preselection', {}).get('status', 'NOT_RUN')}`**; selection uncertainty and leave-one-stress-out sensitivity are separately audited; NOT a statistical generalization guarantee.
 - DEV selected attempt: `{result['selected_attempt']}`; no eligible candidate means the untouched holdout is **NOT_EXECUTED**, not a PASS.
 - Detailed gate reasons/code hashes: `dev_selection_audit.json`.
 - The 08b post-selection policy check repeats fixed DEV probes/stresses; it is NOT an untouched independent behavioral holdout.
@@ -1222,7 +1227,7 @@ def benchmark_fixtures():
 
 
 def _benchmark_report(record: dict) -> str:
-    lines = ["# Claims Operations Planner v0.28 — Diagnostic Benchmark", "",
+    lines = ["# Claims Operations Planner v0.29 — Diagnostic Benchmark", "",
         "> **合成フィクスチャの独立採点です。実顧客要件の正しさ・EU規制適合性を検証しません。**", "",
         f"- Benchmark ID: `{record['benchmark_id']}`", f"- Date: {record['created_at']}",
         f"- Fixtures: `{record['fixture_version']}` / Rubric: `{record['rubric_version']}`",
@@ -1242,7 +1247,7 @@ def _benchmark_report(record: dict) -> str:
     for name, val in record['summary'].items():
         lines.append(f"|{name}|{val.get('timeout_calls', 0)}|{val['completed']}|{val['planned']}|{val.get('structural_consistency_passed', 'n/a')}|")
     axes = record.get('diagnostic_axes') or dax.summarize(record)
-    lines += ['', '## v0.28 RAW dimension-by-dimension audit', '',
+    lines += ['', '## v0.29 RAW dimension-by-dimension audit', '',
               '| group / model | cause | implementation | evidence | revision | requirement fit | cross-field |',
               '|---|---|---|---|---|---|---|']
     for g in axes['groups']:
@@ -1253,7 +1258,12 @@ def _benchmark_report(record: dict) -> str:
         lines.append('|'+g['group']+' / '+g['model_role']+'|'+ '|'.join(cell(k) for k in (
             'cause_classification','implementation_correctness','evidence_quality',
             'revision_action','requirement_fit','cross_field_consistency'))+'|')
-    lines += ['', 'RAW axes are independent; a passing classification does not validate the revision. '
+    targeted=record.get('targeted_repair_summary') or dtr.summarize(record)
+    lines += ['', '## v0.29 Input-only targeted repair audit', '',
+        f"- Opt-in: **{targeted['repair_opt_in']}**; repairs proposed: **{targeted['fixed_trials_with_observable_inconsistency']}**; model calls: **{targeted['fixed_repair_model_calls']}**; adopted: **{targeted['fixed_adopted_repairs']}**",
+        '- Oracle rubric scores DO NOT trigger repairs. Only observable input/RAW inconsistencies select mutable fields.',
+        '- All edits outside selected fields are discarded. Blind trials receive no repair/feedback. RAW first-pass is immutable.',
+        '', 'RAW axes are independent; a passing classification does not validate the revision. '
               'Blind replay is NOT fresh evidence. No production/legal certification.', '']
     lines += ["", "## Trial-level evidence", "", 
               "| case | repetition | model | classification | result | score | failures |",
@@ -1275,7 +1285,7 @@ def _benchmark_report(record: dict) -> str:
         for role,x in record['blind_generalization']['summary'].items():
             lines.append(f"|{role}|{x['passed']}|{x.get('assisted_passed',0)}|{x.get('grounding_applied',0)}|{x['completed']}|{x['planned']}|")
     gate = record.get("reliability_gate") or {}
-    lines += ["", "## v0.28 raw diagnostic reliability gate", "",
+    lines += ["", "## v0.29 raw diagnostic reliability gate", "",
               f"- Status: **{gate.get('status', 'NOT_RUN')}**",
               f"- Human adjudication required: **{gate.get('human_adjudication_required', True)}**",
               f"- Prespecified criteria: {gate.get('predeclared_criteria', 'Not available')}",
@@ -1338,20 +1348,36 @@ async def run_benchmark(body: BenchmarkRequest):
                     # Only a NEW model call can change substantive reasoning.
                     # Grounding merely attaches an input-grounded evidence ID,
                     # and never converts the model's original raw score to PASS.
-                    if body.enable_repair and not assisted_initial['passed']:
-                        critique=dp.public_fact_checks(payload,data)
-                        tr['public_critique']=critique
+                    # v0.29: decide *whether* to repair using only publicly
+                    # observable contradictions. Never trigger based on the
+                    # hidden oracle score (even implicitly).
+                    plan=dtr.plan(payload,data)
+                    tr['targeted_repair_plan']=plan
+                    if (body.enable_repair and plan['eligible_for_repair'] and not
+                        (set(plan['target_fields']) == {'supporting_evidence_ids'} and grounded['applied'])):
+                        tr['public_critique']={'input_only_feedback':plan['input_only_feedback'],
+                                              'oracle_or_expected_labels_exposed':False}
                         tr['repair_attempted']=True
                         try:
-                            revised=await llm.revise_benchmark_diagnosis(payload,prior=data,
-                                visible_feedback=critique['input_only_feedback'],model=model)
-                            revised_data=revised.model_dump()
+                            # Permit older injected test adapters with the prior
+                            # function signature; the adoption filter is authoritative.
+                            import inspect
+                            kw={'prior':data,'visible_feedback':plan['input_only_feedback']+plan['failure_codes'],
+                                'model':model}
+                            if 'target_fields' in inspect.signature(llm.revise_benchmark_diagnosis).parameters:
+                                kw['target_fields']=plan['target_fields']
+                            proposed=await llm.revise_benchmark_diagnosis(payload,**kw)
+                            suggestion=proposed.model_dump()
+                            applied=dtr.adopt(data,suggestion,plan['target_fields'])
+                            revised_data=llm.BenchmarkDiagnosis.model_validate(applied['answer']).model_dump()
                             revised_score=dq.benchmark_score(revised_data,fixture['oracle'])
                             revised_consistency=dc.assess(revised_data,payload)
                             revised_semantics=ds.assess(revised_data,payload)
                             revised_grounded=dp.evidence_bind_from_input(payload,revised_data)
                             revised_assisted=dq.benchmark_score(revised_grounded['assisted_answer'],fixture['oracle'])
-                            tr.update({'revised_diagnosis':revised_data,
+                            tr.update({'targeted_repair_audit':applied,
+                                       'proposed_unrestricted_repair':suggestion,
+                                       'revised_diagnosis':revised_data,
                                        'revised_rubric':revised_score,
                                        'revised_grounding':revised_grounded,
                                        'revised_assisted_rubric':revised_assisted,
@@ -1364,6 +1390,8 @@ async def run_benchmark(body: BenchmarkRequest):
                                        'rubric':revised_assisted})
                         except Exception as repair_exc:
                             tr['repair_error']=str(getattr(repair_exc,'detail',repair_exc))[:500]
+                    elif body.enable_repair:
+                        tr['repair_skipped_reason']=('EVIDENCE_ONLY_GROUNDED_NO_MODEL_CALL' if plan['eligible_for_repair'] else 'NO_INPUT_OBSERVABLE_CONTRADICTION_NO_ORACLE_BASED_TRIGGER')
                     tr['final_model_raw_passed']=tr['latest_raw_rubric']['passed']
                     tr['final_assisted_passed']=tr['rubric']['passed']
                     tr['final_passed']=tr['rubric']['passed']
@@ -1419,6 +1447,8 @@ async def run_benchmark(body: BenchmarkRequest):
           "caveat":"Rule-based checks, no gold-standard EU customer requirement or regulatory validation."}
     data["reliability_gate"] = dr.assess(data)
     data['diagnostic_axes'] = dax.summarize(data)
+    data['targeted_repair_summary'] = dtr.summarize(data)
+    store('benchmarks',bid,'targeted_repair_summary.json',data['targeted_repair_summary'])
     store('benchmarks',bid,'diagnostic_axes.json',data['diagnostic_axes'])
     store("benchmarks",bid,"diagnostic_reliability_gate.json",data["reliability_gate"])
     store("benchmarks",bid,"benchmark.json",data)
@@ -1578,6 +1608,8 @@ async def retry_incomplete_benchmark(body: BenchmarkRetryRequest):
             record['status']=de.status_of(record['trials'],record['blind_generalization']['trials'])
             record['reliability_gate']=dr.assess(record)
             record['diagnostic_axes']=dax.summarize(record)
+            record['targeted_repair_summary']=dtr.summarize(record)
+            _atomic_rewrite('benchmarks',bid,'targeted_repair_summary.json',record['targeted_repair_summary'])
             _atomic_rewrite('benchmarks',bid,'diagnostic_axes.json',record['diagnostic_axes'])
             _atomic_rewrite('benchmarks',bid,'benchmark.json',record)
             _atomic_rewrite('benchmarks',bid,'diagnostic_reliability_gate.json',record['reliability_gate'])

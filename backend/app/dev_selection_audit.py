@@ -1,6 +1,6 @@
 """Predeclared DEV-only comparison. Neither 06 HOLDOUT nor 08f informs selection."""
 from __future__ import annotations
-VERSION='DEV-LEXICOGRAPHIC-ROBUST-SELECT-v0.28.0'
+VERSION='DEV-LEXICOGRAPHIC-ROBUST-SELECT-v0.29.0'
 from . import dev_robustness as drb
 
 
@@ -45,6 +45,8 @@ def select(candidates:list[dict], chosen:str|None,*,selected_source_hash:str|Non
             'selection_consistent_with_predeclared_dev_order':matched,
             'eligible_ranking':ranking,'all_candidates':candidates,
             'robustness_audit':robust,
+            'selection_review':robust['selection_review'],
+            'dev_case_discrimination':robust['case_discrimination'],
             'tie_rule':'DEV missed, DEV unassigned, extra DEV cohort worst/total, pinned stress worst/total, stable source order last.',
             'primary':'DEV aggregate missed deadlines; lower is better',
             'secondary':'DEV unassigned cases; lower is better',

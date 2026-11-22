@@ -1,0 +1,24 @@
+{
+  "approval_id": "318879ff-1308-4feb-854d-844a0f4da34e",
+  "proposal_id": "dd4dd5fb-6769-425d-8e5e-474170e37ff3",
+  "parent_run_id": "b317d1a3-9f4a-43be-abae-d0bff491095c",
+  "decision": "approved",
+  "actor": "Claims Product Owner (demo)",
+  "actor_authentication": "SELF_REPORTED",
+  "rationale": "模擬反例に基づく技術検証として、期限優先方式への改訂を承認。事業妥当性は未検証。",
+  "timestamp_utc": "2026-11-22T01:49:36+00:00",
+  "contract_r0_sha256": "630a7406a20803842949317e4f6e177e67061c8098d7299fbb2b184535829f19",
+  "contract_r1_sha256": "6bc9ca1d3ffa4de231ccf42863ec7f1c4cea6407eaef2e1234f91388117c371a",
+  "service_sha256": "2f88e6c7234e985ac9997d0c35bd60922962f4ba56c18dd485ef6bfbbf99ac9f",
+  "evidence_sha256": "4fdb43ce8a95c64705bf0eaa5f54c06266d6db54eccfc060f984d1700851a6cc",
+  "finance_diagnosis_sha256": "a963badcdb82ead0c430324df4b9b3a5783a56ad252e4f5470e0d4553829883a",
+  "finance_model": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+  "domain_review_override": true,
+  "acknowledges_independent_r0_pass": true,
+  "override_rationale": "R0のFIFO実装は独立評価でPASS。ODAの診断はHOLDのまま残し、理由・証拠・実装認識を個別に確認する。模擬反例と固定R1契約に基づく技術検証のみ継続し、実顧客の事業妥当性は未検証として扱う。",
+  "original_oda_rubric_status": "HOLD",
+  "original_oda_rubric_failures": [
+    "EVIDENCE_IDS_INCORRECT"
+  ],
+  "approval_path": "audited_human_review"
+}

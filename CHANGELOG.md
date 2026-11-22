@@ -1,3 +1,13 @@
+# v0.29.0 — Lexicographic 08f, Research-Only Selection Review, DEV Discrimination, Targeted Diagnosis (2026-11-22)
+
+- Fix post-selection 08f false equivalence: require independent validity plus an `OPTIMAL` solver certificate, then compare `(missed_deadlines, unassigned_cases)` lexicographically. Conditional secondary gaps do not mix incomparable primary scores. Preserve old primary-gap field for backward compatibility.
+- Separate "selected is worse than another candidate" from "selected is worse than the exact oracle" and mark old evidence with no secondary certification as inconclusive where appropriate. Never modify R1 selection from 08f.
+- DEV ties now explicitly yield a **provisional research candidate** with required human review, *not* automatic approval. No extra production approval endpoint is implied.
+- Add case-level DEV discrimination audit across base, extra, and stress cohorts. Identical result pairs are non-discriminative, regardless of leave-one-out stability. No 08f/HOLDOUT data leakage.
+- Add opt-in input-only field-targeted benchmark repair: no oracle-driven repair invocation, no changes outside target fields, immutable first RAW, no blind feedback; record proposed vs adopted fields and failure reasoning.
+- Add fields to 10R and README, keep layout **10 → 10R → 00 → 01..09**; preserve audit ZIP format `v0.25.0` and report consumer view `v0.27.0`, update producer to `0.29.0`.
+- Python regression tests and TSX AST/layout checks; native Rust, Docker, Vite full dependency build, live Ollama and E2B **not verified** here.
+
 # v0.28.0 — Preselection Robustness, RAW Diagnostic Axes, Canonical Retry Report (2026-11-22)
 
 - Keep **10 → 10R → 00 → 01〜09** unchanged from v0.27.1.

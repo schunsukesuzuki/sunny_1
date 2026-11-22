@@ -1,0 +1,163 @@
+{
+  "case_id": "deadline_business_mismatch",
+  "model_role": "finance",
+  "model_id": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+  "input_sha256": "52431beb1880a99029ff4cd85ac1f50a4c4721f7eea85f7a6b36dd4a19998359",
+  "revision_allowed": false,
+  "status": "COMPLETED",
+  "observable_fact_sheet": {
+    "independent_test_reported_status": "PASS",
+    "independent_test_verbatim": "PASS: deterministic reviewer/day checks confirm the code conforms to every listed FIFO constraint.",
+    "original_contract": "R0: process intake cases by arrival_order, qualified earliest available reviewer.",
+    "business_goal_verbatim": "Improve deadline adherence at fixed planned reviewer-hours.",
+    "synthetic_comparison_verbatim": "FIFO missed 6 deadline targets; alternative due-date ordering missed 0 in matched synthetic data with equal hours.",
+    "available_evidence": [
+      {
+        "id": "SYN-BLIND-SLA-4669",
+        "provenance": "synthetic",
+        "observation": "A later-arriving urgent task is delayed behind an earlier, nonurgent task under the pinned FIFO rule."
+      }
+    ],
+    "customer_interview_count": 0,
+    "note": "These fields restate the public INPUT facts; infer diagnoses independently."
+  },
+  "diagnosis": {
+    "classification": "requirement_mismatch",
+    "implementation_assessment": "incorrect",
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_validity": "unverified",
+    "supporting_evidence_ids": [
+      "SYN-BLIND-SLA-4669"
+    ],
+    "root_cause": "implementation violates business objective by prioritizing FIFO over deadline adherence",
+    "suggested_requirement_change": "process intake cases by due_date_order, qualified earliest available reviewer",
+    "scheduling_precedence": "none",
+    "change_required": true,
+    "remaining_uncertainty": "business objective measurement"
+  },
+  "raw_consistency": {
+    "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+    "status": "INCONSISTENT",
+    "passed": false,
+    "failure_codes": [
+      "REQUIREMENT_MISMATCH_REQUIRES_CORRECT_IMPLEMENTATION",
+      "IMPLEMENTATION_ASSESSMENT_CONTRADICTS_PASS_TEST"
+    ],
+    "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+    "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+  },
+  "raw_semantics": {
+    "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+    "status": "HOLD_HUMAN_ADJUDICATION",
+    "passed": false,
+    "failure_codes": [
+      "REQUIREMENT_MISMATCH_REQUIRES_CORRECT_IMPLEMENTATION",
+      "IMPLEMENTATION_ASSESSMENT_CONTRADICTS_PASS_TEST",
+      "REVISION_PRECEDENCE_MUST_BE_DEADLINE_FIRST"
+    ],
+    "axes": {
+      "classification": "requirement_mismatch",
+      "implementation": "incorrect",
+      "evidence_ids": [
+        "SYN-BLIND-SLA-4669"
+      ],
+      "revision_policy": "none",
+      "revision_change_required": true
+    },
+    "oracle_access": false,
+    "auto_rewrite": false,
+    "synthetic_semantic_truth_proven": false,
+    "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+  },
+  "rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": true,
+      "implementation_correctness": false,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": false
+    },
+    "passed": false,
+    "score": 0.75,
+    "failure_codes": [
+      "IMPLEMENTATION_CORRECTNESS",
+      "REVISION_TARGETS_REQUIREMENT"
+    ],
+    "expected_classification": "requirement_mismatch",
+    "real_customer_business_validity": "UNVERIFIED"
+  },
+  "grounding": {
+    "version": "EVIDENCE-BINDER-v0.21.2",
+    "applied": false,
+    "reason": "MODEL_ALREADY_CITED",
+    "added_evidence_ids": [],
+    "raw_answer": {
+      "classification": "requirement_mismatch",
+      "implementation_assessment": "incorrect",
+      "synthetic_requirement_fit": "mismatch",
+      "real_customer_validity": "unverified",
+      "supporting_evidence_ids": [
+        "SYN-BLIND-SLA-4669"
+      ],
+      "root_cause": "implementation violates business objective by prioritizing FIFO over deadline adherence",
+      "suggested_requirement_change": "process intake cases by due_date_order, qualified earliest available reviewer",
+      "scheduling_precedence": "none",
+      "change_required": true,
+      "remaining_uncertainty": "business objective measurement"
+    },
+    "assisted_answer": {
+      "classification": "requirement_mismatch",
+      "implementation_assessment": "incorrect",
+      "synthetic_requirement_fit": "mismatch",
+      "real_customer_validity": "unverified",
+      "supporting_evidence_ids": [
+        "SYN-BLIND-SLA-4669"
+      ],
+      "root_cause": "implementation violates business objective by prioritizing FIFO over deadline adherence",
+      "suggested_requirement_change": "process intake cases by due_date_order, qualified earliest available reviewer",
+      "scheduling_precedence": "none",
+      "change_required": true,
+      "remaining_uncertainty": "business objective measurement"
+    },
+    "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+  },
+  "assisted_diagnosis": {
+    "classification": "requirement_mismatch",
+    "implementation_assessment": "incorrect",
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_validity": "unverified",
+    "supporting_evidence_ids": [
+      "SYN-BLIND-SLA-4669"
+    ],
+    "root_cause": "implementation violates business objective by prioritizing FIFO over deadline adherence",
+    "suggested_requirement_change": "process intake cases by due_date_order, qualified earliest available reviewer",
+    "scheduling_precedence": "none",
+    "change_required": true,
+    "remaining_uncertainty": "business objective measurement"
+  },
+  "assisted_rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": true,
+      "implementation_correctness": false,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": false
+    },
+    "passed": false,
+    "score": 0.75,
+    "failure_codes": [
+      "IMPLEMENTATION_CORRECTNESS",
+      "REVISION_TARGETS_REQUIREMENT"
+    ],
+    "expected_classification": "requirement_mismatch",
+    "real_customer_business_validity": "UNVERIFIED"
+  }
+}

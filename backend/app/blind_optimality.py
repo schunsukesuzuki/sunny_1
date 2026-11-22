@@ -14,7 +14,7 @@ from typing import Any
 
 from .domain import validate, sha256
 
-VERSION = 'BLIND-OPTIMALITY-v0.21.0'
+VERSION = 'BLIND-OPTIMALITY-v0.29.0'
 
 
 def fresh_blind_seed() -> int:
@@ -157,7 +157,11 @@ def exact_baseline(ds:dict) ->dict:
 
 
 def summarize(suite:dict[int,dict],runs:dict[str,list],optima:dict[int,dict])->dict:
-    """Independent scores; any non-optimal oracle => no asserted optimality gap."""
+    """Read-only 08f score: minimize (missed_deadlines, unassigned_cases).
+
+    A secondary-objective gap is meaningful ONLY at the proven primary optimum.
+    CP-SAT FEASIBLE and interrupted enumeration never certify either gap.
+    """
     result={}
     for name,series in runs.items():
         byseed={r.seed:r for r in series}
@@ -165,20 +169,42 @@ def summarize(suite:dict[int,dict],runs:dict[str,list],optima:dict[int,dict])->d
         for seed,ds in suite.items():
             raw=byseed.get(seed)
             if raw is None:
-                metrics={'valid':False,'violations':['Missing sandbox execution'],'missed_deadlines':None}
+                metrics={'valid':False,'violations':['Missing sandbox execution'],
+                         'missed_deadlines':None,'unassigned_cases':None}
             else:
                 metrics=validate(ds,raw.output,policy='r1')
-                if raw.error:metrics['valid']=False;metrics['violations'].append(str(raw.error)[:200])
+                if raw.error:
+                    metrics['valid']=False
+                    metrics['violations'].append(str(raw.error)[:200])
             ex=optima[seed]
-            diff=(metrics['missed_deadlines']-ex['metrics']['missed_deadlines']
-                 if metrics['valid'] and ex['status']=='OPTIMAL' else None)
+            certified=(metrics['valid'] is True and ex['status']=='OPTIMAL' and
+                       isinstance(ex.get('metrics'),dict) and ex['metrics'].get('valid') is True)
+            missed_gap=(metrics['missed_deadlines']-ex['metrics']['missed_deadlines'] if certified else None)
+            # Unassigned cannot be compared as an 'optimality gap' when the
+            # candidate has a worse primary objective, even if it assigns more.
+            secondary_gap=(metrics['unassigned_cases']-ex['metrics']['unassigned_cases']
+                           if certified and missed_gap==0 else None)
+            lex_optimal=bool(certified and missed_gap==0 and secondary_gap==0)
             rows.append({'seed':seed,'input_sha256':sha256(ds),'valid':metrics['valid'],
-               'missed_deadlines':metrics.get('missed_deadlines'),'unassigned':metrics.get('unassigned_cases'),
-               'optimality_gap_missed_cases':diff,
-               'exact_status':ex['status'],'execution_seconds':getattr(raw,'elapsed_seconds',None)})
+                'missed_deadlines':metrics.get('missed_deadlines'),
+                'unassigned':metrics.get('unassigned_cases'),
+                'optimality_gap_missed_cases':missed_gap,  # legacy, primary-only
+                'optimality_gap_unassigned_conditional':secondary_gap,
+                'lexicographic_optimal':lex_optimal if certified else None,
+                'exact_optimal_missed':ex['metrics']['missed_deadlines'] if certified else None,
+                'exact_optimal_unassigned':ex['metrics']['unassigned_cases'] if certified else None,
+                'exact_status':ex['status'],
+                'execution_seconds':getattr(raw,'elapsed_seconds',None)})
+        certified_rows=[x for x in rows if x['optimality_gap_missed_cases'] is not None]
         result[name]={'cases':rows,'valid_count':sum(x['valid'] for x in rows),
-            'proven_optimal_cases':sum(x['optimality_gap_missed_cases']==0 for x in rows),
-            'total_proven_gap':sum(x['optimality_gap_missed_cases'] for x in rows
-                                   if x['optimality_gap_missed_cases'] is not None),
-            'all_proven':all(x['optimality_gap_missed_cases'] is not None for x in rows)}
+            'proven_optimal_cases':sum(x['lexicographic_optimal'] is True for x in rows),
+            'primary_optimal_cases':sum(x['optimality_gap_missed_cases']==0 for x in certified_rows),
+            'certified_lexicographic_cases':sum(x['lexicographic_optimal'] is True for x in rows),
+            'total_proven_gap':sum(x['optimality_gap_missed_cases'] for x in certified_rows),
+            'total_proven_secondary_gap_conditional':sum(
+                x['optimality_gap_unassigned_conditional'] for x in certified_rows
+                if x['optimality_gap_unassigned_conditional'] is not None),
+            'all_proven':len(certified_rows)==len(rows),
+            'objective_order':['min_missed_deadlines','min_unassigned_cases'],
+            'secondary_gap_only_at_primary_optimum':True}
     return result

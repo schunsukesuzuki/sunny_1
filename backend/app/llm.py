@@ -284,7 +284,8 @@ async def benchmark_diagnosis(payload: dict, *, model: str) -> BenchmarkDiagnosi
 
 
 async def revise_benchmark_diagnosis(payload:dict, *, prior:dict,
-                                    visible_feedback:list[str], model:str)->BenchmarkDiagnosis:
+                                    visible_feedback:list[str], model:str,
+                                    target_fields:list[str]|None=None)->BenchmarkDiagnosis:
     """A SECOND model call, NEVER deterministic relabeling or benchmark-oracle repair.
 
     Critique contains only observations verifiable directly in the input. The
@@ -292,11 +293,13 @@ async def revise_benchmark_diagnosis(payload:dict, *, prior:dict,
     """
     system=("Reconsider your own diagnostic JSON using ONLY input facts and public "
             "consistency checks. Do not copy any presumed gold label. "
-            "Return a NEW complete JSON object in the same schema. " + DECISION_PROTOCOL)
+            "Return a NEW complete JSON object in the same schema, changing ONLY the listed target fields; "
+            "all other fields must stay verbatim. " + DECISION_PROTOCOL)
     return await query(BenchmarkDiagnosis,system,
         "Original case facts: "+canonical(payload)+
         "\nOriginal diagnosis: "+canonical(prior)+
         "\nObserved inconsistencies (NOT gold labels): "+canonical(visible_feedback)+
+        "\nAllowed repair fields (everything else will be ignored): "+canonical(target_fields or [])+
         "\nCheck implementation, objective, evidence relevance, requirement-change policy and internal consistency.",
         model=model)
 

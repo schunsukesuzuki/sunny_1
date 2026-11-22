@@ -1,0 +1,11 @@
+{
+  "status": "PROVISIONAL_RESEARCH_SELECTION_REVIEW_REQUIRED",
+  "requires_human_review": true,
+  "review_performed": false,
+  "reviewer_id": null,
+  "decision": null,
+  "research_execution_allowed": true,
+  "production_selection_authorized": false,
+  "fixed_order_is_only_reproducibility_tiebreak": true,
+  "human_approval_before_production_required": true
+}

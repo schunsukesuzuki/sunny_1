@@ -8,7 +8,7 @@ estimate of real-world generalization.
 from __future__ import annotations
 from . import dev_robustness_fixtures as fixtures
 
-VERSION = 'PRESELECTION-DEV-ROBUSTNESS-v0.28.0'
+VERSION = 'PRESELECTION-DEV-ROBUSTNESS-v0.29.0'
 EXPECTED_STRESS_SEEDS = frozenset((910000, 910001, 910002, 910003))
 
 
@@ -81,6 +81,52 @@ def _candidate_score(candidate: dict, usable_stress: bool,
     return score
 
 
+def _discriminative_cases(eligible:list[tuple[int,dict]])->dict:
+    """Evaluate DEV scenario separation; reporting only, never postselection 08f."""
+    cohorts=[]
+    for name,keys,collector in (
+        ('base_dev',None,lambda c:{r['seed']:{'missed':r['missed'],'unassigned':r['unassigned']}
+            for r in _base_rows(c) if type(r.get('seed')) is int and
+            type(r.get('missed')) is int and type(r.get('unassigned')) is int and r.get('valid') is True}),
+        ('extra_dev',set(fixtures.SEEDS),_extra_rows),
+        ('stress_dev',set(EXPECTED_STRESS_SEEDS),_stress_rows),
+    ):
+        profiles={c['candidate_id']:collector(c) for _,c in eligible}
+        available=[set(p) for p in profiles.values()]
+        common=set.intersection(*available) if available else set()
+        expected=(keys if keys is not None else set.union(*available) if available else set())
+        rows=[]
+        for seed in sorted(common):
+            outcomes={cid:[row[seed]['missed'],row[seed]['unassigned']]
+                      for cid,row in profiles.items()}
+            separated=len({tuple(values) for values in outcomes.values()})>1
+            best=min(map(tuple,outcomes.values())) if outcomes else None
+            rows.append({'seed':seed,'case_discriminates_candidates':separated,
+                         'candidate_objective_pairs':outcomes,
+                         'lexicographic_winners':[cid for cid,val in outcomes.items() if tuple(val)==best],
+                         'objective_order':['missed_deadlines','unassigned_cases']})
+        cohorts.append({'cohort':name,'expected_seeds':sorted(expected),
+                        'comparable_seeds':sorted(common),
+                        'missing_or_unaligned':sorted(expected-common),
+                        'case_rows':rows,
+                        'discriminative_case_count':sum(x['case_discriminates_candidates'] for x in rows),
+                        'nondiscriminative_case_count':sum(not x['case_discriminates_candidates'] for x in rows),
+                        'complete':bool(eligible) and not (expected-common) and bool(rows)})
+    all_rows=[row for cohort in cohorts for row in cohort['case_rows']]
+    total=sum(x['discriminative_case_count'] for x in cohorts)
+    return {'version':'DEV-CASE-DISCRIMINATION-v0.29.0',
+            'status':('NO_ELIGIBLE_CANDIDATE' if not eligible else
+                      'NO_SEPARATING_CASES' if total==0 else
+                      'SOME_COHORTS_INCOMPLETE' if any(not x['complete'] for x in cohorts) else
+                      'SEPARATING_CASES_PRESENT'),
+            'eligible_candidate_count':len(eligible),
+            'case_count_comparable':len(all_rows),
+            'case_count_discriminative':total,
+            'case_count_nondiscriminative':len(all_rows)-total,
+            'cohorts':cohorts,'source':'PRESELECTED_DEV_ONLY',
+            '08f_or_holdout_used':False,
+            'advisory':'If no cases distinguish candidates, fixed-order selection is only reproducible, not evidence of superior generalization. Never move 08f cases back into DEV.'}
+
 def choose(candidates: list[dict]) -> dict:
     eligible = [(i,c) for i,c in enumerate(candidates) if c.get('eligible') is True]
     profiles = [_stress_rows(c) for _,c in eligible]
@@ -123,7 +169,13 @@ def choose(candidates: list[dict]) -> dict:
                 'winner_candidate_id':lo['candidate_id'],
                 'changed_winner':lo['candidate_id']!=winner['candidate_id']})
     scenario_sensitivity=any(r['changed_winner'] for r in leave_one_out+leave_one_extra_out)
+    separation=_discriminative_cases(eligible)
     incomplete_extra=extra_present and not extra_comparable
+    requires_selection_review=not eligible or unresolved_tie or not comparable or incomplete_extra or scenario_sensitivity
+    # Stable order is a *research fallback* and never a human approval.
+    review_state=('NO_ELIGIBLE_SELECTION' if not eligible else
+                  'PROVISIONAL_RESEARCH_SELECTION_REVIEW_REQUIRED' if requires_selection_review else
+                  'DEV_SELECTED_SYNTHETIC_RESEARCH_ONLY')
     profiles_by_candidate=[]
     for i,c in eligible:
         stress=_stress_rows(c)
@@ -154,7 +206,14 @@ def choose(candidates: list[dict]) -> dict:
                   'SCENARIO_SENSITIVE' if scenario_sensitivity else
                   'TIED_WITH_ANOTHER_ELIGIBLE_CANDIDATE' if unresolved_tie else
                   'NO_SENSITIVITY_DETECTED_IN_SMALL_FIXTURES'),
-        'requires_human_review_of_selection':not eligible or unresolved_tie or not comparable or incomplete_extra or scenario_sensitivity,
+         'requires_human_review_of_selection':requires_selection_review,
+        'selection_review':{'status':review_state,'requires_human_review':requires_selection_review,
+            'review_performed':False,'reviewer_id':None,'decision':None,
+            'research_execution_allowed':bool(winner),
+            'production_selection_authorized':False,
+            'fixed_order_is_only_reproducibility_tiebreak':unresolved_tie,
+            'human_approval_before_production_required':True},
+        'case_discrimination':separation,
         'top_rank_score':list(top_score) if top_score is not None else None,
         'runner_up_rank_score':list(runner_up_score) if runner_up_score is not None else None,
         'selected_candidate_id':winner['candidate_id'] if winner else None,
