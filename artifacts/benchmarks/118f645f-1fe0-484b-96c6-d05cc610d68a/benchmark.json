@@ -1,0 +1,2798 @@
+{
+  "benchmark_id": "118f645f-1fe0-484b-96c6-d05cc610d68a",
+  "created_at": "2026-11-22T03:05:46+00:00",
+  "fixture_version": "CLAIMS-DIAG-FIXTURES-v0.10.1",
+  "rubric_version": "DIAG-RUBRIC-v0.10.1",
+  "case_ids": [
+    "fifo_sla_conflict",
+    "actual_fifo_implementation_bug"
+  ],
+  "repetitions": 1,
+  "models": {
+    "coding": "qwen3-coder:30b",
+    "finance": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M"
+  },
+  "status": "COMPLETED",
+  "real_customer_validity": "UNVERIFIED",
+  "diagnosis_repair_enabled": true,
+  "protocol_version": "DIAG-PROTOCOL-v0.21.2",
+  "summary": {
+    "coding": {
+      "model": "qwen3-coder:30b",
+      "planned": 2,
+      "completed": 2,
+      "passed": 0,
+      "initial_passed": 0,
+      "raw_initial_passed": 0,
+      "raw_final_passed": 0,
+      "assisted_initial_passed": 0,
+      "assisted_final_passed": 0,
+      "grounding_applied": 0,
+      "revised_calls": 1,
+      "mean_score": 0.875,
+      "mean_raw_score": 0.875,
+      "mean_assisted_score": 0.875,
+      "failed_calls": 0,
+      "timeout_calls": 0,
+      "structural_consistency_passed": 1
+    },
+    "finance": {
+      "model": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+      "planned": 2,
+      "completed": 2,
+      "passed": 0,
+      "initial_passed": 0,
+      "raw_initial_passed": 0,
+      "raw_final_passed": 0,
+      "assisted_initial_passed": 0,
+      "assisted_final_passed": 0,
+      "grounding_applied": 0,
+      "revised_calls": 0,
+      "mean_score": 0.6875,
+      "mean_raw_score": 0.6875,
+      "mean_assisted_score": 0.6875,
+      "failed_calls": 0,
+      "timeout_calls": 0,
+      "structural_consistency_passed": 0
+    }
+  },
+  "trials": [
+    {
+      "case_id": "fifo_sla_conflict",
+      "repetition": 0,
+      "model_role": "coding",
+      "model_id": "qwen3-coder:30b",
+      "fixture_version": "CLAIMS-DIAG-FIXTURES-v0.10.1",
+      "prompt_input_sha256": "44a4e3a3ac93a72c65498482cb9101f04dce9209ea64911b24a507efec2a795f",
+      "status": "COMPLETED",
+      "real_customer_validity": "UNVERIFIED",
+      "observable_fact_sheet": {
+        "independent_test_reported_status": "PASS",
+        "independent_test_verbatim": "PASS: R0 matches specified FIFO, reviewer qualifications, capacities, case durations.",
+        "original_contract": "R0: assign claims strictly in arrival_order, earliest feasible qualified reviewer/day.",
+        "business_goal_verbatim": "Reduce missed deadlines without increasing total staffed hours.",
+        "synthetic_comparison_verbatim": "On identical synthetic cases and 87 reviewer-hours, FIFO misses 11 deadlines; independent deadline-priority reference misses 0. Reference is a heuristic, not proven optimal.",
+        "available_evidence": [
+          {
+            "id": "SIM-SLA-001",
+            "provenance": "synthetic",
+            "observation": "Later arriving urgent claim can be missed under FIFO while an earlier arrival with a later deadline is scheduled first."
+          }
+        ],
+        "customer_interview_count": 0,
+        "note": "These fields restate the public INPUT facts; infer diagnoses independently."
+      },
+      "initial_diagnosis": {
+        "classification": "implementation_bug",
+        "implementation_assessment": "correct",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-SLA-001"
+        ],
+        "root_cause": "The implementation correctly follows the specified FIFO contract (R0) but this contract does not achieve the stated business objective of reducing missed deadlines without increasing staffed hours.",
+        "suggested_requirement_change": "change_required=true",
+        "scheduling_precedence": "deadline_first_fifo_tiebreak",
+        "change_required": true,
+        "remaining_uncertainty": "insufficient_evidence"
+      },
+      "initial_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": false,
+          "implementation_correctness": true,
+          "synthetic_business_fit": true,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": false
+        },
+        "passed": false,
+        "score": 0.75,
+        "failure_codes": [
+          "CAUSE_CLASSIFICATION",
+          "REVISION_TARGETS_REQUIREMENT"
+        ],
+        "expected_classification": "requirement_mismatch",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "initial_raw_consistency": {
+        "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+        "status": "INCONSISTENT",
+        "passed": false,
+        "failure_codes": [
+          "BUG_REQUIRES_INCORRECT_IMPLEMENTATION",
+          "BUG_NOT_A_REQUIREMENT_REWRITE",
+          "BUG_SHOULD_NOT_CHANGE_PRECEDENCE"
+        ],
+        "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+        "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+      },
+      "initial_raw_semantics": {
+        "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+        "status": "HOLD_HUMAN_ADJUDICATION",
+        "passed": false,
+        "failure_codes": [
+          "BUG_REQUIRES_INCORRECT_IMPLEMENTATION",
+          "BUG_NOT_A_REQUIREMENT_REWRITE",
+          "BUG_SHOULD_NOT_CHANGE_PRECEDENCE",
+          "REVISION_CHANGES_REQUIREMENTS_WITHOUT_BASIS"
+        ],
+        "axes": {
+          "classification": "implementation_bug",
+          "implementation": "correct",
+          "evidence_ids": [
+            "SIM-SLA-001"
+          ],
+          "revision_policy": "deadline_first_fifo_tiebreak",
+          "revision_change_required": true
+        },
+        "oracle_access": false,
+        "auto_rewrite": false,
+        "synthetic_semantic_truth_proven": false,
+        "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+      },
+      "raw_semantics": {
+        "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+        "status": "HOLD_HUMAN_ADJUDICATION",
+        "passed": false,
+        "failure_codes": [
+          "REVISION_DOES_NOT_MENTION_DEADLINE"
+        ],
+        "axes": {
+          "classification": "requirement_mismatch",
+          "implementation": "correct",
+          "evidence_ids": [
+            "SIM-SLA-001"
+          ],
+          "revision_policy": "deadline_first_fifo_tiebreak",
+          "revision_change_required": true
+        },
+        "oracle_access": false,
+        "auto_rewrite": false,
+        "synthetic_semantic_truth_proven": false,
+        "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+      },
+      "initial_grounding": {
+        "version": "EVIDENCE-BINDER-v0.21.2",
+        "applied": false,
+        "reason": "MODEL_ALREADY_CITED",
+        "added_evidence_ids": [],
+        "raw_answer": {
+          "classification": "implementation_bug",
+          "implementation_assessment": "correct",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SIM-SLA-001"
+          ],
+          "root_cause": "The implementation correctly follows the specified FIFO contract (R0) but this contract does not achieve the stated business objective of reducing missed deadlines without increasing staffed hours.",
+          "suggested_requirement_change": "change_required=true",
+          "scheduling_precedence": "deadline_first_fifo_tiebreak",
+          "change_required": true,
+          "remaining_uncertainty": "insufficient_evidence"
+        },
+        "assisted_answer": {
+          "classification": "implementation_bug",
+          "implementation_assessment": "correct",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SIM-SLA-001"
+          ],
+          "root_cause": "The implementation correctly follows the specified FIFO contract (R0) but this contract does not achieve the stated business objective of reducing missed deadlines without increasing staffed hours.",
+          "suggested_requirement_change": "change_required=true",
+          "scheduling_precedence": "deadline_first_fifo_tiebreak",
+          "change_required": true,
+          "remaining_uncertainty": "insufficient_evidence"
+        },
+        "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+      },
+      "assisted_initial_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": false,
+          "implementation_correctness": true,
+          "synthetic_business_fit": true,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": false
+        },
+        "passed": false,
+        "score": 0.75,
+        "failure_codes": [
+          "CAUSE_CLASSIFICATION",
+          "REVISION_TARGETS_REQUIREMENT"
+        ],
+        "expected_classification": "requirement_mismatch",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "diagnosis": {
+        "classification": "requirement_mismatch",
+        "implementation_assessment": "correct",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-SLA-001"
+        ],
+        "root_cause": "The specified contract R0 prioritizes arrival_order over deadline, which leads to missed deadlines contrary to the business goal of reducing missed deadlines without increasing staffed hours. The synthetic evidence demonstrates that deadline-priority scheduling outperforms FIFO in this metric.",
+        "suggested_requirement_change": "change_required=true",
+        "scheduling_precedence": "deadline_first_fifo_tiebreak",
+        "change_required": true,
+        "remaining_uncertainty": "insufficient_evidence"
+      },
+      "rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": true,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": false
+        },
+        "passed": false,
+        "score": 0.875,
+        "failure_codes": [
+          "REVISION_TARGETS_REQUIREMENT"
+        ],
+        "expected_classification": "requirement_mismatch",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "latest_raw_diagnosis": {
+        "classification": "requirement_mismatch",
+        "implementation_assessment": "correct",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-SLA-001"
+        ],
+        "root_cause": "The specified contract R0 prioritizes arrival_order over deadline, which leads to missed deadlines contrary to the business goal of reducing missed deadlines without increasing staffed hours. The synthetic evidence demonstrates that deadline-priority scheduling outperforms FIFO in this metric.",
+        "suggested_requirement_change": "change_required=true",
+        "scheduling_precedence": "deadline_first_fifo_tiebreak",
+        "change_required": true,
+        "remaining_uncertainty": "insufficient_evidence"
+      },
+      "latest_raw_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": true,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": false
+        },
+        "passed": false,
+        "score": 0.875,
+        "failure_codes": [
+          "REVISION_TARGETS_REQUIREMENT"
+        ],
+        "expected_classification": "requirement_mismatch",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "repair_attempted": true,
+      "targeted_repair_plan": {
+        "version": "INPUT_ONLY_TARGETED_REPAIR-v0.29.0",
+        "target_fields": [
+          "change_required",
+          "classification",
+          "implementation_assessment",
+          "root_cause",
+          "scheduling_precedence",
+          "suggested_requirement_change",
+          "synthetic_requirement_fit"
+        ],
+        "failure_codes": [
+          "BUG_REQUIRES_INCORRECT_IMPLEMENTATION",
+          "BUG_NOT_A_REQUIREMENT_REWRITE",
+          "BUG_SHOULD_NOT_CHANGE_PRECEDENCE",
+          "REVISION_CHANGES_REQUIREMENTS_WITHOUT_BASIS"
+        ],
+        "input_only_feedback": [],
+        "eligible_for_repair": true,
+        "selection_uses_oracle": false,
+        "blind_repair_allowed": false,
+        "method": "Model proposes full schema, harness adopts target fields ONLY; no automatic gold-label correction.",
+        "unmapped_codes": []
+      },
+      "public_critique": {
+        "input_only_feedback": [],
+        "oracle_or_expected_labels_exposed": false
+      },
+      "targeted_repair_audit": {
+        "answer": {
+          "classification": "requirement_mismatch",
+          "implementation_assessment": "correct",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SIM-SLA-001"
+          ],
+          "root_cause": "The specified contract R0 prioritizes arrival_order over deadline, which leads to missed deadlines contrary to the business goal of reducing missed deadlines without increasing staffed hours. The synthetic evidence demonstrates that deadline-priority scheduling outperforms FIFO in this metric.",
+          "suggested_requirement_change": "change_required=true",
+          "scheduling_precedence": "deadline_first_fifo_tiebreak",
+          "change_required": true,
+          "remaining_uncertainty": "insufficient_evidence"
+        },
+        "target_fields": [
+          "change_required",
+          "classification",
+          "implementation_assessment",
+          "root_cause",
+          "scheduling_precedence",
+          "suggested_requirement_change",
+          "synthetic_requirement_fit"
+        ],
+        "discarded_out_of_scope_model_edits": [
+          "supporting_evidence_ids"
+        ],
+        "all_untargeted_fields_preserved": true,
+        "oracle_used": false,
+        "blind_case_used": false
+      },
+      "proposed_unrestricted_repair": {
+        "classification": "requirement_mismatch",
+        "implementation_assessment": "correct",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [],
+        "root_cause": "The specified contract R0 prioritizes arrival_order over deadline, which leads to missed deadlines contrary to the business goal of reducing missed deadlines without increasing staffed hours. The synthetic evidence demonstrates that deadline-priority scheduling outperforms FIFO in this metric.",
+        "suggested_requirement_change": "change_required=true",
+        "scheduling_precedence": "deadline_first_fifo_tiebreak",
+        "change_required": true,
+        "remaining_uncertainty": "insufficient_evidence"
+      },
+      "revised_diagnosis": {
+        "classification": "requirement_mismatch",
+        "implementation_assessment": "correct",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-SLA-001"
+        ],
+        "root_cause": "The specified contract R0 prioritizes arrival_order over deadline, which leads to missed deadlines contrary to the business goal of reducing missed deadlines without increasing staffed hours. The synthetic evidence demonstrates that deadline-priority scheduling outperforms FIFO in this metric.",
+        "suggested_requirement_change": "change_required=true",
+        "scheduling_precedence": "deadline_first_fifo_tiebreak",
+        "change_required": true,
+        "remaining_uncertainty": "insufficient_evidence"
+      },
+      "revised_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": true,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": false
+        },
+        "passed": false,
+        "score": 0.875,
+        "failure_codes": [
+          "REVISION_TARGETS_REQUIREMENT"
+        ],
+        "expected_classification": "requirement_mismatch",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "revised_grounding": {
+        "version": "EVIDENCE-BINDER-v0.21.2",
+        "applied": false,
+        "reason": "MODEL_ALREADY_CITED",
+        "added_evidence_ids": [],
+        "raw_answer": {
+          "classification": "requirement_mismatch",
+          "implementation_assessment": "correct",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SIM-SLA-001"
+          ],
+          "root_cause": "The specified contract R0 prioritizes arrival_order over deadline, which leads to missed deadlines contrary to the business goal of reducing missed deadlines without increasing staffed hours. The synthetic evidence demonstrates that deadline-priority scheduling outperforms FIFO in this metric.",
+          "suggested_requirement_change": "change_required=true",
+          "scheduling_precedence": "deadline_first_fifo_tiebreak",
+          "change_required": true,
+          "remaining_uncertainty": "insufficient_evidence"
+        },
+        "assisted_answer": {
+          "classification": "requirement_mismatch",
+          "implementation_assessment": "correct",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SIM-SLA-001"
+          ],
+          "root_cause": "The specified contract R0 prioritizes arrival_order over deadline, which leads to missed deadlines contrary to the business goal of reducing missed deadlines without increasing staffed hours. The synthetic evidence demonstrates that deadline-priority scheduling outperforms FIFO in this metric.",
+          "suggested_requirement_change": "change_required=true",
+          "scheduling_precedence": "deadline_first_fifo_tiebreak",
+          "change_required": true,
+          "remaining_uncertainty": "insufficient_evidence"
+        },
+        "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+      },
+      "revised_assisted_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": true,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": false
+        },
+        "passed": false,
+        "score": 0.875,
+        "failure_codes": [
+          "REVISION_TARGETS_REQUIREMENT"
+        ],
+        "expected_classification": "requirement_mismatch",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "raw_consistency": {
+        "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+        "status": "CONSISTENT",
+        "passed": true,
+        "failure_codes": [],
+        "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+        "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+      },
+      "revised_raw_consistency": {
+        "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+        "status": "CONSISTENT",
+        "passed": true,
+        "failure_codes": [],
+        "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+        "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+      },
+      "revised_raw_semantics": {
+        "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+        "status": "HOLD_HUMAN_ADJUDICATION",
+        "passed": false,
+        "failure_codes": [
+          "REVISION_DOES_NOT_MENTION_DEADLINE"
+        ],
+        "axes": {
+          "classification": "requirement_mismatch",
+          "implementation": "correct",
+          "evidence_ids": [
+            "SIM-SLA-001"
+          ],
+          "revision_policy": "deadline_first_fifo_tiebreak",
+          "revision_change_required": true
+        },
+        "oracle_access": false,
+        "auto_rewrite": false,
+        "synthetic_semantic_truth_proven": false,
+        "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+      },
+      "final_model_raw_passed": false,
+      "final_assisted_passed": false,
+      "final_passed": false,
+      "elapsed_seconds": 7.07,
+      "created_at": "2026-11-22T03:05:53+00:00"
+    },
+    {
+      "case_id": "fifo_sla_conflict",
+      "repetition": 0,
+      "model_role": "finance",
+      "model_id": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+      "fixture_version": "CLAIMS-DIAG-FIXTURES-v0.10.1",
+      "prompt_input_sha256": "44a4e3a3ac93a72c65498482cb9101f04dce9209ea64911b24a507efec2a795f",
+      "status": "COMPLETED",
+      "real_customer_validity": "UNVERIFIED",
+      "error_type": null,
+      "error": null,
+      "elapsed_seconds": 480.03,
+      "created_at": "2026-11-22T03:13:53+00:00",
+      "raw_consistency": {
+        "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+        "status": "INCONSISTENT",
+        "passed": false,
+        "failure_codes": [
+          "INSUFFICIENT_EVIDENCE_REQUIRES_UNVERIFIED_FIT",
+          "IMPLEMENTATION_ASSESSMENT_CONTRADICTS_PASS_TEST"
+        ],
+        "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+        "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+      },
+      "raw_semantics": {
+        "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+        "status": "HOLD_HUMAN_ADJUDICATION",
+        "passed": false,
+        "failure_codes": [
+          "INSUFFICIENT_EVIDENCE_REQUIRES_UNVERIFIED_FIT",
+          "IMPLEMENTATION_ASSESSMENT_CONTRADICTS_PASS_TEST"
+        ],
+        "axes": {
+          "classification": "insufficient_evidence",
+          "implementation": "incorrect",
+          "evidence_ids": [
+            "SIM-SLA-001"
+          ],
+          "revision_policy": "none",
+          "revision_change_required": false
+        },
+        "oracle_access": false,
+        "auto_rewrite": false,
+        "synthetic_semantic_truth_proven": false,
+        "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+      },
+      "replayed_after_incomplete": true,
+      "replay_origin_attempt": 1,
+      "initial_diagnosis": {
+        "classification": "insufficient_evidence",
+        "implementation_assessment": "incorrect",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-SLA-001"
+        ],
+        "root_cause": "implementation_meets_contract_but_not_business_goal",
+        "suggested_requirement_change": "false",
+        "scheduling_precedence": "none",
+        "change_required": false,
+        "remaining_uncertainty": "synthetic_evidence_insufficient"
+      },
+      "initial_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": false,
+          "implementation_correctness": false,
+          "synthetic_business_fit": true,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": false
+        },
+        "passed": false,
+        "score": 0.625,
+        "failure_codes": [
+          "CAUSE_CLASSIFICATION",
+          "IMPLEMENTATION_CORRECTNESS",
+          "REVISION_TARGETS_REQUIREMENT"
+        ],
+        "expected_classification": "requirement_mismatch",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "initial_raw_consistency": {
+        "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+        "status": "INCONSISTENT",
+        "passed": false,
+        "failure_codes": [
+          "INSUFFICIENT_EVIDENCE_REQUIRES_UNVERIFIED_FIT",
+          "IMPLEMENTATION_ASSESSMENT_CONTRADICTS_PASS_TEST"
+        ],
+        "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+        "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+      },
+      "initial_grounding": {
+        "version": "EVIDENCE-BINDER-v0.21.2",
+        "applied": false,
+        "reason": "MODEL_ALREADY_CITED",
+        "added_evidence_ids": [],
+        "raw_answer": {
+          "classification": "insufficient_evidence",
+          "implementation_assessment": "incorrect",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SIM-SLA-001"
+          ],
+          "root_cause": "implementation_meets_contract_but_not_business_goal",
+          "suggested_requirement_change": "false",
+          "scheduling_precedence": "none",
+          "change_required": false,
+          "remaining_uncertainty": "synthetic_evidence_insufficient"
+        },
+        "assisted_answer": {
+          "classification": "insufficient_evidence",
+          "implementation_assessment": "incorrect",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SIM-SLA-001"
+          ],
+          "root_cause": "implementation_meets_contract_but_not_business_goal",
+          "suggested_requirement_change": "false",
+          "scheduling_precedence": "none",
+          "change_required": false,
+          "remaining_uncertainty": "synthetic_evidence_insufficient"
+        },
+        "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+      },
+      "assisted_initial_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": false,
+          "implementation_correctness": false,
+          "synthetic_business_fit": true,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": false
+        },
+        "passed": false,
+        "score": 0.625,
+        "failure_codes": [
+          "CAUSE_CLASSIFICATION",
+          "IMPLEMENTATION_CORRECTNESS",
+          "REVISION_TARGETS_REQUIREMENT"
+        ],
+        "expected_classification": "requirement_mismatch",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "latest_raw_diagnosis": {
+        "classification": "insufficient_evidence",
+        "implementation_assessment": "incorrect",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-SLA-001"
+        ],
+        "root_cause": "implementation_meets_contract_but_not_business_goal",
+        "suggested_requirement_change": "false",
+        "scheduling_precedence": "none",
+        "change_required": false,
+        "remaining_uncertainty": "synthetic_evidence_insufficient"
+      },
+      "latest_raw_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": false,
+          "implementation_correctness": false,
+          "synthetic_business_fit": true,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": false
+        },
+        "passed": false,
+        "score": 0.625,
+        "failure_codes": [
+          "CAUSE_CLASSIFICATION",
+          "IMPLEMENTATION_CORRECTNESS",
+          "REVISION_TARGETS_REQUIREMENT"
+        ],
+        "expected_classification": "requirement_mismatch",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "diagnosis": {
+        "classification": "insufficient_evidence",
+        "implementation_assessment": "incorrect",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-SLA-001"
+        ],
+        "root_cause": "implementation_meets_contract_but_not_business_goal",
+        "suggested_requirement_change": "false",
+        "scheduling_precedence": "none",
+        "change_required": false,
+        "remaining_uncertainty": "synthetic_evidence_insufficient"
+      },
+      "rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": false,
+          "implementation_correctness": false,
+          "synthetic_business_fit": true,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": false
+        },
+        "passed": false,
+        "score": 0.625,
+        "failure_codes": [
+          "CAUSE_CLASSIFICATION",
+          "IMPLEMENTATION_CORRECTNESS",
+          "REVISION_TARGETS_REQUIREMENT"
+        ],
+        "expected_classification": "requirement_mismatch",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "final_model_raw_passed": false,
+      "final_assisted_passed": false,
+      "final_passed": false,
+      "repair_attempted": false,
+      "repair_skipped_on_replay": "No hidden rubric feedback on retry"
+    },
+    {
+      "case_id": "actual_fifo_implementation_bug",
+      "repetition": 0,
+      "model_role": "coding",
+      "model_id": "qwen3-coder:30b",
+      "fixture_version": "CLAIMS-DIAG-FIXTURES-v0.10.1",
+      "prompt_input_sha256": "cdbf59cfba49a1e2c39565dcc05d249c3995c5a3c481f1fbc3ea8b428c153a4d",
+      "status": "COMPLETED",
+      "real_customer_validity": "UNVERIFIED",
+      "observable_fact_sheet": {
+        "independent_test_reported_status": "FAIL",
+        "independent_test_verbatim": "FAIL: independent deterministic order check shows R0 implementation violates FIFO.",
+        "original_contract": "R0: strictly process arrival_order; earliest eligible qualified reviewer/day.",
+        "business_goal_verbatim": "Follow the stated FIFO queue for this test. No deadline-reduction requirement was supplied.",
+        "synthetic_comparison_verbatim": "Reviewer R-A can process both cases on day 0. C001 arrival_order=1, C002 arrival_order=2, but code schedules C002 before C001 solely because C002 has a larger amount. Both are otherwise equally feasible.",
+        "available_evidence": [
+          {
+            "id": "SIM-BUG-001",
+            "provenance": "synthetic_implementation_trace",
+            "observation": "Generated schedule inverted two feasible FIFO cases."
+          }
+        ],
+        "customer_interview_count": 0,
+        "note": "These fields restate the public INPUT facts; infer diagnoses independently."
+      },
+      "initial_diagnosis": {
+        "classification": "implementation_bug",
+        "implementation_assessment": "incorrect",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-BUG-001"
+        ],
+        "root_cause": "The implementation violates the specified FIFO requirement by prioritizing case amount over arrival order, despite R0 explicitly stating 'strictly process arrival_order'.",
+        "suggested_requirement_change": "change_required=false",
+        "scheduling_precedence": "none",
+        "change_required": false,
+        "remaining_uncertainty": "insufficient_evidence"
+      },
+      "initial_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": false,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": true
+        },
+        "passed": false,
+        "score": 0.875,
+        "failure_codes": [
+          "SYNTHETIC_BUSINESS_FIT"
+        ],
+        "expected_classification": "implementation_bug",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "initial_raw_consistency": {
+        "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+        "status": "CONSISTENT",
+        "passed": true,
+        "failure_codes": [],
+        "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+        "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+      },
+      "initial_raw_semantics": {
+        "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+        "status": "CONSISTENT_WITH_VISIBLE_CONTRACT",
+        "passed": true,
+        "failure_codes": [],
+        "axes": {
+          "classification": "implementation_bug",
+          "implementation": "incorrect",
+          "evidence_ids": [
+            "SIM-BUG-001"
+          ],
+          "revision_policy": "none",
+          "revision_change_required": false
+        },
+        "oracle_access": false,
+        "auto_rewrite": false,
+        "synthetic_semantic_truth_proven": false,
+        "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+      },
+      "raw_semantics": {
+        "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+        "status": "CONSISTENT_WITH_VISIBLE_CONTRACT",
+        "passed": true,
+        "failure_codes": [],
+        "axes": {
+          "classification": "implementation_bug",
+          "implementation": "incorrect",
+          "evidence_ids": [
+            "SIM-BUG-001"
+          ],
+          "revision_policy": "none",
+          "revision_change_required": false
+        },
+        "oracle_access": false,
+        "auto_rewrite": false,
+        "synthetic_semantic_truth_proven": false,
+        "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+      },
+      "initial_grounding": {
+        "version": "EVIDENCE-BINDER-v0.21.2",
+        "applied": false,
+        "reason": "MODEL_ALREADY_CITED",
+        "added_evidence_ids": [],
+        "raw_answer": {
+          "classification": "implementation_bug",
+          "implementation_assessment": "incorrect",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SIM-BUG-001"
+          ],
+          "root_cause": "The implementation violates the specified FIFO requirement by prioritizing case amount over arrival order, despite R0 explicitly stating 'strictly process arrival_order'.",
+          "suggested_requirement_change": "change_required=false",
+          "scheduling_precedence": "none",
+          "change_required": false,
+          "remaining_uncertainty": "insufficient_evidence"
+        },
+        "assisted_answer": {
+          "classification": "implementation_bug",
+          "implementation_assessment": "incorrect",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SIM-BUG-001"
+          ],
+          "root_cause": "The implementation violates the specified FIFO requirement by prioritizing case amount over arrival order, despite R0 explicitly stating 'strictly process arrival_order'.",
+          "suggested_requirement_change": "change_required=false",
+          "scheduling_precedence": "none",
+          "change_required": false,
+          "remaining_uncertainty": "insufficient_evidence"
+        },
+        "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+      },
+      "assisted_initial_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": false,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": true
+        },
+        "passed": false,
+        "score": 0.875,
+        "failure_codes": [
+          "SYNTHETIC_BUSINESS_FIT"
+        ],
+        "expected_classification": "implementation_bug",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "diagnosis": {
+        "classification": "implementation_bug",
+        "implementation_assessment": "incorrect",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-BUG-001"
+        ],
+        "root_cause": "The implementation violates the specified FIFO requirement by prioritizing case amount over arrival order, despite R0 explicitly stating 'strictly process arrival_order'.",
+        "suggested_requirement_change": "change_required=false",
+        "scheduling_precedence": "none",
+        "change_required": false,
+        "remaining_uncertainty": "insufficient_evidence"
+      },
+      "rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": false,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": true
+        },
+        "passed": false,
+        "score": 0.875,
+        "failure_codes": [
+          "SYNTHETIC_BUSINESS_FIT"
+        ],
+        "expected_classification": "implementation_bug",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "latest_raw_diagnosis": {
+        "classification": "implementation_bug",
+        "implementation_assessment": "incorrect",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-BUG-001"
+        ],
+        "root_cause": "The implementation violates the specified FIFO requirement by prioritizing case amount over arrival order, despite R0 explicitly stating 'strictly process arrival_order'.",
+        "suggested_requirement_change": "change_required=false",
+        "scheduling_precedence": "none",
+        "change_required": false,
+        "remaining_uncertainty": "insufficient_evidence"
+      },
+      "latest_raw_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": false,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": true
+        },
+        "passed": false,
+        "score": 0.875,
+        "failure_codes": [
+          "SYNTHETIC_BUSINESS_FIT"
+        ],
+        "expected_classification": "implementation_bug",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "repair_attempted": false,
+      "targeted_repair_plan": {
+        "version": "INPUT_ONLY_TARGETED_REPAIR-v0.29.0",
+        "target_fields": [],
+        "failure_codes": [],
+        "input_only_feedback": [],
+        "eligible_for_repair": false,
+        "selection_uses_oracle": false,
+        "blind_repair_allowed": false,
+        "method": "Model proposes full schema, harness adopts target fields ONLY; no automatic gold-label correction.",
+        "unmapped_codes": []
+      },
+      "repair_skipped_reason": "NO_INPUT_OBSERVABLE_CONTRADICTION_NO_ORACLE_BASED_TRIGGER",
+      "final_model_raw_passed": false,
+      "final_assisted_passed": false,
+      "final_passed": false,
+      "elapsed_seconds": 7.83,
+      "created_at": "2026-11-22T03:14:01+00:00"
+    },
+    {
+      "case_id": "actual_fifo_implementation_bug",
+      "repetition": 0,
+      "model_role": "finance",
+      "model_id": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+      "fixture_version": "CLAIMS-DIAG-FIXTURES-v0.10.1",
+      "prompt_input_sha256": "cdbf59cfba49a1e2c39565dcc05d249c3995c5a3c481f1fbc3ea8b428c153a4d",
+      "status": "COMPLETED",
+      "real_customer_validity": "UNVERIFIED",
+      "error_type": null,
+      "error": null,
+      "elapsed_seconds": 480.04,
+      "created_at": "2026-11-22T03:22:01+00:00",
+      "raw_consistency": {
+        "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+        "status": "INCONSISTENT",
+        "passed": false,
+        "failure_codes": [
+          "CITES_UNKNOWN_EVIDENCE"
+        ],
+        "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+        "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+      },
+      "raw_semantics": {
+        "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+        "status": "HOLD_HUMAN_ADJUDICATION",
+        "passed": false,
+        "failure_codes": [
+          "CITES_UNKNOWN_EVIDENCE",
+          "CITATION_NOT_IN_VISIBLE_EVIDENCE"
+        ],
+        "axes": {
+          "classification": "implementation_bug",
+          "implementation": "incorrect",
+          "evidence_ids": [
+            "SIM-BUG-0001"
+          ],
+          "revision_policy": "none",
+          "revision_change_required": false
+        },
+        "oracle_access": false,
+        "auto_rewrite": false,
+        "synthetic_semantic_truth_proven": false,
+        "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+      },
+      "replayed_after_incomplete": true,
+      "replay_origin_attempt": 1,
+      "initial_diagnosis": {
+        "classification": "implementation_bug",
+        "implementation_assessment": "incorrect",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-BUG-0001"
+        ],
+        "root_cause": "implementation_defect",
+        "suggested_requirement_change": "change_required=false",
+        "scheduling_precedence": "none",
+        "change_required": false,
+        "remaining_uncertainty": "insufficient_evidence"
+      },
+      "initial_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": false,
+          "real_world_humility": true,
+          "evidence_traceability": false,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": true
+        },
+        "passed": false,
+        "score": 0.75,
+        "failure_codes": [
+          "SYNTHETIC_BUSINESS_FIT",
+          "EVIDENCE_TRACEABILITY"
+        ],
+        "expected_classification": "implementation_bug",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "initial_raw_consistency": {
+        "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+        "status": "INCONSISTENT",
+        "passed": false,
+        "failure_codes": [
+          "CITES_UNKNOWN_EVIDENCE"
+        ],
+        "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+        "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+      },
+      "initial_grounding": {
+        "version": "EVIDENCE-BINDER-v0.21.2",
+        "applied": false,
+        "reason": "MODEL_ALREADY_CITED",
+        "added_evidence_ids": [],
+        "raw_answer": {
+          "classification": "implementation_bug",
+          "implementation_assessment": "incorrect",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SIM-BUG-0001"
+          ],
+          "root_cause": "implementation_defect",
+          "suggested_requirement_change": "change_required=false",
+          "scheduling_precedence": "none",
+          "change_required": false,
+          "remaining_uncertainty": "insufficient_evidence"
+        },
+        "assisted_answer": {
+          "classification": "implementation_bug",
+          "implementation_assessment": "incorrect",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SIM-BUG-0001"
+          ],
+          "root_cause": "implementation_defect",
+          "suggested_requirement_change": "change_required=false",
+          "scheduling_precedence": "none",
+          "change_required": false,
+          "remaining_uncertainty": "insufficient_evidence"
+        },
+        "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+      },
+      "assisted_initial_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": false,
+          "real_world_humility": true,
+          "evidence_traceability": false,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": true
+        },
+        "passed": false,
+        "score": 0.75,
+        "failure_codes": [
+          "SYNTHETIC_BUSINESS_FIT",
+          "EVIDENCE_TRACEABILITY"
+        ],
+        "expected_classification": "implementation_bug",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "latest_raw_diagnosis": {
+        "classification": "implementation_bug",
+        "implementation_assessment": "incorrect",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-BUG-0001"
+        ],
+        "root_cause": "implementation_defect",
+        "suggested_requirement_change": "change_required=false",
+        "scheduling_precedence": "none",
+        "change_required": false,
+        "remaining_uncertainty": "insufficient_evidence"
+      },
+      "latest_raw_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": false,
+          "real_world_humility": true,
+          "evidence_traceability": false,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": true
+        },
+        "passed": false,
+        "score": 0.75,
+        "failure_codes": [
+          "SYNTHETIC_BUSINESS_FIT",
+          "EVIDENCE_TRACEABILITY"
+        ],
+        "expected_classification": "implementation_bug",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "diagnosis": {
+        "classification": "implementation_bug",
+        "implementation_assessment": "incorrect",
+        "synthetic_requirement_fit": "mismatch",
+        "real_customer_validity": "unverified",
+        "supporting_evidence_ids": [
+          "SIM-BUG-0001"
+        ],
+        "root_cause": "implementation_defect",
+        "suggested_requirement_change": "change_required=false",
+        "scheduling_precedence": "none",
+        "change_required": false,
+        "remaining_uncertainty": "insufficient_evidence"
+      },
+      "rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": false,
+          "real_world_humility": true,
+          "evidence_traceability": false,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": true
+        },
+        "passed": false,
+        "score": 0.75,
+        "failure_codes": [
+          "SYNTHETIC_BUSINESS_FIT",
+          "EVIDENCE_TRACEABILITY"
+        ],
+        "expected_classification": "implementation_bug",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "final_model_raw_passed": false,
+      "final_assisted_passed": false,
+      "final_passed": false,
+      "repair_attempted": false,
+      "repair_skipped_on_replay": "No hidden rubric feedback on retry"
+    }
+  ],
+  "blind_generalization": {
+    "enabled": true,
+    "trials": [
+      {
+        "case_id": "deadline_business_mismatch",
+        "model_role": "coding",
+        "model_id": "qwen3-coder:30b",
+        "input_sha256": "bec7bcfd036dde1c221673688551743357bf7ff169d008c5293d8451dff33cdd",
+        "revision_allowed": false,
+        "status": "COMPLETED",
+        "observable_fact_sheet": {
+          "independent_test_reported_status": "PASS",
+          "independent_test_verbatim": "PASS: deterministic reviewer/day checks confirm the code conforms to every listed FIFO constraint.",
+          "original_contract": "R0: process intake cases by arrival_order, qualified earliest available reviewer.",
+          "business_goal_verbatim": "Improve deadline adherence at fixed planned reviewer-hours.",
+          "synthetic_comparison_verbatim": "FIFO missed 9 deadline targets; alternative due-date ordering missed 0 in matched synthetic data with equal hours.",
+          "available_evidence": [
+            {
+              "id": "SYN-BLIND-SLA-1299",
+              "provenance": "synthetic",
+              "observation": "A later-arriving urgent task is delayed behind an earlier, nonurgent task under the pinned FIFO rule."
+            }
+          ],
+          "customer_interview_count": 0,
+          "note": "These fields restate the public INPUT facts; infer diagnoses independently."
+        },
+        "diagnosis": {
+          "classification": "implementation_bug",
+          "implementation_assessment": "correct",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SYN-BLIND-SLA-1299"
+          ],
+          "root_cause": "The implementation correctly follows the FIFO constraint as defined in R0, but the business objective prioritizes deadline adherence over strict FIFO ordering. The synthetic comparison shows that due-date ordering outperforms FIFO in meeting deadlines while using the same reviewer hours.",
+          "suggested_requirement_change": "change_required=true",
+          "scheduling_precedence": "deadline_first_fifo_tiebreak",
+          "change_required": true,
+          "remaining_uncertainty": "insufficient_evidence"
+        },
+        "raw_consistency": {
+          "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+          "status": "INCONSISTENT",
+          "passed": false,
+          "failure_codes": [
+            "BUG_REQUIRES_INCORRECT_IMPLEMENTATION",
+            "BUG_NOT_A_REQUIREMENT_REWRITE",
+            "BUG_SHOULD_NOT_CHANGE_PRECEDENCE"
+          ],
+          "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+          "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+        },
+        "raw_semantics": {
+          "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+          "status": "HOLD_HUMAN_ADJUDICATION",
+          "passed": false,
+          "failure_codes": [
+            "BUG_REQUIRES_INCORRECT_IMPLEMENTATION",
+            "BUG_NOT_A_REQUIREMENT_REWRITE",
+            "BUG_SHOULD_NOT_CHANGE_PRECEDENCE",
+            "REVISION_CHANGES_REQUIREMENTS_WITHOUT_BASIS"
+          ],
+          "axes": {
+            "classification": "implementation_bug",
+            "implementation": "correct",
+            "evidence_ids": [
+              "SYN-BLIND-SLA-1299"
+            ],
+            "revision_policy": "deadline_first_fifo_tiebreak",
+            "revision_change_required": true
+          },
+          "oracle_access": false,
+          "auto_rewrite": false,
+          "synthetic_semantic_truth_proven": false,
+          "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+        },
+        "rubric": {
+          "rubric_version": "DIAG-RUBRIC-v0.10.1",
+          "checks": {
+            "cause_classification": false,
+            "implementation_correctness": true,
+            "synthetic_business_fit": true,
+            "real_world_humility": true,
+            "evidence_traceability": true,
+            "no_implementation_contradiction": true,
+            "no_conflicting_revision_policy": true,
+            "revision_targets_requirement": false
+          },
+          "passed": false,
+          "score": 0.75,
+          "failure_codes": [
+            "CAUSE_CLASSIFICATION",
+            "REVISION_TARGETS_REQUIREMENT"
+          ],
+          "expected_classification": "requirement_mismatch",
+          "real_customer_business_validity": "UNVERIFIED"
+        },
+        "grounding": {
+          "version": "EVIDENCE-BINDER-v0.21.2",
+          "applied": false,
+          "reason": "MODEL_ALREADY_CITED",
+          "added_evidence_ids": [],
+          "raw_answer": {
+            "classification": "implementation_bug",
+            "implementation_assessment": "correct",
+            "synthetic_requirement_fit": "mismatch",
+            "real_customer_validity": "unverified",
+            "supporting_evidence_ids": [
+              "SYN-BLIND-SLA-1299"
+            ],
+            "root_cause": "The implementation correctly follows the FIFO constraint as defined in R0, but the business objective prioritizes deadline adherence over strict FIFO ordering. The synthetic comparison shows that due-date ordering outperforms FIFO in meeting deadlines while using the same reviewer hours.",
+            "suggested_requirement_change": "change_required=true",
+            "scheduling_precedence": "deadline_first_fifo_tiebreak",
+            "change_required": true,
+            "remaining_uncertainty": "insufficient_evidence"
+          },
+          "assisted_answer": {
+            "classification": "implementation_bug",
+            "implementation_assessment": "correct",
+            "synthetic_requirement_fit": "mismatch",
+            "real_customer_validity": "unverified",
+            "supporting_evidence_ids": [
+              "SYN-BLIND-SLA-1299"
+            ],
+            "root_cause": "The implementation correctly follows the FIFO constraint as defined in R0, but the business objective prioritizes deadline adherence over strict FIFO ordering. The synthetic comparison shows that due-date ordering outperforms FIFO in meeting deadlines while using the same reviewer hours.",
+            "suggested_requirement_change": "change_required=true",
+            "scheduling_precedence": "deadline_first_fifo_tiebreak",
+            "change_required": true,
+            "remaining_uncertainty": "insufficient_evidence"
+          },
+          "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+        },
+        "assisted_diagnosis": {
+          "classification": "implementation_bug",
+          "implementation_assessment": "correct",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SYN-BLIND-SLA-1299"
+          ],
+          "root_cause": "The implementation correctly follows the FIFO constraint as defined in R0, but the business objective prioritizes deadline adherence over strict FIFO ordering. The synthetic comparison shows that due-date ordering outperforms FIFO in meeting deadlines while using the same reviewer hours.",
+          "suggested_requirement_change": "change_required=true",
+          "scheduling_precedence": "deadline_first_fifo_tiebreak",
+          "change_required": true,
+          "remaining_uncertainty": "insufficient_evidence"
+        },
+        "assisted_rubric": {
+          "rubric_version": "DIAG-RUBRIC-v0.10.1",
+          "checks": {
+            "cause_classification": false,
+            "implementation_correctness": true,
+            "synthetic_business_fit": true,
+            "real_world_humility": true,
+            "evidence_traceability": true,
+            "no_implementation_contradiction": true,
+            "no_conflicting_revision_policy": true,
+            "revision_targets_requirement": false
+          },
+          "passed": false,
+          "score": 0.75,
+          "failure_codes": [
+            "CAUSE_CLASSIFICATION",
+            "REVISION_TARGETS_REQUIREMENT"
+          ],
+          "expected_classification": "requirement_mismatch",
+          "real_customer_business_validity": "UNVERIFIED"
+        }
+      },
+      {
+        "case_id": "deadline_business_mismatch",
+        "model_role": "finance",
+        "model_id": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+        "input_sha256": "bec7bcfd036dde1c221673688551743357bf7ff169d008c5293d8451dff33cdd",
+        "revision_allowed": false,
+        "status": "COMPLETED",
+        "observable_fact_sheet": {
+          "independent_test_reported_status": "PASS",
+          "independent_test_verbatim": "PASS: deterministic reviewer/day checks confirm the code conforms to every listed FIFO constraint.",
+          "original_contract": "R0: process intake cases by arrival_order, qualified earliest available reviewer.",
+          "business_goal_verbatim": "Improve deadline adherence at fixed planned reviewer-hours.",
+          "synthetic_comparison_verbatim": "FIFO missed 9 deadline targets; alternative due-date ordering missed 0 in matched synthetic data with equal hours.",
+          "available_evidence": [
+            {
+              "id": "SYN-BLIND-SLA-1299",
+              "provenance": "synthetic",
+              "observation": "A later-arriving urgent task is delayed behind an earlier, nonurgent task under the pinned FIFO rule."
+            }
+          ],
+          "customer_interview_count": 0,
+          "note": "These fields restate the public INPUT facts; infer diagnoses independently."
+        },
+        "diagnosis": {
+          "classification": "requirement_mismatch",
+          "implementation_assessment": "incorrect",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SYN-BLIND-SLA-1299"
+          ],
+          "root_cause": "requirement_mismatch",
+          "suggested_requirement_change": "Process intake cases by due_date, qualified earliest available reviewer. FIFO only used as tie-breaker when due_date matches.",
+          "scheduling_precedence": "deadline_first_fifo_tiebreak",
+          "change_required": true,
+          "remaining_uncertainty": "business_goal_not_quantified"
+        },
+        "raw_consistency": {
+          "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+          "status": "INCONSISTENT",
+          "passed": false,
+          "failure_codes": [
+            "REQUIREMENT_MISMATCH_REQUIRES_CORRECT_IMPLEMENTATION",
+            "IMPLEMENTATION_ASSESSMENT_CONTRADICTS_PASS_TEST"
+          ],
+          "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+          "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+        },
+        "raw_semantics": {
+          "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+          "status": "HOLD_HUMAN_ADJUDICATION",
+          "passed": false,
+          "failure_codes": [
+            "REQUIREMENT_MISMATCH_REQUIRES_CORRECT_IMPLEMENTATION",
+            "IMPLEMENTATION_ASSESSMENT_CONTRADICTS_PASS_TEST"
+          ],
+          "axes": {
+            "classification": "requirement_mismatch",
+            "implementation": "incorrect",
+            "evidence_ids": [
+              "SYN-BLIND-SLA-1299"
+            ],
+            "revision_policy": "deadline_first_fifo_tiebreak",
+            "revision_change_required": true
+          },
+          "oracle_access": false,
+          "auto_rewrite": false,
+          "synthetic_semantic_truth_proven": false,
+          "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+        },
+        "rubric": {
+          "rubric_version": "DIAG-RUBRIC-v0.10.1",
+          "checks": {
+            "cause_classification": true,
+            "implementation_correctness": false,
+            "synthetic_business_fit": true,
+            "real_world_humility": true,
+            "evidence_traceability": true,
+            "no_implementation_contradiction": true,
+            "no_conflicting_revision_policy": true,
+            "revision_targets_requirement": true
+          },
+          "passed": false,
+          "score": 0.875,
+          "failure_codes": [
+            "IMPLEMENTATION_CORRECTNESS"
+          ],
+          "expected_classification": "requirement_mismatch",
+          "real_customer_business_validity": "UNVERIFIED"
+        },
+        "grounding": {
+          "version": "EVIDENCE-BINDER-v0.21.2",
+          "applied": false,
+          "reason": "MODEL_ALREADY_CITED",
+          "added_evidence_ids": [],
+          "raw_answer": {
+            "classification": "requirement_mismatch",
+            "implementation_assessment": "incorrect",
+            "synthetic_requirement_fit": "mismatch",
+            "real_customer_validity": "unverified",
+            "supporting_evidence_ids": [
+              "SYN-BLIND-SLA-1299"
+            ],
+            "root_cause": "requirement_mismatch",
+            "suggested_requirement_change": "Process intake cases by due_date, qualified earliest available reviewer. FIFO only used as tie-breaker when due_date matches.",
+            "scheduling_precedence": "deadline_first_fifo_tiebreak",
+            "change_required": true,
+            "remaining_uncertainty": "business_goal_not_quantified"
+          },
+          "assisted_answer": {
+            "classification": "requirement_mismatch",
+            "implementation_assessment": "incorrect",
+            "synthetic_requirement_fit": "mismatch",
+            "real_customer_validity": "unverified",
+            "supporting_evidence_ids": [
+              "SYN-BLIND-SLA-1299"
+            ],
+            "root_cause": "requirement_mismatch",
+            "suggested_requirement_change": "Process intake cases by due_date, qualified earliest available reviewer. FIFO only used as tie-breaker when due_date matches.",
+            "scheduling_precedence": "deadline_first_fifo_tiebreak",
+            "change_required": true,
+            "remaining_uncertainty": "business_goal_not_quantified"
+          },
+          "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+        },
+        "assisted_diagnosis": {
+          "classification": "requirement_mismatch",
+          "implementation_assessment": "incorrect",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SYN-BLIND-SLA-1299"
+          ],
+          "root_cause": "requirement_mismatch",
+          "suggested_requirement_change": "Process intake cases by due_date, qualified earliest available reviewer. FIFO only used as tie-breaker when due_date matches.",
+          "scheduling_precedence": "deadline_first_fifo_tiebreak",
+          "change_required": true,
+          "remaining_uncertainty": "business_goal_not_quantified"
+        },
+        "assisted_rubric": {
+          "rubric_version": "DIAG-RUBRIC-v0.10.1",
+          "checks": {
+            "cause_classification": true,
+            "implementation_correctness": false,
+            "synthetic_business_fit": true,
+            "real_world_humility": true,
+            "evidence_traceability": true,
+            "no_implementation_contradiction": true,
+            "no_conflicting_revision_policy": true,
+            "revision_targets_requirement": true
+          },
+          "passed": false,
+          "score": 0.875,
+          "failure_codes": [
+            "IMPLEMENTATION_CORRECTNESS"
+          ],
+          "expected_classification": "requirement_mismatch",
+          "real_customer_business_validity": "UNVERIFIED"
+        }
+      },
+      {
+        "case_id": "code_breaks_fifo",
+        "model_role": "coding",
+        "model_id": "qwen3-coder:30b",
+        "input_sha256": "19f32d217867c322cb6953028e1598f3d4d2d218f0c728dbc66b9ef21a4fb66e",
+        "revision_allowed": false,
+        "status": "COMPLETED",
+        "observable_fact_sheet": {
+          "independent_test_reported_status": "FAIL",
+          "independent_test_verbatim": "FAIL: deterministic ordering check found inversion of two feasible intake cases.",
+          "original_contract": "R0: process claims in arrival_order if both reviewers and capacity allow.",
+          "business_goal_verbatim": "Execute the approved FIFO policy; no separate business SLA comparison is established.",
+          "synthetic_comparison_verbatim": "Claim B arrived after claim A, but implementation put claim B first even though claim A was feasible.",
+          "available_evidence": [
+            {
+              "id": "SYN-BLIND-BUG-4671",
+              "provenance": "synthetic_implementation_trace",
+              "observation": "Observed out-of-order queue assignments while all skills and capacity were available."
+            }
+          ],
+          "customer_interview_count": 0,
+          "note": "These fields restate the public INPUT facts; infer diagnoses independently."
+        },
+        "diagnosis": {
+          "classification": "implementation_bug",
+          "implementation_assessment": "incorrect",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SYN-BLIND-BUG-4671"
+          ],
+          "root_cause": "The implementation does not adhere to the specified R0 contract which requires processing claims in arrival_order when reviewers and capacity allow. The independent test result shows a deterministic ordering check found an inversion of two feasible intake cases, indicating a clear violation of the FIFO policy.",
+          "suggested_requirement_change": "change_required=false",
+          "scheduling_precedence": "none",
+          "change_required": false,
+          "remaining_uncertainty": "insufficient_evidence"
+        },
+        "raw_consistency": {
+          "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+          "status": "CONSISTENT",
+          "passed": true,
+          "failure_codes": [],
+          "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+          "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+        },
+        "raw_semantics": {
+          "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+          "status": "CONSISTENT_WITH_VISIBLE_CONTRACT",
+          "passed": true,
+          "failure_codes": [],
+          "axes": {
+            "classification": "implementation_bug",
+            "implementation": "incorrect",
+            "evidence_ids": [
+              "SYN-BLIND-BUG-4671"
+            ],
+            "revision_policy": "none",
+            "revision_change_required": false
+          },
+          "oracle_access": false,
+          "auto_rewrite": false,
+          "synthetic_semantic_truth_proven": false,
+          "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+        },
+        "rubric": {
+          "rubric_version": "DIAG-RUBRIC-v0.10.1",
+          "checks": {
+            "cause_classification": true,
+            "implementation_correctness": true,
+            "synthetic_business_fit": false,
+            "real_world_humility": true,
+            "evidence_traceability": true,
+            "no_implementation_contradiction": true,
+            "no_conflicting_revision_policy": true,
+            "revision_targets_requirement": true
+          },
+          "passed": false,
+          "score": 0.875,
+          "failure_codes": [
+            "SYNTHETIC_BUSINESS_FIT"
+          ],
+          "expected_classification": "implementation_bug",
+          "real_customer_business_validity": "UNVERIFIED"
+        },
+        "grounding": {
+          "version": "EVIDENCE-BINDER-v0.21.2",
+          "applied": false,
+          "reason": "MODEL_ALREADY_CITED",
+          "added_evidence_ids": [],
+          "raw_answer": {
+            "classification": "implementation_bug",
+            "implementation_assessment": "incorrect",
+            "synthetic_requirement_fit": "mismatch",
+            "real_customer_validity": "unverified",
+            "supporting_evidence_ids": [
+              "SYN-BLIND-BUG-4671"
+            ],
+            "root_cause": "The implementation does not adhere to the specified R0 contract which requires processing claims in arrival_order when reviewers and capacity allow. The independent test result shows a deterministic ordering check found an inversion of two feasible intake cases, indicating a clear violation of the FIFO policy.",
+            "suggested_requirement_change": "change_required=false",
+            "scheduling_precedence": "none",
+            "change_required": false,
+            "remaining_uncertainty": "insufficient_evidence"
+          },
+          "assisted_answer": {
+            "classification": "implementation_bug",
+            "implementation_assessment": "incorrect",
+            "synthetic_requirement_fit": "mismatch",
+            "real_customer_validity": "unverified",
+            "supporting_evidence_ids": [
+              "SYN-BLIND-BUG-4671"
+            ],
+            "root_cause": "The implementation does not adhere to the specified R0 contract which requires processing claims in arrival_order when reviewers and capacity allow. The independent test result shows a deterministic ordering check found an inversion of two feasible intake cases, indicating a clear violation of the FIFO policy.",
+            "suggested_requirement_change": "change_required=false",
+            "scheduling_precedence": "none",
+            "change_required": false,
+            "remaining_uncertainty": "insufficient_evidence"
+          },
+          "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+        },
+        "assisted_diagnosis": {
+          "classification": "implementation_bug",
+          "implementation_assessment": "incorrect",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SYN-BLIND-BUG-4671"
+          ],
+          "root_cause": "The implementation does not adhere to the specified R0 contract which requires processing claims in arrival_order when reviewers and capacity allow. The independent test result shows a deterministic ordering check found an inversion of two feasible intake cases, indicating a clear violation of the FIFO policy.",
+          "suggested_requirement_change": "change_required=false",
+          "scheduling_precedence": "none",
+          "change_required": false,
+          "remaining_uncertainty": "insufficient_evidence"
+        },
+        "assisted_rubric": {
+          "rubric_version": "DIAG-RUBRIC-v0.10.1",
+          "checks": {
+            "cause_classification": true,
+            "implementation_correctness": true,
+            "synthetic_business_fit": false,
+            "real_world_humility": true,
+            "evidence_traceability": true,
+            "no_implementation_contradiction": true,
+            "no_conflicting_revision_policy": true,
+            "revision_targets_requirement": true
+          },
+          "passed": false,
+          "score": 0.875,
+          "failure_codes": [
+            "SYNTHETIC_BUSINESS_FIT"
+          ],
+          "expected_classification": "implementation_bug",
+          "real_customer_business_validity": "UNVERIFIED"
+        }
+      },
+      {
+        "case_id": "code_breaks_fifo",
+        "model_role": "finance",
+        "model_id": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+        "input_sha256": "19f32d217867c322cb6953028e1598f3d4d2d218f0c728dbc66b9ef21a4fb66e",
+        "revision_allowed": false,
+        "status": "COMPLETED",
+        "observable_fact_sheet": {
+          "independent_test_reported_status": "FAIL",
+          "independent_test_verbatim": "FAIL: deterministic ordering check found inversion of two feasible intake cases.",
+          "original_contract": "R0: process claims in arrival_order if both reviewers and capacity allow.",
+          "business_goal_verbatim": "Execute the approved FIFO policy; no separate business SLA comparison is established.",
+          "synthetic_comparison_verbatim": "Claim B arrived after claim A, but implementation put claim B first even though claim A was feasible.",
+          "available_evidence": [
+            {
+              "id": "SYN-BLIND-BUG-4671",
+              "provenance": "synthetic_implementation_trace",
+              "observation": "Observed out-of-order queue assignments while all skills and capacity were available."
+            }
+          ],
+          "customer_interview_count": 0,
+          "note": "These fields restate the public INPUT facts; infer diagnoses independently."
+        },
+        "diagnosis": {
+          "classification": "implementation_bug",
+          "implementation_assessment": "incorrect",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SYN-BLIND-BUG-4671"
+          ],
+          "root_cause": "implementation_defect",
+          "suggested_requirement_change": "change_required=false",
+          "scheduling_precedence": "none",
+          "change_required": false,
+          "remaining_uncertainty": "no"
+        },
+        "raw_consistency": {
+          "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+          "status": "CONSISTENT",
+          "passed": true,
+          "failure_codes": [],
+          "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+          "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+        },
+        "raw_semantics": {
+          "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+          "status": "CONSISTENT_WITH_VISIBLE_CONTRACT",
+          "passed": true,
+          "failure_codes": [],
+          "axes": {
+            "classification": "implementation_bug",
+            "implementation": "incorrect",
+            "evidence_ids": [
+              "SYN-BLIND-BUG-4671"
+            ],
+            "revision_policy": "none",
+            "revision_change_required": false
+          },
+          "oracle_access": false,
+          "auto_rewrite": false,
+          "synthetic_semantic_truth_proven": false,
+          "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+        },
+        "rubric": {
+          "rubric_version": "DIAG-RUBRIC-v0.10.1",
+          "checks": {
+            "cause_classification": true,
+            "implementation_correctness": true,
+            "synthetic_business_fit": false,
+            "real_world_humility": true,
+            "evidence_traceability": true,
+            "no_implementation_contradiction": true,
+            "no_conflicting_revision_policy": true,
+            "revision_targets_requirement": true
+          },
+          "passed": false,
+          "score": 0.875,
+          "failure_codes": [
+            "SYNTHETIC_BUSINESS_FIT"
+          ],
+          "expected_classification": "implementation_bug",
+          "real_customer_business_validity": "UNVERIFIED"
+        },
+        "grounding": {
+          "version": "EVIDENCE-BINDER-v0.21.2",
+          "applied": false,
+          "reason": "MODEL_ALREADY_CITED",
+          "added_evidence_ids": [],
+          "raw_answer": {
+            "classification": "implementation_bug",
+            "implementation_assessment": "incorrect",
+            "synthetic_requirement_fit": "mismatch",
+            "real_customer_validity": "unverified",
+            "supporting_evidence_ids": [
+              "SYN-BLIND-BUG-4671"
+            ],
+            "root_cause": "implementation_defect",
+            "suggested_requirement_change": "change_required=false",
+            "scheduling_precedence": "none",
+            "change_required": false,
+            "remaining_uncertainty": "no"
+          },
+          "assisted_answer": {
+            "classification": "implementation_bug",
+            "implementation_assessment": "incorrect",
+            "synthetic_requirement_fit": "mismatch",
+            "real_customer_validity": "unverified",
+            "supporting_evidence_ids": [
+              "SYN-BLIND-BUG-4671"
+            ],
+            "root_cause": "implementation_defect",
+            "suggested_requirement_change": "change_required=false",
+            "scheduling_precedence": "none",
+            "change_required": false,
+            "remaining_uncertainty": "no"
+          },
+          "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+        },
+        "assisted_diagnosis": {
+          "classification": "implementation_bug",
+          "implementation_assessment": "incorrect",
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_validity": "unverified",
+          "supporting_evidence_ids": [
+            "SYN-BLIND-BUG-4671"
+          ],
+          "root_cause": "implementation_defect",
+          "suggested_requirement_change": "change_required=false",
+          "scheduling_precedence": "none",
+          "change_required": false,
+          "remaining_uncertainty": "no"
+        },
+        "assisted_rubric": {
+          "rubric_version": "DIAG-RUBRIC-v0.10.1",
+          "checks": {
+            "cause_classification": true,
+            "implementation_correctness": true,
+            "synthetic_business_fit": false,
+            "real_world_humility": true,
+            "evidence_traceability": true,
+            "no_implementation_contradiction": true,
+            "no_conflicting_revision_policy": true,
+            "revision_targets_requirement": true
+          },
+          "passed": false,
+          "score": 0.875,
+          "failure_codes": [
+            "SYNTHETIC_BUSINESS_FIT"
+          ],
+          "expected_classification": "implementation_bug",
+          "real_customer_business_validity": "UNVERIFIED"
+        }
+      }
+    ],
+    "summary": {
+      "coding": {
+        "planned": 2,
+        "completed": 2,
+        "passed": 0,
+        "assisted_passed": 0,
+        "grounding_applied": 0,
+        "timeout_calls": 0,
+        "structural_consistency_passed": 1
+      },
+      "finance": {
+        "planned": 2,
+        "completed": 2,
+        "passed": 0,
+        "assisted_passed": 0,
+        "grounding_applied": 0,
+        "timeout_calls": 0,
+        "structural_consistency_passed": 1
+      }
+    },
+    "no_repair_feedback": true
+  },
+  "grounding_version": "EVIDENCE-BINDER-v0.21.2",
+  "consistency_version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+  "semantic_version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+  "retry_protocol_version": "REPLAY-INCOMPLETE-v0.26.0",
+  "retry_history": [
+    {
+      "kind": "fixed",
+      "case_id": "fifo_sla_conflict",
+      "repetition": 0,
+      "model_role": "finance",
+      "model_id": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+      "input_sha256": "44a4e3a3ac93a72c65498482cb9101f04dce9209ea64911b24a507efec2a795f",
+      "original_status": "INCOMPLETE_TIMEOUT",
+      "retry_no": 1,
+      "created_at": "2026-11-22T03:23:39+00:00",
+      "retry_is_fresh_blind": false,
+      "no_model_swap": true,
+      "no_oracle_feedback": true,
+      "status": "COMPLETED",
+      "raw_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": false,
+          "implementation_correctness": false,
+          "synthetic_business_fit": true,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": false
+        },
+        "passed": false,
+        "score": 0.625,
+        "failure_codes": [
+          "CAUSE_CLASSIFICATION",
+          "IMPLEMENTATION_CORRECTNESS",
+          "REVISION_TARGETS_REQUIREMENT"
+        ],
+        "expected_classification": "requirement_mismatch",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "raw_consistency": {
+        "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+        "status": "INCONSISTENT",
+        "passed": false,
+        "failure_codes": [
+          "INSUFFICIENT_EVIDENCE_REQUIRES_UNVERIFIED_FIT",
+          "IMPLEMENTATION_ASSESSMENT_CONTRADICTS_PASS_TEST"
+        ],
+        "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+        "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+      },
+      "raw_semantics": {
+        "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+        "status": "HOLD_HUMAN_ADJUDICATION",
+        "passed": false,
+        "failure_codes": [
+          "INSUFFICIENT_EVIDENCE_REQUIRES_UNVERIFIED_FIT",
+          "IMPLEMENTATION_ASSESSMENT_CONTRADICTS_PASS_TEST"
+        ],
+        "axes": {
+          "classification": "insufficient_evidence",
+          "implementation": "incorrect",
+          "evidence_ids": [
+            "SIM-SLA-001"
+          ],
+          "revision_policy": "none",
+          "revision_change_required": false
+        },
+        "oracle_access": false,
+        "auto_rewrite": false,
+        "synthetic_semantic_truth_proven": false,
+        "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+      },
+      "assisted_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": false,
+          "implementation_correctness": false,
+          "synthetic_business_fit": true,
+          "real_world_humility": true,
+          "evidence_traceability": true,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": false
+        },
+        "passed": false,
+        "score": 0.625,
+        "failure_codes": [
+          "CAUSE_CLASSIFICATION",
+          "IMPLEMENTATION_CORRECTNESS",
+          "REVISION_TARGETS_REQUIREMENT"
+        ],
+        "expected_classification": "requirement_mismatch",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "elapsed_seconds": 42.42
+    },
+    {
+      "kind": "fixed",
+      "case_id": "actual_fifo_implementation_bug",
+      "repetition": 0,
+      "model_role": "finance",
+      "model_id": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+      "input_sha256": "cdbf59cfba49a1e2c39565dcc05d249c3995c5a3c481f1fbc3ea8b428c153a4d",
+      "original_status": "INCOMPLETE_TIMEOUT",
+      "retry_no": 1,
+      "created_at": "2026-11-22T03:24:21+00:00",
+      "retry_is_fresh_blind": false,
+      "no_model_swap": true,
+      "no_oracle_feedback": true,
+      "status": "COMPLETED",
+      "raw_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": false,
+          "real_world_humility": true,
+          "evidence_traceability": false,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": true
+        },
+        "passed": false,
+        "score": 0.75,
+        "failure_codes": [
+          "SYNTHETIC_BUSINESS_FIT",
+          "EVIDENCE_TRACEABILITY"
+        ],
+        "expected_classification": "implementation_bug",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "raw_consistency": {
+        "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+        "status": "INCONSISTENT",
+        "passed": false,
+        "failure_codes": [
+          "CITES_UNKNOWN_EVIDENCE"
+        ],
+        "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+        "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+      },
+      "raw_semantics": {
+        "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+        "status": "HOLD_HUMAN_ADJUDICATION",
+        "passed": false,
+        "failure_codes": [
+          "CITES_UNKNOWN_EVIDENCE",
+          "CITATION_NOT_IN_VISIBLE_EVIDENCE"
+        ],
+        "axes": {
+          "classification": "implementation_bug",
+          "implementation": "incorrect",
+          "evidence_ids": [
+            "SIM-BUG-0001"
+          ],
+          "revision_policy": "none",
+          "revision_change_required": false
+        },
+        "oracle_access": false,
+        "auto_rewrite": false,
+        "synthetic_semantic_truth_proven": false,
+        "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+      },
+      "assisted_rubric": {
+        "rubric_version": "DIAG-RUBRIC-v0.10.1",
+        "checks": {
+          "cause_classification": true,
+          "implementation_correctness": true,
+          "synthetic_business_fit": false,
+          "real_world_humility": true,
+          "evidence_traceability": false,
+          "no_implementation_contradiction": true,
+          "no_conflicting_revision_policy": true,
+          "revision_targets_requirement": true
+        },
+        "passed": false,
+        "score": 0.75,
+        "failure_codes": [
+          "SYNTHETIC_BUSINESS_FIT",
+          "EVIDENCE_TRACEABILITY"
+        ],
+        "expected_classification": "implementation_bug",
+        "real_customer_business_validity": "UNVERIFIED"
+      },
+      "elapsed_seconds": 18.3
+    }
+  ],
+  "methodology": "Two-layer audit: raw model prediction (unaltered), optional deterministic input-only evidence-ID binding, optional second model inference, and fresh blind raw+assisted scores. The fixture oracle grades ONLY, never enters model prompts or grounder. Assistance is not a model-level diagnostic success. Fixed rubric unchanged. Cross-field consistency is a separate check.",
+  "caveat": "Rule-based checks, no gold-standard EU customer requirement or regulatory validation.",
+  "reliability_gate": {
+    "version": "DIAGNOSTIC-RELIABILITY-GATE-v0.27.0",
+    "status": "HOLD_HUMAN_ADJUDICATION",
+    "quality_status": "HOLD_HUMAN_ADJUDICATION",
+    "execution_status": "COMPLETE",
+    "human_adjudication_required": true,
+    "autonomous_diagnostic_reliability": false,
+    "no_unattended_requirement_rewrite": true,
+    "no_auto_repair_from_blind_oracle": true,
+    "predeclared_criteria": "Both models: >=2 fixed and >=2 fresh blind synthetic cases; all calls completed; 100% RAW rubric PASS and cross-field consistency. Replayed blind calls are not fresh.",
+    "models": {
+      "coding": {
+        "model_id": "qwen3-coder:30b",
+        "fixed_raw_passed": 0,
+        "fixed_total": 2,
+        "fixed_completed": 2,
+        "blind_raw_passed": 0,
+        "blind_total": 2,
+        "blind_completed": 2,
+        "assisted_passes_not_substituted": true,
+        "timeout_calls": 0
+      },
+      "finance": {
+        "model_id": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+        "fixed_raw_passed": 0,
+        "fixed_total": 2,
+        "fixed_completed": 2,
+        "blind_raw_passed": 0,
+        "blind_total": 2,
+        "blind_completed": 2,
+        "assisted_passes_not_substituted": true,
+        "timeout_calls": 0
+      }
+    },
+    "quality_failure_codes": [
+      "CODING_RAW_FIXED_DIAGNOSIS_FAILURE",
+      "CODING_RAW_BLIND_DIAGNOSIS_FAILURE",
+      "CODING_CROSS_FIELD_INCONSISTENCY",
+      "CODING_SEMANTIC_BOUNDARY_INCONSISTENCY",
+      "FINANCE_RAW_FIXED_DIAGNOSIS_FAILURE",
+      "FINANCE_RAW_BLIND_DIAGNOSIS_FAILURE",
+      "FINANCE_CROSS_FIELD_INCONSISTENCY",
+      "FINANCE_SEMANTIC_BOUNDARY_INCONSISTENCY"
+    ],
+    "execution_failure_codes": [],
+    "failure_codes": [
+      "CODING_RAW_FIXED_DIAGNOSIS_FAILURE",
+      "CODING_RAW_BLIND_DIAGNOSIS_FAILURE",
+      "CODING_CROSS_FIELD_INCONSISTENCY",
+      "CODING_SEMANTIC_BOUNDARY_INCONSISTENCY",
+      "FINANCE_RAW_FIXED_DIAGNOSIS_FAILURE",
+      "FINANCE_RAW_BLIND_DIAGNOSIS_FAILURE",
+      "FINANCE_CROSS_FIELD_INCONSISTENCY",
+      "FINANCE_SEMANTIC_BOUNDARY_INCONSISTENCY"
+    ],
+    "scope": "Small synthetic screen; no statistical, legal or real-customer validation",
+    "next_action": "Human reviews original RAW diagnosis and code-vs-contract evidence. Retry only incomplete calls with saved model/input; do not overwrite completed failures.",
+    "production_authorization": false
+  },
+  "diagnostic_axes": {
+    "version": "RAW-DIAGNOSTIC-AXES-v0.28.0",
+    "benchmark_id": "118f645f-1fe0-484b-96c6-d05cc610d68a",
+    "benchmark_execution_status": "COMPLETED",
+    "groups": [
+      {
+        "group": "fixed_first_raw",
+        "model_role": "coding",
+        "planned": 2,
+        "completed": 2,
+        "replayed_cases": 0,
+        "fresh_first_pass": false,
+        "usable_for_first_pass_generalization": false,
+        "axes": {
+          "cause_classification": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "cause_classification"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "fifo_sla_conflict",
+                "repetition": 0,
+                "failed_checks": [
+                  "cause_classification"
+                ]
+              }
+            ]
+          },
+          "implementation_correctness": {
+            "status": "PASS_SYNTHETIC",
+            "passed": 2,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "implementation_correctness",
+              "no_implementation_contradiction"
+            ],
+            "failed_cases": []
+          },
+          "evidence_quality": {
+            "status": "PASS_SYNTHETIC",
+            "passed": 2,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "evidence_traceability",
+              "real_world_humility"
+            ],
+            "failed_cases": []
+          },
+          "revision_action": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "revision_targets_requirement",
+              "no_conflicting_revision_policy"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "fifo_sla_conflict",
+                "repetition": 0,
+                "failed_checks": [
+                  "revision_targets_requirement"
+                ]
+              }
+            ]
+          },
+          "requirement_fit": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "synthetic_business_fit"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "actual_fifo_implementation_bug",
+                "repetition": 0,
+                "failed_checks": [
+                  "synthetic_business_fit"
+                ]
+              }
+            ]
+          },
+          "cross_field_consistency": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "raw_consistency.passed",
+              "raw_semantics.passed"
+            ]
+          }
+        }
+      },
+      {
+        "group": "fixed_first_raw",
+        "model_role": "finance",
+        "planned": 2,
+        "completed": 0,
+        "replayed_cases": 2,
+        "fresh_first_pass": false,
+        "usable_for_first_pass_generalization": false,
+        "axes": {
+          "cause_classification": {
+            "status": "NOT_EVALUATED",
+            "passed": 0,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 0,
+            "checks": [
+              "cause_classification"
+            ],
+            "failed_cases": []
+          },
+          "implementation_correctness": {
+            "status": "NOT_EVALUATED",
+            "passed": 0,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 0,
+            "checks": [
+              "implementation_correctness",
+              "no_implementation_contradiction"
+            ],
+            "failed_cases": []
+          },
+          "evidence_quality": {
+            "status": "NOT_EVALUATED",
+            "passed": 0,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 0,
+            "checks": [
+              "evidence_traceability",
+              "real_world_humility"
+            ],
+            "failed_cases": []
+          },
+          "revision_action": {
+            "status": "NOT_EVALUATED",
+            "passed": 0,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 0,
+            "checks": [
+              "revision_targets_requirement",
+              "no_conflicting_revision_policy"
+            ],
+            "failed_cases": []
+          },
+          "requirement_fit": {
+            "status": "NOT_EVALUATED",
+            "passed": 0,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 0,
+            "checks": [
+              "synthetic_business_fit"
+            ],
+            "failed_cases": []
+          },
+          "cross_field_consistency": {
+            "status": "NOT_EVALUATED",
+            "passed": 0,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 0,
+            "checks": [
+              "raw_consistency.passed",
+              "raw_semantics.passed"
+            ]
+          }
+        }
+      },
+      {
+        "group": "fixed_latest_raw",
+        "model_role": "coding",
+        "planned": 2,
+        "completed": 2,
+        "replayed_cases": 0,
+        "fresh_first_pass": false,
+        "usable_for_first_pass_generalization": false,
+        "axes": {
+          "cause_classification": {
+            "status": "PASS_SYNTHETIC",
+            "passed": 2,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "cause_classification"
+            ],
+            "failed_cases": []
+          },
+          "implementation_correctness": {
+            "status": "PASS_SYNTHETIC",
+            "passed": 2,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "implementation_correctness",
+              "no_implementation_contradiction"
+            ],
+            "failed_cases": []
+          },
+          "evidence_quality": {
+            "status": "PASS_SYNTHETIC",
+            "passed": 2,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "evidence_traceability",
+              "real_world_humility"
+            ],
+            "failed_cases": []
+          },
+          "revision_action": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "revision_targets_requirement",
+              "no_conflicting_revision_policy"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "fifo_sla_conflict",
+                "repetition": 0,
+                "failed_checks": [
+                  "revision_targets_requirement"
+                ]
+              }
+            ]
+          },
+          "requirement_fit": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "synthetic_business_fit"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "actual_fifo_implementation_bug",
+                "repetition": 0,
+                "failed_checks": [
+                  "synthetic_business_fit"
+                ]
+              }
+            ]
+          },
+          "cross_field_consistency": {
+            "status": "HOLD",
+            "passed": 0,
+            "failed": 1,
+            "unscored": 1,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "raw_consistency.passed",
+              "raw_semantics.passed"
+            ]
+          }
+        }
+      },
+      {
+        "group": "fixed_latest_raw",
+        "model_role": "finance",
+        "planned": 2,
+        "completed": 2,
+        "replayed_cases": 2,
+        "fresh_first_pass": false,
+        "usable_for_first_pass_generalization": false,
+        "axes": {
+          "cause_classification": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "cause_classification"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "fifo_sla_conflict",
+                "repetition": 0,
+                "failed_checks": [
+                  "cause_classification"
+                ]
+              }
+            ]
+          },
+          "implementation_correctness": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "implementation_correctness",
+              "no_implementation_contradiction"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "fifo_sla_conflict",
+                "repetition": 0,
+                "failed_checks": [
+                  "implementation_correctness"
+                ]
+              }
+            ]
+          },
+          "evidence_quality": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "evidence_traceability",
+              "real_world_humility"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "actual_fifo_implementation_bug",
+                "repetition": 0,
+                "failed_checks": [
+                  "evidence_traceability"
+                ]
+              }
+            ]
+          },
+          "revision_action": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "revision_targets_requirement",
+              "no_conflicting_revision_policy"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "fifo_sla_conflict",
+                "repetition": 0,
+                "failed_checks": [
+                  "revision_targets_requirement"
+                ]
+              }
+            ]
+          },
+          "requirement_fit": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "synthetic_business_fit"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "actual_fifo_implementation_bug",
+                "repetition": 0,
+                "failed_checks": [
+                  "synthetic_business_fit"
+                ]
+              }
+            ]
+          },
+          "cross_field_consistency": {
+            "status": "HOLD",
+            "passed": 0,
+            "failed": 2,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "raw_consistency.passed",
+              "raw_semantics.passed"
+            ]
+          }
+        }
+      },
+      {
+        "group": "blind_raw",
+        "model_role": "coding",
+        "planned": 2,
+        "completed": 2,
+        "replayed_cases": 0,
+        "fresh_first_pass": true,
+        "usable_for_first_pass_generalization": true,
+        "axes": {
+          "cause_classification": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "cause_classification"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "deadline_business_mismatch",
+                "repetition": 0,
+                "failed_checks": [
+                  "cause_classification"
+                ]
+              }
+            ]
+          },
+          "implementation_correctness": {
+            "status": "PASS_SYNTHETIC",
+            "passed": 2,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "implementation_correctness",
+              "no_implementation_contradiction"
+            ],
+            "failed_cases": []
+          },
+          "evidence_quality": {
+            "status": "PASS_SYNTHETIC",
+            "passed": 2,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "evidence_traceability",
+              "real_world_humility"
+            ],
+            "failed_cases": []
+          },
+          "revision_action": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "revision_targets_requirement",
+              "no_conflicting_revision_policy"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "deadline_business_mismatch",
+                "repetition": 0,
+                "failed_checks": [
+                  "revision_targets_requirement"
+                ]
+              }
+            ]
+          },
+          "requirement_fit": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "synthetic_business_fit"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "code_breaks_fifo",
+                "repetition": 0,
+                "failed_checks": [
+                  "synthetic_business_fit"
+                ]
+              }
+            ]
+          },
+          "cross_field_consistency": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "raw_consistency.passed",
+              "raw_semantics.passed"
+            ]
+          }
+        }
+      },
+      {
+        "group": "blind_raw",
+        "model_role": "finance",
+        "planned": 2,
+        "completed": 2,
+        "replayed_cases": 0,
+        "fresh_first_pass": true,
+        "usable_for_first_pass_generalization": true,
+        "axes": {
+          "cause_classification": {
+            "status": "PASS_SYNTHETIC",
+            "passed": 2,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "cause_classification"
+            ],
+            "failed_cases": []
+          },
+          "implementation_correctness": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "implementation_correctness",
+              "no_implementation_contradiction"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "deadline_business_mismatch",
+                "repetition": 0,
+                "failed_checks": [
+                  "implementation_correctness"
+                ]
+              }
+            ]
+          },
+          "evidence_quality": {
+            "status": "PASS_SYNTHETIC",
+            "passed": 2,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "evidence_traceability",
+              "real_world_humility"
+            ],
+            "failed_cases": []
+          },
+          "revision_action": {
+            "status": "PASS_SYNTHETIC",
+            "passed": 2,
+            "failed": 0,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "revision_targets_requirement",
+              "no_conflicting_revision_policy"
+            ],
+            "failed_cases": []
+          },
+          "requirement_fit": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "synthetic_business_fit"
+            ],
+            "failed_cases": [
+              {
+                "case_id": "code_breaks_fifo",
+                "repetition": 0,
+                "failed_checks": [
+                  "synthetic_business_fit"
+                ]
+              }
+            ]
+          },
+          "cross_field_consistency": {
+            "status": "HOLD",
+            "passed": 1,
+            "failed": 1,
+            "unscored": 0,
+            "planned": 2,
+            "completed": 2,
+            "checks": [
+              "raw_consistency.passed",
+              "raw_semantics.passed"
+            ]
+          }
+        }
+      }
+    ],
+    "raw_only": true,
+    "assisted_outputs_excluded": true,
+    "oracle_only_used_in_existing_independent_rubric": true,
+    "auto_corrected_diagnosis": false,
+    "production_authorization": false,
+    "limitations": "Pass means an individual criterion passed in small synthetic fixtures. Lexical cross-field checks are not proof of semantic truth. Blind replays are not fresh trials; no causal or legal conclusions."
+  },
+  "targeted_repair_summary": {
+    "version": "INPUT_ONLY_TARGETED_REPAIR-v0.29.0",
+    "repair_opt_in": true,
+    "fixed_trials": 4,
+    "fixed_trials_with_observable_inconsistency": 1,
+    "fixed_repair_model_calls": 1,
+    "fixed_adopted_repairs": 1,
+    "repair_model_errors": 0,
+    "changed_fields_per_trial": [
+      {
+        "case_id": "fifo_sla_conflict",
+        "model_role": "coding",
+        "target_fields": [
+          "change_required",
+          "classification",
+          "implementation_assessment",
+          "root_cause",
+          "scheduling_precedence",
+          "suggested_requirement_change",
+          "synthetic_requirement_fit"
+        ],
+        "discarded_non_target_edits": [
+          "supporting_evidence_ids"
+        ]
+      }
+    ],
+    "blind_trials": 4,
+    "blind_repair_model_calls": 0,
+    "oracle_used_for_repair_decision": false,
+    "raw_first_pass_preserved": true,
+    "human_adjudication_still_required_for_holds": true,
+    "note": "Only input-observable contradictions trigger opt-in repair; repair is not proof of correct interpretation. Blind never receives feedback."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "source_sha256": "891ef6f60759ff3d7e3f31df14ba3f52c3298ed5b1d4178afc0bb3ce57804258",
+  "rationale": "This solution implements a greedy algorithm that prioritizes cases based on their deadlines (earliest first) and business priority (higher first) to minimize deadline misses. The approach follows these steps:\n\n1. Read input data from input.json including days, cases, and reviewers\n2. Sort cases by deadline day (ascending) and then by business priority (descending) to prioritize urgent cases\n3. Create a copy of reviewer capacities to track remaining hours per reviewer per day\n4. For each case in the sorted order:\n   - Find the first available reviewer with matching skills\n   - Try to assign the case to the earliest possible day where capacity exists\n   - Update the reviewer's daily capacity accordingly\n5. If no suitable assignment is found, add the case to unassigned_case_ids\n6. Write the assignments and unassigned cases to output.json\n\nThe algorithm ensures:\n- Skill matching for each case\n- No overtime (hours don't exceed daily capacity)\n- Deadline prioritization over arrival order\n- No increase in total reviewer hours compared to FIFO\n- Each case assigned at most once\n- All hard constraints are satisfied",
+  "created_at": "2026-11-22T03:04:24+00:00",
+  "coding_model": "qwen3-coder:30b",
+  "finance_model": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+  "domain_review_sha256": "ed2fc81b8d5a1aa215edc07d59d1f68601daade3e297d13c52fef305153e7efc",
+  "domain_review_used_as_advisory": false,
+  "human_adjudication_used_instead": true
+}

@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import './styles.css';
 
 type Dict = Record<string, any>;
+type AdvisoryConstraints = {budget_eur:number|null;team_size:number|null;delivery_weeks:number|null;engineering_scope:string;operational_constraints:string;stakeholder_notes:string};
+const DEFAULT_ADVISORY_CONSTRAINTS:AdvisoryConstraints = {budget_eur:null,team_size:null,delivery_weeks:null,engineering_scope:'',operational_constraints:'',stakeholder_notes:''};
 type HistoryKind = 'runs' | 'experiments' | 'proposals' | 'benchmarks' | 'assessments' | 'policy_validations' | 'exports' | 'workflows';
 const BACKEND = '/api';
 const BENCHMARK_CASES: {id:string;label:string}[] = [
@@ -51,6 +53,73 @@ function Disclosure({ title, data }: { title: string; data: unknown }) {
 }
 function Group({ no, title, desc, children }: { no: number; title: string; desc: string; children: React.ReactNode }) {
   return <section className="card"><header className="section-header"><div className="step-number">{no.toString().padStart(2, '0')}</div><div><h2>{title}</h2><p>{desc}</p></div></header>{children}</section>;
+}
+
+function AdvisoryPanel({advisory, constraints, onConstraintsChange, onGenerate, onReview, actor, setActor,
+  reviewReason, setReviewReason, nextBrief, setNextBrief, onApplyBrief, busy, error}:
+  {advisory:Dict|null;constraints:AdvisoryConstraints;onConstraintsChange:(v:AdvisoryConstraints)=>void;
+   onGenerate:()=>void;onReview:()=>void;actor:string;setActor:(v:string)=>void;
+   reviewReason:string;setReviewReason:(v:string)=>void;nextBrief:string;setNextBrief:(v:string)=>void;
+   onApplyBrief:()=>void;busy:boolean;error:string}) {
+  const draft:Dict|null=advisory?.draft || null;
+  const numberField=(key:'budget_eur'|'team_size'|'delivery_weeks',value:string)=>{
+    onConstraintsChange({...constraints,[key]:value===''?null:Number(value)});
+  };
+  return <section className="advisory-panel" aria-label="10R AI技術提案ドラフト">
+    <div className="assessment-report-head"><div><span className="intro-kicker">10R · FIRST / HUMAN-IN-THE-LOOP</span>
+      <h3>顧客課題と制約下での技術提案（AIドラフト）</h3>
+      <p className="muted">生成版 {advisory?.version || '—'} · {advisory?.model || 'Qwen/Ollama'} · {advisory?.status || '読み込み中'}</p></div>
+      <Status good={false}>未承認の仮説</Status></div>
+    <p className="muted">これは評価結果に基づく提案のたたき台であり、顧客課題の真因、価格、ROI、法的適合、技術採用の承認ではありません。提案が不成立でも後続の実行レポートを表示します。</p>
+    <div className="two-cols">
+      <div><label htmlFor="advisory-budget">プロジェクト予算（EUR、空欄＝未確認）</label>
+        <input id="advisory-budget" type="number" min="0" value={constraints.budget_eur??''} onChange={e=>numberField('budget_eur',e.target.value)}/></div>
+      <div><label htmlFor="advisory-team">開発担当人数（空欄＝未確認）</label>
+        <input id="advisory-team" type="number" min="1" value={constraints.team_size??''} onChange={e=>numberField('team_size',e.target.value)}/></div>
+      <div><label htmlFor="advisory-weeks">目標期間（週、空欄＝未確認）</label>
+        <input id="advisory-weeks" type="number" min="1" value={constraints.delivery_weeks??''} onChange={e=>numberField('delivery_weeks',e.target.value)}/></div>
+      <div><label htmlFor="advisory-scope">技術的・開発範囲の制約</label>
+        <input id="advisory-scope" maxLength={1200} value={constraints.engineering_scope} onChange={e=>onConstraintsChange({...constraints,engineering_scope:e.target.value})} placeholder="例：既存システムとのAPI連携のみ"/></div>
+    </div>
+    <label htmlFor="advisory-operational">運用・契約・セキュリティの制約</label>
+    <textarea id="advisory-operational" rows={2} maxLength={1200} value={constraints.operational_constraints} onChange={e=>onConstraintsChange({...constraints,operational_constraints:e.target.value})}/>
+    <label htmlFor="advisory-notes">PM／技術者による修正前提・顧客ヒアリングメモ</label>
+    <textarea id="advisory-notes" rows={2} maxLength={1200} value={constraints.stakeholder_notes} onChange={e=>onConstraintsChange({...constraints,stakeholder_notes:e.target.value})}/>
+    <div className="button-row"><button type="button" onClick={onGenerate} disabled={busy||advisory?.status==='RUNNING'}>
+      {advisory?.status==='RUNNING'?'提案を生成中…': draft?'修正した前提で提案を再生成':'技術提案を生成'}</button></div>
+    {advisory?.status==='RUNNING' && <p role="status" className="notice">基盤モデルが提案を生成しています。10Rの下の評価結果は閲覧できます。Macの性能によって時間がかかります。</p>}
+    {advisory?.status==='GENERATION_FAILED' && <div className="notice" role="alert"><strong>提案生成に失敗：</strong>{advisory?.error?.message || '詳細不明'}。評価レポートは影響を受けません。必要なら再生成してください。</div>}
+    {error && <div className="error" role="alert">{error}</div>}
+    {draft && <div className="advisory-draft">
+      <h4>{draft.title}</h4><p>{draft.executive_direction}</p>
+      <h4>顧客課題の仮説（根拠と未確認事項を分離）</h4>
+      {(draft.customer_problem_hypotheses||[]).map((h:Dict,i:number)=><article className="assessment-item" key={i}>
+        <p>{h.statement}</p><p className="muted">区分：{h.evidence_status} · 根拠ファイル：{h.source_refs?.join(' / ')||'なし'}</p>
+        <p><strong>未確認:</strong> {h.unknowns}</p></article>)}
+      <h4>技術的な選択肢（予算・人員・期間に対する仮説）</h4>
+      <div className="advisory-options">{(draft.technical_options||[]).map((o:Dict,i:number)=><article className="assessment-item" key={i}>
+        <strong>{o.label==='low_complexity'?'A：低コスト・シンプル案':o.label==='balanced'?'B：標準案':'C：研究開発案'}</strong>
+        <p>{o.solution}</p><p><strong>制約適合:</strong> {o.fit_to_constraints}</p>
+        <p><strong>費用見積の根拠:</strong> {o.estimated_cost_basis}</p>
+        <p><strong>必要な役割:</strong> {o.necessary_roles?.join('、')||'未確認'}</p>
+        <p><strong>トレードオフ:</strong> {o.main_tradeoffs?.join('／')||'未確認'}</p>
+        <p><strong>追加検証:</strong> {o.validation}</p></article>)}</div>
+      <h4>推奨する次の検証</h4><p>{draft.recommended_next_experiment}</p>
+      <div className="two-cols"><div><h4>顧客に確認すべきこと</h4><ul>{(draft.questions_for_customer||[]).map((x:string,i:number)=><li key={i}>{x}</li>)}</ul></div>
+      <div><h4>PM・技術者が見直す前提</h4><ul>{(draft.pm_and_engineer_review_points||[]).map((x:string,i:number)=><li key={i}>{x}</li>)}</ul></div></div>
+      <Disclosure title="制約・未知事項・次の反復入力・提案の限界（監査用JSON）" data={{constraints:draft.constraints_and_unknowns,next_iteration_inputs:draft.next_iteration_inputs,limitations:draft.limitations,source_hash:advisory?.source_hash}}/>
+      <div className="assessment-item"><h4>人間レビューと次の反復（自動再実行なし）</h4>
+        <label htmlFor="advisory-actor">レビュー担当者</label><input id="advisory-actor" value={actor} onChange={e=>setActor(e.target.value)}/>
+        <label htmlFor="advisory-review-reason">判断・修正の理由</label><textarea id="advisory-review-reason" rows={2} value={reviewReason} onChange={e=>setReviewReason(e.target.value)}/>
+        <label htmlFor="advisory-next-brief">次回の顧客ブリーフ案（人間が編集）</label><textarea id="advisory-next-brief" rows={3} value={nextBrief} onChange={e=>setNextBrief(e.target.value)}/>
+        <div className="button-row"><button type="button" disabled={busy||actor.trim().length<2||reviewReason.trim().length<10} onClick={onReview}>
+          レビューを履歴に保存（次回実行はしない）</button>
+          <button type="button" className="secondary" onClick={onApplyBrief} disabled={busy||nextBrief.trim().length<20}>
+            編集したブリーフを01・10の入力欄へ反映</button></div>
+        <p className="muted">入力欄に反映しても一括実行は始まりません。新しいWorkflow IDでの開始・05の承認は必ず人間が操作します。</p></div>
+    </div>}
+    {advisory?.history?.length>0 && <Disclosure title="AI提案の版数と人間レビュー履歴" data={advisory.history}/>} 
+  </section>;
 }
 
 function WorkflowReportPanel({report}: {report: Dict}) {
@@ -197,6 +266,12 @@ export default function App() {
   const [fullRunId, setFullRunId] = useState('');
   const [fullRunReport, setFullRunReport] = useState<Dict | null>(null);
   const [fullRunReportError, setFullRunReportError] = useState('');
+  const [advisory, setAdvisory] = useState<Dict | null>(null);
+  const [advisoryError, setAdvisoryError] = useState('');
+  const [advisoryConstraints, setAdvisoryConstraints] = useState<AdvisoryConstraints>(DEFAULT_ADVISORY_CONSTRAINTS);
+  const [advisoryActor, setAdvisoryActor] = useState('PM / Technical Reviewer (demo)');
+  const [advisoryReviewReason, setAdvisoryReviewReason] = useState('検証結果と技術提案を確認。顧客の実データ・予算・体制・運用要件は未確認のため次回ヒアリングで確認する。');
+  const [advisoryNextBrief, setAdvisoryNextBrief] = useState('');
   const [evidenceDatasets, setEvidenceDatasets] = useState<Dict[]>([]);
   const [evidenceDataset, setEvidenceDataset] = useState<'community_credit' | 'cfpb_sample' | 'insurance_claims_uk'>('insurance_claims_uk');
   const [evidenceQuery, setEvidenceQuery] = useState('insurance claim delays poor communication processing time');
@@ -264,6 +339,45 @@ export default function App() {
     return ()=>{live=false;};
   }, [fullRun?.workflow_id, fullRun?.status, fullRun?.updated_at]);
 
+  // 10R AI proposal is asynchronous and isolated from the audit assessment.
+  // Auto-starts once for a terminal workflow only; never on an ordinary report GET.
+  useEffect(() => {
+    const wid=fullRun?.workflow_id;
+    if (!wid || !['COMPLETE','PARTIAL'].includes(fullRun.status)) return;
+    let live=true;
+    setAdvisory(null); setAdvisoryError('');
+    (async()=>{
+      try {
+        let data=await call<Dict>(`/full-run/${wid}/advisory`);
+        if (data.status==='NOT_STARTED') {
+          data=await call<Dict>(`/full-run/${wid}/advisory`,{constraints:DEFAULT_ADVISORY_CONSTRAINTS,regenerate:false});
+        }
+        if (live) {
+          setAdvisory(data);
+          if(data.constraints) setAdvisoryConstraints(data.constraints as AdvisoryConstraints);
+        }
+      } catch(e) { if(live) setAdvisoryError(e instanceof Error?e.message:String(e)); }
+    })();
+    return ()=>{live=false;};
+  },[fullRun?.workflow_id,fullRun?.status]);
+
+  useEffect(()=>{
+    if (!fullRun?.workflow_id || advisory?.status!=='RUNNING') return;
+    let live=true;
+    const timer=window.setInterval(async()=>{
+      try {
+        const next=await call<Dict>(`/full-run/${fullRun.workflow_id}/advisory`);
+        if(!live) return;
+        setAdvisory(next);
+        if(next.status!=='RUNNING') {
+          const current=await call<Dict>(`/full-run/${fullRun.workflow_id}`);
+          if(live) setFullRun(current); // refresh report updated_at after bundle repack
+        }
+      } catch(e) {if(live) setAdvisoryError(e instanceof Error?e.message:String(e));}
+    },2500);
+    return ()=>{live=false;window.clearInterval(timer);};
+  },[fullRun?.workflow_id,advisory?.status]);
+
   // Long-running 00–09 work happens server-side. Poll persisted state so the
   // user can leave/reopen the page, and never infer success from a button click.
   useEffect(() => {
@@ -318,7 +432,7 @@ export default function App() {
 
   return <div className="app-shell">
     <header className="masthead">
-      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.29.0</div>
+      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.30.0</div>
       <h1>Claims Operations <span>Planner</span></h1>
       <p className="lead">German InsurTech事業開発：審査人員を増やさず、保険金請求の期限超過を減らせるか。</p>
       <div className="tags"><span>架空顧客 / 合成請求データ</span><span>Qwen3-Coder + ODA-Fin-RL-8B · Ollama / Metal</span><span>E2B isolated execution</span><span>R0 → R1 requirement refinement</span></div>
@@ -333,7 +447,7 @@ export default function App() {
       <h3 className="intro-subtitle">主な機能と画面の進め方</h3>
       <ol className="feature-overview">
         <li><span className="feature-index">10</span><div><strong>00〜09を一括実行してZIP保存</strong><p>一括実行の入口。公開資料の取得・レビューと合成R0/R1検証を開始し、明示的な人間承認を挟みます。</p></div></li>
-        <li><span className="feature-index">10R</span><div><strong>一括実行レポート</strong><p>COMPLETE/PARTIALになった後、10の直下・00の手前に評価結果を表示します。</p></div></li>
+        <li><span className="feature-index">10R</span><div><strong>顧客課題と技術提案 → 個別評価レポート</strong><p>まず基盤モデルが課題と制約に応じた未承認の技術提案を生成し、続けて00〜09の結果分析を表示。PM・技術者が前提を修正し、次回の反復を手動開始できます。</p></div></li>
         <li><span className="feature-index">00</span><div><strong>公開資料の根拠を取得・関連性を検査（個別操作）</strong><p>FCA/FOS保険資料・銀行インタビュー・苦情を個別に検索します。10のデータセット選択と同期します。</p></div></li>
         <li><span className="feature-index">01–02</span><div><strong>顧客課題・サービス設計</strong><p>業務目標、制約、受入テストを整理し、サービス設計案を構造化します。</p></div></li>
         <li><span className="feature-index">03</span><div><strong>R0を隔離実行</strong><p>FIFO仕様をE2Bで実行し、仕様適合性と合成KPIを独立評価します。</p></div></li>
@@ -441,7 +555,7 @@ export default function App() {
         },!fullRunId.trim(),'secondary')}
       </div>
       {fullRun && <section className="assessment-report" aria-label="00〜09 一括実行状況">
-        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.29.0</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
+        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.30.0</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
           <Status good={fullRun.status==='COMPLETE'}>{fullRun.status}</Status></div>
         {fullRun.topic_alignment && <div className="notice"><strong>公開資料と保険請求課題の対応:</strong> {fullRun.topic_alignment.status} — {fullRun.topic_alignment.reason}。一致は原文の意味的支持・因果の証明ではありません。</div>}
         {fullRun.grounded_contract_status && <p className="muted">担当者割当KPIの検証: {fullRun.grounded_contract_status}（該当要件のみ）</p>}
@@ -620,10 +734,29 @@ export default function App() {
         It does not move with the manual 00 controls or cause any extra execution. */}
     {fullRun && ['COMPLETE','PARTIAL'].includes(fullRun.status) && <section className="card full-run-report-placement" aria-label="10の出力レポート">
       <header className="section-header"><div className="step-number">10R</div><div>
-        <h2>10 実行結果レポート</h2>
+        <h2>10R — 技術提案と実行結果レポート</h2>
         <p>一括実行の結果を表示します。以下の00画面より先に閲覧できます。</p>
       </div></header>
       <div className="full-run-inline-report">
+        <AdvisoryPanel advisory={advisory} constraints={advisoryConstraints} onConstraintsChange={setAdvisoryConstraints}
+          actor={advisoryActor} setActor={setAdvisoryActor} reviewReason={advisoryReviewReason}
+          setReviewReason={setAdvisoryReviewReason} nextBrief={advisoryNextBrief} setNextBrief={setAdvisoryNextBrief}
+          busy={Boolean(busy)} error={advisoryError}
+          onGenerate={()=>{void action('advisory-generate',async()=>{
+            if(!fullRun?.workflow_id) return;
+            const x=await call<Dict>(`/full-run/${fullRun.workflow_id}/advisory`,{constraints:advisoryConstraints,regenerate:true});
+            setAdvisory(x);setAdvisoryError('');
+          });}}
+          onReview={()=>{void action('advisory-review',async()=>{
+            if(!fullRun?.workflow_id||!advisory?.version) return;
+            await call<Dict>(`/full-run/${fullRun.workflow_id}/advisory/review`,{
+              version:advisory.version,actor:advisoryActor,decision:'feedback_for_next_iteration',
+              rationale:advisoryReviewReason,next_iteration_brief:advisoryNextBrief});
+            setAdvisory(await call<Dict>(`/full-run/${fullRun.workflow_id}/advisory`));
+            setFullRun(await call<Dict>(`/full-run/${fullRun.workflow_id}`));
+          });}}
+          onApplyBrief={()=>setBrief(advisoryNextBrief)}/>
+        <h3 className="report-analysis-heading">各工程の出力結果・独立評価の分析</h3>
         {fullRunReport && fullRunReport.workflow_id === fullRun.workflow_id && fullRunReport.updated_at === fullRun.updated_at ?
           <WorkflowReportPanel report={fullRunReport}/> :
           <div className="notice" role="status">{fullRunReportError ? `レポートの取得に失敗しました：${fullRunReportError}` : '保存済み成果物からレポートを読み込んでいます。'}</div>}

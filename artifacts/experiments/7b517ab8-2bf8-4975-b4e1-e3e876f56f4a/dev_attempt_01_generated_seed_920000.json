@@ -1,0 +1,115 @@
+{
+  "name": "generated",
+  "seed": 920000,
+  "source_sha256": "0b4a90b7220a2275063d643c4b535f12171fe814e3b2d9604180c4d4c4877525",
+  "sandbox_id": "ilxm2v6c64n5kwko2z6gq",
+  "elapsed_seconds": 0.325,
+  "stdout": "",
+  "stderr": "",
+  "output": {
+    "assignments": [
+      {
+        "case_id": "C007",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "C008",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "C009",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "C016",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "C018",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "C010",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "C011",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 2
+      },
+      {
+        "case_id": "C013",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "C017",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 1
+      },
+      {
+        "case_id": "C005",
+        "reviewer_id": "R-C",
+        "day": 2,
+        "hours": 3
+      },
+      {
+        "case_id": "C012",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 1
+      },
+      {
+        "case_id": "C014",
+        "reviewer_id": "R-C",
+        "day": 2,
+        "hours": 2
+      },
+      {
+        "case_id": "C015",
+        "reviewer_id": "R-C",
+        "day": 3,
+        "hours": 3
+      },
+      {
+        "case_id": "C001",
+        "reviewer_id": "R-A",
+        "day": 1,
+        "hours": 3
+      },
+      {
+        "case_id": "C004",
+        "reviewer_id": "R-A",
+        "day": 2,
+        "hours": 3
+      },
+      {
+        "case_id": "C006",
+        "reviewer_id": "R-C",
+        "day": 3,
+        "hours": 2
+      }
+    ],
+    "unassigned_case_ids": [
+      "C002",
+      "C003"
+    ]
+  },
+  "output_sha256": "da2d2500e7dba7a33abde3a932dc15762e5b12dae855f912c914b1a7aa79fbc2",
+  "error": null
+}

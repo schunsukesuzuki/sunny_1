@@ -1,3 +1,12 @@
+## v0.30.0 — Post-run presales advisory draft (human-loop)
+
+- Step 10R now starts with an LLM-generated **unapproved** customer problem and technology proposal, followed by the existing independent per-stage outcome analysis. Screen order: **10 → 10R proposal → 10R results → 00 → 01–09**.
+- New typed budget (EUR), engineering team size, delivery weeks and free-form scope/operational constraints. Empty means unknown. Generated choices cover rules-first/low-complexity, balanced integration and optionally research. Never infer customer facts or compliance from synthetic evidence.
+- Generation is automatic once after a terminal workflow opens in the UI, then explicit only on regenerate. Long Ollama calls run in separate background tasks. 10R report itself is always read-only and never blocked by an LLM timeout.
+- Stored immutable `10p_advisory_vNNNN.json` and `10p_review_vNNNN.json` plus current-index snapshot, hash-scoped evaluation provenance and version history; regenerated audit ZIP includes those artifacts. Human review never triggers autonomous reruns.
+- Existing Dogwood/R1/DEV/HOLDOUT, 08f, 09 outcomes and `AUDIT-EXPORT-v0.25.0` manifest format are unchanged.
+- Python regression tests and TSX order/parse checks included. Native Ollama/Docker/E2B tests must be run on target machine.
+
 # v0.29.0 — Lexicographic 08f, Research-Only Selection Review, DEV Discrimination, Targeted Diagnosis (2026-11-22)
 
 - Fix post-selection 08f false equivalence: require independent validity plus an `OPTIMAL` solver certificate, then compare `(missed_deadlines, unassigned_cases)` lexicographically. Conditional secondary gaps do not mix incomparable primary scores. Preserve old primary-gap field for backward compatibility.

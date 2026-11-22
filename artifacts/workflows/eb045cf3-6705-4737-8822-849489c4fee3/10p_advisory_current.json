@@ -1,0 +1,92 @@
+{
+  "workflow_id": "eb045cf3-6705-4737-8822-849489c4fee3",
+  "version": 1,
+  "status": "DRAFT_UNAPPROVED",
+  "created_at": "2026-11-22T03:23:32+00:00",
+  "source_hash": "4e1addc77492e2d332af3be080f0b9b724b74d7f82e4922f9875e5679d436025",
+  "source_workflow_status": "PARTIAL",
+  "constraints": {
+    "budget_eur": null,
+    "team_size": null,
+    "delivery_weeks": null,
+    "engineering_scope": "",
+    "operational_constraints": "",
+    "stakeholder_notes": ""
+  },
+  "model": "qwen3-coder:30b",
+  "approval_status": "NOT_APPROVED",
+  "source_refs": [
+    "workflow.json",
+    "assessment.json",
+    "benchmark.json",
+    "08e_feature_acceptance.json",
+    "08f_selection_gap_analysis.json"
+  ],
+  "notice": "AI proposal draft, not a validated customer need, deployment authorization or proof of ROI",
+  "draft": {
+    "title": "Presales Memo: Insurance Claims Workflow Optimization - Japan Internal Review",
+    "executive_direction": "This memo outlines the preliminary findings and next steps for a presales initiative targeting an insurance SaaS company in Germany, with potential expansion across Europe. The focus is on optimizing claim processing workflows to reduce deadline overruns while maintaining human decision-making. This document is for internal review only and not approved for client delivery.",
+    "customer_problem_hypotheses": [
+      {
+        "statement": "The customer seeks to optimize insurance claims processing by reducing deadline overruns using fixed staffing and working hours.",
+        "evidence_status": "hypothesis_unverified",
+        "source_refs": [],
+        "unknowns": "Customer's actual budget, team size, delivery timeline, and specific EU regulatory compliance requirements are unknown."
+      },
+      {
+        "statement": "The customer prefers human judgment for payment approval decisions.",
+        "evidence_status": "hypothesis_unverified",
+        "source_refs": [],
+        "unknowns": "No verified data on the volume or complexity of claims requiring human review."
+      }
+    ],
+    "constraints_and_unknowns": [
+      "Workflow optimization must be compatible with existing service design and code generation processes.",
+      "E2B evaluation and requirement revision cycles need to be reproducible for experimental validation.",
+      "EU law compliance is not yet verified for the customer's specific use case.",
+      "No confirmed data on actual claim volumes, processing times, or human review frequency."
+    ],
+    "technical_options": [
+      {
+        "label": "low_complexity",
+        "solution": "Implement a rule-based deadline tracking system using synthetic data from 'insurance_claims_uk' to simulate claim progress updates.",
+        "necessary_roles": [],
+        "fit_to_constraints": "Aligns with fixed staffing and human decision-making requirements; avoids complex ML models.",
+        "estimated_cost_basis": "Unknown budget, but minimal engineering effort required for rule-based logic implementation.",
+        "main_tradeoffs": [],
+        "validation": "Synthetic feature acceptance passed; no real customer validation yet."
+      },
+      {
+        "label": "balanced",
+        "solution": "Use a lightweight decision tree or rule engine to prioritize claims based on deadline risk and claim amount.",
+        "necessary_roles": [],
+        "fit_to_constraints": "Balances automation with human oversight, suitable for fixed staffing scenarios.",
+        "estimated_cost_basis": "Unknown budget, but requires minimal training data and model complexity.",
+        "main_tradeoffs": [],
+        "validation": "Requires further synthetic testing; no real-world validation."
+      }
+    ],
+    "recommended_next_experiment": "Conduct a small-scale simulation using the 'insurance_claims_uk' dataset to test rule-based prioritization logic for claim progress updates. Owner: Junior Engineer (with PM oversight).",
+    "questions_for_customer": [
+      "What is the typical volume of claims processed per week?",
+      "Are there specific EU regulations that must be considered in the workflow design?",
+      "How much time is typically spent on human review per claim?"
+    ],
+    "pm_and_engineer_review_points": [
+      "Verify synthetic test results against real-world data if available.",
+      "Ensure rule-based logic aligns with business requirements and stakeholder expectations.",
+      "Confirm that the workflow design supports E2B evaluation and requirement revision cycles."
+    ],
+    "next_iteration_inputs": [
+      "08e_feature_acceptance.json",
+      "08f_selection_gap_analysis.json",
+      "workflow.json"
+    ],
+    "limitations": [
+      "No actual customer budget, team size, or delivery timeline provided.",
+      "No verified data on EU regulatory compliance for the customer's use case.",
+      "Synthetic results are not representative of real-world performance."
+    ]
+  },
+  "finished_at": "2026-11-22T03:23:50+00:00"
+}

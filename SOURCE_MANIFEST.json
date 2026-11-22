@@ -1,16 +1,23 @@
 {
-  "source_package_version": "0.29.0",
-  "source_base": "0.28.0",
+  "source_package_version": "0.30.0",
+  "source_base": "0.29.0",
   "artifact_type": "complete source snapshot",
   "runtime_dependencies_not_bundled": true,
-  "verification": "SHA-256 of source bytes; SOURCE_MANIFEST.json excluded from its own hashes",
-  "python_regression_tests": "166 passed",
+  "verification": "SHA-256 of all source bytes; SOURCE_MANIFEST.json excluded from its own hashes",
+  "python_regression_tests": "170 passed",
   "frontend_tsx_syntax_parse": "PASSED",
-  "frontend_layout_ast_check": "PASSED_10_REPORT_00_01_TO_09",
-  "frontend_full_vite_build": "NOT_EXECUTED_FRONTEND_DEPENDENCIES_UNAVAILABLE",
+  "frontend_layout_ast_check": "PASSED_10_10R_PROPOSAL_FIRST_00_01_TO_09",
+  "frontend_full_vite_build": "NOT_EXECUTED_REACT_DEPENDENCIES_UNAVAILABLE",
   "native_rust_build": "NOT_EXECUTED_IN_PACKAGING_ENVIRONMENT",
   "real_ollama_e2b": "NOT_EXECUTED_IN_PACKAGING_ENVIRONMENT",
-  "archived_v028_08f_reanalysis": "SECONDARY_OBJECTIVE_LOSS_DETECTED_WITHOUT_DEV_LEAKAGE",
+  "proposal_model_test": "TEST_DOUBLE_ONLY; REAL_QWEN_OUTPUT_UNVERIFIED",
+  "new_features": [
+    "AI presales proposal at top of step 10R",
+    "typed budget staffing deadline constraints",
+    "versioned draft/review records and hashes",
+    "human-edited next iteration brief (no auto rerun)",
+    "separate asynchronous generation (reports unaffected by failure)"
+  ],
   "files": [
     {
       "path": ".env.example",
@@ -24,8 +31,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 22249,
-      "sha256": "a5023157116f5c96cf76fe17f8a04feed0149448acec71dc0b7e4fb3f21ba268"
+      "bytes": 23568,
+      "sha256": "3a68eb9c7836f253d9448188b9c898bdc82f3c02b8bf1638d592d91d58d98ce3"
     },
     {
       "path": "LICENSE",
@@ -34,8 +41,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 37976,
-      "sha256": "e13980321c17ca7a55e852ca27c7a6de0d8286a045d3fd947cc300e123079f9d"
+      "bytes": 38910,
+      "sha256": "50c29ab32996b7e40ce64650f614ff9b57ce76289ff75a5a41e03c5c47bb59b2"
     },
     {
       "path": "artifacts/.gitkeep",
@@ -51,6 +58,11 @@
       "path": "backend/app/__init__.py",
       "bytes": 45,
       "sha256": "101ac21b0416f023225eb2a360d71e0fbfa90130510df35d357e14472745b5ee"
+    },
+    {
+      "path": "backend/app/advisory.py",
+      "bytes": 8079,
+      "sha256": "3132bc159ce9c743bd516a81010b3dcd6a733c2d4ccae9759a4a07ededa16493"
     },
     {
       "path": "backend/app/artifact_readiness.py",
@@ -169,8 +181,8 @@
     },
     {
       "path": "backend/app/export_bundle.py",
-      "bytes": 11125,
-      "sha256": "71dcef10e62dd0b524a847d0d75e5d0e06450924bac3806fc83e86d206291729"
+      "bytes": 11287,
+      "sha256": "7bacf187015828a699670b5cdc1098def2aef0dd310ba7896441bf190b5ff6f4"
     },
     {
       "path": "backend/app/feature_acceptance.py",
@@ -179,8 +191,8 @@
     },
     {
       "path": "backend/app/full_run.py",
-      "bytes": 77534,
-      "sha256": "77ae7cdc73f4c38c751b5dd8ba46c3a5787ee5ca83a9075023f1691b1f4ac57a"
+      "bytes": 84535,
+      "sha256": "cd96bef6ffdcdf358e8109fe44e6888af04181b0e85de934f99a3075cf56cc76"
     },
     {
       "path": "backend/app/grounded_contract.py",
@@ -195,7 +207,7 @@
     {
       "path": "backend/app/main.py",
       "bytes": 115130,
-      "sha256": "bc0516f48a908b86c6123eac66acf8afb6d1a8ba2c76a4dbd4482a3bf466810a"
+      "sha256": "dfde541bbbb27895d453e9cdd33ce3e9ff75717ba452768605ddf79c01d2b109"
     },
     {
       "path": "backend/app/notification_demo.py",
@@ -424,18 +436,23 @@
     },
     {
       "path": "backend/tests/test_v027_feature_semantic_selection_dogwood.py",
-      "bytes": 10959,
-      "sha256": "904c6c27523367e7b2e2f16021d20bfcb1b44544c052aab3594d1c6275f7968e"
+      "bytes": 10968,
+      "sha256": "0685b6d61245edf049ab62c7479f8edcffa53ea722f45b452cbadfea4685370a"
     },
     {
       "path": "backend/tests/test_v028_robust_dev_diagnostic_snapshot.py",
-      "bytes": 9539,
-      "sha256": "baf9a7d9f92d9c7fec5e8dda7f6437d0896c1d3a828bd2dca7a529522ee196db"
+      "bytes": 9548,
+      "sha256": "e5ec9ac57350e96c3ec922ce0c19f36f0dde08d01bab000c16d0b0194212fa1d"
     },
     {
       "path": "backend/tests/test_v029_lexicographic_review_targeted.py",
       "bytes": 5508,
       "sha256": "d091a8f581d3df816135b4391da8191d7c9b8a8cf387f7adf02b674a43c924fa"
+    },
+    {
+      "path": "backend/tests/test_v030_advisory_loop.py",
+      "bytes": 7449,
+      "sha256": "cfc91c09e7f344ce5193c1951a191f7450ff940f41078e15db3b013a7fd5afcf"
     },
     {
       "path": "backend/tests/test_vertical_v09.py",
@@ -578,6 +595,11 @@
       "sha256": "8f6ef784f20eefcf1c64fea64c867f2ed033cdffe564757851b1533c323bee7e"
     },
     {
+      "path": "docs/v030-ai-advisory-human-loop.md",
+      "bytes": 4195,
+      "sha256": "dc95d39498965a6f96f994ca4a38a77a010f72766f1c97df4b5578dbef17201f"
+    },
+    {
       "path": "docs/v08-claims-experiment-protocol.md",
       "bytes": 3593,
       "sha256": "99a9d6f4a087ce74a1e1138d9232330d948dbea31b557bf62451153322988492"
@@ -630,17 +652,17 @@
     {
       "path": "frontend/package.json",
       "bytes": 520,
-      "sha256": "b92eb34b8c1e42d2f03273109e55541772a6d6fee97abcb1517fe9bfa63b36cd"
+      "sha256": "e88f8455eb213fced96d2102db903995e3b786784b99c4730edefad415589cb6"
     },
     {
       "path": "frontend/scripts/verify-layout.cjs",
-      "bytes": 2850,
-      "sha256": "dffe0beaff520a632681058b7d0cd1af144fc8186e619cf96c2e38c4f3cb49d2"
+      "bytes": 3065,
+      "sha256": "7c66e934108bcd7b4a88071b4b9ce99ca1f6d3ef28b9a52e3748b50ef87b1e24"
     },
     {
       "path": "frontend/src/App.tsx",
-      "bytes": 99840,
-      "sha256": "95b1b3633cc5f7378446f5814cbe7d7f29292efdcdb52a99936fdd84b1e54fef"
+      "bytes": 111670,
+      "sha256": "f12efdafdfc6311096a0fa392cf0115bdc45cf455977294ac2e43800151ec3ff"
     },
     {
       "path": "frontend/src/main.tsx",
@@ -649,8 +671,8 @@
     },
     {
       "path": "frontend/src/styles.css",
-      "bytes": 14283,
-      "sha256": "6ff21498fa09a9a249fbed340b8f19bfa7020599fe772a5350e5460301e0f5de"
+      "bytes": 15102,
+      "sha256": "8cb0fcd6e5d481f1d55c28b8126b6d14079bdaf73179d3d83b467241a0d9d366"
     },
     {
       "path": "frontend/src/types.ts",

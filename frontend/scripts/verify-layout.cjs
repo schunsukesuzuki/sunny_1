@@ -28,6 +28,8 @@ for (const item of shell.children) {
     assert.ok(text.includes('fullRunReport.workflow_id === fullRun.workflow_id'), 'report/run identity guard missing');
     assert.ok(text.includes('fullRunReport.updated_at === fullRun.updated_at'), 'stale report guard missing');
     assert.ok(text.includes('full-run-report-reload'), 'manual retry missing');
+    assert.ok(text.includes('<AdvisoryPanel'), '10R advisory panel missing');
+    assert.ok(text.indexOf('<AdvisoryPanel') < text.indexOf('<WorkflowReportPanel'), 'AI proposal must render before detailed results');
   }
 }
 const indices=Object.fromEntries(rendered.map((x,i)=>[x.key,i]));

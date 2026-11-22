@@ -11,6 +11,8 @@ import json
 import os
 from pathlib import Path
 from typing import Callable
+import hashlib
+import time
 
 from fastapi import BackgroundTasks, HTTPException, Header
 from fastapi.responses import FileResponse
@@ -32,6 +34,7 @@ from . import diagnostic_targeted_repair as dtr
 from . import feature_acceptance as fa
 from . import dogwood_negative_audit as dna
 from . import selection_gap_analysis as sga
+from . import advisory as adv
 
 # The endpoints are registered by register(app, main_module) to keep the
 # existing 01..09 handlers as the single implementation of each operation.
@@ -79,6 +82,19 @@ class FullRunEvidenceReview(BaseModel):
 class FullRunReview(BaseModel):
     workflow_id: str
     approval: dict
+
+
+class AdvisoryStart(BaseModel):
+    constraints: adv.AdvisoryConstraints = Field(default_factory=adv.AdvisoryConstraints)
+    regenerate: bool = False
+
+
+class AdvisoryReview(BaseModel):
+    version: int = Field(ge=1)
+    actor: str = Field(min_length=2,max_length=100)
+    decision: Literal['feedback_for_next_iteration','reviewed_as_draft','rejected']
+    rationale: str = Field(min_length=10,max_length=1600)
+    next_iteration_brief: str = Field(default='',max_length=4000)
 
 
 def register(app, m) -> None:
@@ -1033,7 +1049,7 @@ def register(app, m) -> None:
                                state.get('diagnostic_execution_status')==gate.get('execution_status'))
         return {
             'report_version': '0.27.0', # backward-compatible view contract
-            'producer_version': '0.29.0',
+            'producer_version': '0.30.0',
             'workflow_id': state['workflow_id'],
             'updated_at': state.get('updated_at'),
             'status': state['status'],
@@ -1077,6 +1093,120 @@ def register(app, m) -> None:
             },
         }
 
+    # Step 10R (v0.30): optional post-run AI presales proposal. The workflow
+    # remains terminal; proposal failures do not rewrite 09, Dogwood or DEV.
+    def proposal_path(wid: str) -> Path:
+        return folder(wid) / '10p_advisory_current.json'
+
+    def atomic_json(path: Path, record: dict) -> None:
+        temp = path.with_name(path.name + '.' + m.fresh_id() + '.tmp')
+        temp.write_text(json.dumps(record,ensure_ascii=False,indent=2),encoding='utf-8')
+        os.replace(temp,path)
+
+    def proposal_response(wid: str) -> dict:
+        current=proposal_path(wid)
+        if not current.exists():
+            return {'workflow_id':wid, 'status':'NOT_STARTED', 'version':0, 'history':[]}
+        data=json.loads(current.read_text(encoding='utf-8'))
+        archive=[]
+        for f in sorted(folder(wid).glob('10p_advisory_v[0-9][0-9][0-9][0-9].json')):
+            item=json.loads(f.read_text(encoding='utf-8'))
+            review_file=folder(wid)/f'10p_review_v{item["version"]:04d}.json'
+            archive.append({'version':item['version'],'status':item['status'],
+                            'created_at':item['created_at'],
+                            'constraints':item.get('constraints'),
+                            'review':json.loads(review_file.read_text(encoding='utf-8')) if review_file.exists() else None})
+        return {**data,'history':archive}
+
+    async def advisory_background(wid: str, record: dict, context:dict) -> None:
+        lock=folder(wid)/'10p_generation.lock'
+        final=dict(record)
+        try:
+            final['draft']=await adv.generate(context,adv.AdvisoryConstraints(**record['constraints']))
+            final['status']='DRAFT_UNAPPROVED'
+        except Exception as exc:
+            # A proposal is never allowed to convert a terminal workflow into FAILED.
+            final['status']='GENERATION_FAILED'
+            final['error']={'type':type(exc).__name__, 'message':str(getattr(exc,'detail',exc))[:600]}
+        finally:
+            final['finished_at']=m.now()
+            m.store('workflows',wid,f'10p_advisory_v{record["version"]:04d}.json',final)
+            atomic_json(proposal_path(wid),final)
+            lock.unlink(missing_ok=True)
+            # Preserve the versioned draft in the workflow ZIP, with hashes and
+            # stable version history. It is not an execution step or authorization.
+            try:
+                save_archive(read(wid))
+            except Exception:
+                # A repackaging failure must remain visible, never be success.
+                final['bundle_refresh_error']='Could not rebuild audit ZIP after proposal generation'
+                atomic_json(proposal_path(wid),final)
+
+    @app.get('/api/full-run/{workflow_id}/advisory')
+    def get_advisory(workflow_id:str):
+        state=read(workflow_id)
+        if state.get('status') not in ('COMPLETE','PARTIAL'):
+            raise HTTPException(409,'Advisory draft requires a terminal workflow')
+        return proposal_response(workflow_id)
+
+    @app.post('/api/full-run/{workflow_id}/advisory')
+    def start_advisory(workflow_id:str, body:AdvisoryStart, tasks:BackgroundTasks):
+        state=read(workflow_id)
+        report=build_report(state)  # independently verify artifact lineage
+        context=adv.compact_context(report,state.get('inputs') or {})
+        fingerprint=adv.digest({'context':context,'linked_ids':state.get('linked_ids')})
+        current=proposal_response(workflow_id)
+        requested=body.constraints.model_dump()
+        if (not body.regenerate and current.get('status') != 'NOT_STARTED'
+            and current.get('constraints')==requested and current.get('source_hash')==fingerprint):
+            return current
+        lockfile=folder(workflow_id)/'10p_generation.lock'
+        try:
+            fd=os.open(lockfile,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
+        except FileExistsError as exc:
+            raise HTTPException(409,'Advisory generation is already running; see current status') from exc
+        os.close(fd)
+        try:
+            all_versions=[int(p.stem[-4:]) for p in folder(workflow_id).glob('10p_advisory_v[0-9][0-9][0-9][0-9].json')]
+            version=max([current.get('version',0),*all_versions])+1
+            record={'workflow_id':workflow_id,'version':version,'status':'RUNNING',
+                    'created_at':m.now(),'source_hash':fingerprint,
+                    'source_workflow_status':state['status'],'constraints':requested,
+                    'model':m.llm.MODEL,'approval_status':'NOT_APPROVED',
+                    'source_refs':context['allowed_source_refs'],
+                    'notice':'AI proposal draft, not a validated customer need, deployment authorization or proof of ROI'}
+            atomic_json(proposal_path(workflow_id),record)
+            tasks.add_task(advisory_background, workflow_id,record,context)
+            return {**record,'history':current.get('history',[])}
+        except Exception:
+            lockfile.unlink(missing_ok=True)
+            raise
+
+    @app.post('/api/full-run/{workflow_id}/advisory/review')
+    def review_advisory(workflow_id:str, body:AdvisoryReview):
+        state=read(workflow_id)
+        if state.get('status') not in ('COMPLETE','PARTIAL'):
+            raise HTTPException(409,'Workflow must be terminal')
+        p=folder(workflow_id)/f'10p_advisory_v{body.version:04d}.json'
+        if not p.exists():
+            raise HTTPException(404,'Proposal version not found')
+        draft=json.loads(p.read_text(encoding='utf-8'))
+        if draft.get('status')!='DRAFT_UNAPPROVED':
+            raise HTTPException(409,'Only completed draft versions can receive a review')
+        out=folder(workflow_id)/f'10p_review_v{body.version:04d}.json'
+        record={'workflow_id':workflow_id,'proposal_version':body.version, 'actor':body.actor,
+                'decision':body.decision,'rationale':body.rationale,
+                'next_iteration_brief':body.next_iteration_brief,
+                'created_at':m.now(),'effect':'REVIEW_ONLY_NO_AUTONOMOUS_EXECUTION'}
+        try:
+            fd=os.open(out,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
+        except FileExistsError as exc:
+            raise HTTPException(409,'Review is already recorded; regenerate a new version for further changes') from exc
+        with os.fdopen(fd,'w',encoding='utf-8') as f:
+            json.dump(record,f,ensure_ascii=False,indent=2)
+        save_archive(read(workflow_id))
+        return record
+
     @app.get('/api/full-run/{workflow_id}/report')
     def full_run_report(workflow_id: str):
         return build_report(read(workflow_id))
@@ -1091,5 +1221,5 @@ def register(app, m) -> None:
         file=m.path_for("exports",state["export_id"])/"complete_audit_package.zip"
         if not file.is_file():
             raise HTTPException(409,"ZIP is not ready; check workflow status")
-        return FileResponse(file,filename=f"claims_full_run_v028_{workflow_id}.zip",media_type="application/zip")
+        return FileResponse(file,filename=f"claims_full_run_v030_{workflow_id}.zip",media_type="application/zip")
 

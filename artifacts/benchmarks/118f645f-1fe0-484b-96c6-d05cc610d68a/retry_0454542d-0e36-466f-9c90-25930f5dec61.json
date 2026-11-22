@@ -1,0 +1,107 @@
+{
+  "kind": "fixed",
+  "case_id": "fifo_sla_conflict",
+  "repetition": 0,
+  "model_role": "finance",
+  "model_id": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+  "input_sha256": "44a4e3a3ac93a72c65498482cb9101f04dce9209ea64911b24a507efec2a795f",
+  "original_status": "INCOMPLETE_TIMEOUT",
+  "retry_no": 1,
+  "created_at": "2026-11-22T03:23:39+00:00",
+  "retry_is_fresh_blind": false,
+  "no_model_swap": true,
+  "no_oracle_feedback": true,
+  "status": "COMPLETED",
+  "raw_rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": false,
+      "implementation_correctness": false,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": false
+    },
+    "passed": false,
+    "score": 0.625,
+    "failure_codes": [
+      "CAUSE_CLASSIFICATION",
+      "IMPLEMENTATION_CORRECTNESS",
+      "REVISION_TARGETS_REQUIREMENT"
+    ],
+    "expected_classification": "requirement_mismatch",
+    "real_customer_business_validity": "UNVERIFIED"
+  },
+  "raw_consistency": {
+    "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+    "status": "INCONSISTENT",
+    "passed": false,
+    "failure_codes": [
+      "INSUFFICIENT_EVIDENCE_REQUIRES_UNVERIFIED_FIT",
+      "IMPLEMENTATION_ASSESSMENT_CONTRADICTS_PASS_TEST"
+    ],
+    "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+    "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+  },
+  "raw_semantics": {
+    "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+    "status": "HOLD_HUMAN_ADJUDICATION",
+    "passed": false,
+    "failure_codes": [
+      "INSUFFICIENT_EVIDENCE_REQUIRES_UNVERIFIED_FIT",
+      "IMPLEMENTATION_ASSESSMENT_CONTRADICTS_PASS_TEST"
+    ],
+    "axes": {
+      "classification": "insufficient_evidence",
+      "implementation": "incorrect",
+      "evidence_ids": [
+        "SIM-SLA-001"
+      ],
+      "revision_policy": "none",
+      "revision_change_required": false
+    },
+    "oracle_access": false,
+    "auto_rewrite": false,
+    "synthetic_semantic_truth_proven": false,
+    "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+  },
+  "raw_answer": {
+    "classification": "insufficient_evidence",
+    "implementation_assessment": "incorrect",
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_validity": "unverified",
+    "supporting_evidence_ids": [
+      "SIM-SLA-001"
+    ],
+    "root_cause": "implementation_meets_contract_but_not_business_goal",
+    "suggested_requirement_change": "false",
+    "scheduling_precedence": "none",
+    "change_required": false,
+    "remaining_uncertainty": "synthetic_evidence_insufficient"
+  },
+  "assisted_rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": false,
+      "implementation_correctness": false,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": false
+    },
+    "passed": false,
+    "score": 0.625,
+    "failure_codes": [
+      "CAUSE_CLASSIFICATION",
+      "IMPLEMENTATION_CORRECTNESS",
+      "REVISION_TARGETS_REQUIREMENT"
+    ],
+    "expected_classification": "requirement_mismatch",
+    "real_customer_business_validity": "UNVERIFIED"
+  },
+  "elapsed_seconds": 42.42
+}

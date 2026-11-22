@@ -1,0 +1,10 @@
+{
+  "dataset_id": "insurance_claims_uk",
+  "source_manifest_sha256": "213ff56cff3a185f5e7878e92361f494819de73a5ebad968b3b14b42d7d2cca1",
+  "indexed_at_utc": "2026-11-22T03:01:27+00:00",
+  "chunk_count": 77,
+  "method": "BM25 + character ngram fuzzy reranking with RRF; optional semantic embeddings not used",
+  "limitations": "Metadata and exact excerpts are traceable. Retrieval relevance and semantic support are not proven.",
+  "index_action": "BUILT",
+  "index_sha256_raw": "07d572334f27286d7a94b64c400207887c81694c1ca1bf4991a5a9b4ca97af08"
+}

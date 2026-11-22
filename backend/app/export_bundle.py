@@ -43,7 +43,7 @@ def make_manifest(artifact_dir: Path, export_id: str, identifiers: dict,
             files.append(entry)
             total+=size
     incomplete=bool(missing or skipped or any(stage.get('status') not in ('COMPLETED','COMPLETED_WITH_FINDINGS') for stage in stages))
-    return {'format_version':'AUDIT-EXPORT-v0.25.0', 'producer_version':'0.29.0', 'export_id':export_id,
+    return {'format_version':'AUDIT-EXPORT-v0.25.0', 'producer_version':'0.30.0', 'export_id':export_id,
             'created_at':created_at,'status':'PARTIAL' if incomplete else 'COMPLETE',
             'experiment_id':identifiers.get('experiments'),
             'linked_ids':identifiers,'stages':stages,'files':files,'missing':missing,
@@ -53,7 +53,7 @@ def make_manifest(artifact_dir: Path, export_id: str, identifiers: dict,
 
 
 def make_intro(manifest:dict, assessment:dict|None)->str:
-    lines=['# Claims Operations Planner — v0.29 Lexicographic Objective + Provisional Selection + Targeted Diagnosis Audit Package','',
+    lines=['# Claims Operations Planner — v0.30 Human-in-the-loop Technical Proposal + Independent Evaluation Audit Package','',
            f"- Export: `{manifest['export_id']}`",
            f"- Original experiment: `{manifest['experiment_id']}`",
            f"- Export completeness: **{manifest['status']}**",
@@ -79,6 +79,7 @@ def make_intro(manifest:dict, assessment:dict|None)->str:
     else:
         lines.append('- Assessment not produced; see stage failure in manifest.')
     lines.extend(['','## Reading order','',
+                  '10P. `workflows/<id>/10p_advisory_vNNNN.json` and `10p_review_vNNNN.json` — post-run AI proposal drafts and human feedback, NOT customer approval',
                   '0. `workflows/<id>/00_evidence_grounded_requirements.json`, `00_source_manifest.json`, `00_index_metadata.json`, `00_rag_report.md` — retrieved public evidence; no real-world approval',
                   '0b. `workflows/<id>/00b_human_evidence_review.json` — human-selected evidence; check domain alignment and reviewer judgment',
                   '0c. `workflows/<id>/00c_grounded_test_contract.json` and `00c_technical_spec.md` — human-configured bounded KPI thresholds',

@@ -1,0 +1,14 @@
+{
+  "case_id": "fifo_sla_conflict",
+  "repetition": 0,
+  "model_role": "finance",
+  "model_id": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+  "fixture_version": "CLAIMS-DIAG-FIXTURES-v0.10.1",
+  "prompt_input_sha256": "44a4e3a3ac93a72c65498482cb9101f04dce9209ea64911b24a507efec2a795f",
+  "status": "INCOMPLETE_TIMEOUT",
+  "real_customer_validity": "UNVERIFIED",
+  "error_type": "HTTPException",
+  "error": "Ollama (hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M) の応答がタイムアウトしました。",
+  "elapsed_seconds": 480.03,
+  "created_at": "2026-11-22T03:13:53+00:00"
+}
