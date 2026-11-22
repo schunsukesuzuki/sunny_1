@@ -1,3 +1,29 @@
+# v0.28.0 — Preselection Robustness, RAW Diagnostic Axes, Canonical Retry Report (2026-11-22)
+
+- Keep **10 → 10R → 00 → 01〜09** unchanged from v0.27.1.
+- DEV-only candidate selection: preserve existing eligibility gates; additionally run four predeclared distribution-shift DEV fixtures (scarcity/capacity/deadline/arrival; seeds 920000..920003), alongside the original four pinned stress fixtures (910000..910003). Rank eligible candidates by ordinary DEV deadline misses and unassigned cases, new DEV-cohort worst/total misses and unassigned, original stress worst/total misses and unassigned, and only then stable source order. Store `experiments/<id>/dev_robustness_preselection.json` **before** 06 HOLDOUT. Incomplete/misaligned cohorts are excluded for every candidate and flagged for review; unresolved ties and leave-one-out sensitivity likewise require review. These extra E2B DEV runs cost time/resources. Never use 06 HOLDOUT/08f/CP-SAT in selection or model repair feedback.
+- Six separately evaluated RAW diagnostic axes: classification, implementation, evidence, revision action, requirement fit, cross-field consistency. Store benchmark and workflow JSON summaries, preserve initial/latest responses, and never count blind retries as fresh initial passes.
+- Canonical latest benchmark: report uses `benchmarks/<id>/benchmark.json` after selective retry. Derived `08_latest_state_index.json` and `08_diagnostic_axes.json` update atomically; older snapshots and the prior ZIP remain historical. Report warns if workflow/index and benchmark disagree.
+- Preserve format compatibility: audit manifest schema `AUDIT-EXPORT-v0.25.0`; report contract `report_version=0.27.0`; producer `0.28.0` identified separately.
+- Keep Dogwood deny-path probes, feature-specific acceptance tests, authorizations, R0/R1 evaluation and CP-SAT independent post-selection 08f unchanged.
+- Scope: predeclared synthetic cases only, no proven production/real-client generalization or formal guarantee from diagnostic lexical checks. Docker/Rust, Vite full build, real Ollama/E2B are not tested by source packaging.
+
+See `docs/v028-dev-robustness-diagnostic-axes-latest-report.md`.
+
+---
+
+# v0.27.1 — Step 10 → terminal report → Step 00 (2026-11-22)
+
+- Render the one-click **10** section before the manual evidence **00** section, followed by 01..09.
+- Move the persisted **COMPLETE/PARTIAL report** out of the Step 10 card into its own immediate sibling between 10 and 00; preserve async loading, exact Workflow ID + updated_at guards, manual reload on errors, and read-only report API.
+- Expose public dataset, evidence query and optional Qwen extraction directly in Step 10 (shared React state with manual 00) so users can start without scrolling to 00.
+- Update the guide and documentation. No modification to backend algorithms, policy, approval gates, evaluation or audit exports.
+- Validation: Python regression suite unchanged (152 passed); TSX parsed and static AST layout verification passed. Full React/Vite and Docker/Rust live builds require external dependencies and remain unverified in this packaging environment.
+
+See `docs/v0271-step10-report-before-step00.md`.
+
+---
+
 # v0.27.0 — Typed feature acceptance, semantic diagnosis, DEV selection and Dogwood negative audit (2026-11-22)
 
 - Bind each human-approved feature to an explicit acceptance contract; `claim_progress_updates` passes only its own four notification prototype tests and never via R1 assignment KPIs. Store `08e_feature_acceptance.json` and show it in step-10 report. Keep production `NO_GO` where notification integration is absent.

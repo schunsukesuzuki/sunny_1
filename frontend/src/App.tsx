@@ -81,6 +81,8 @@ function WorkflowReportPanel({report}: {report: Dict}) {
         <p><strong>受入テスト:</strong> {report.requirement_trace_status || '未検証'}</p>
         <p><strong>型付き機能契約:</strong> {report.feature_acceptance?.status || '未検証'}</p>
         {report.feature_acceptance && <Disclosure title="要求された機能ごとの受入テストID・失敗理由" data={report.feature_acceptance}/>}
+        <p><strong>06 DEV頑健性と選択安定性:</strong> {report.dev_robustness_preselection?.status || '未実行（旧ワークフロー）'}</p>
+        {report.dev_robustness_preselection && <Disclosure title="DEV・4ストレス条件の候補別成績とLeave-One-Stress-Out（08fは選択に不使用）" data={report.dev_robustness_preselection}/>}
         <p><strong>08f 選択後ギャップ:</strong> {report.selection_gap_analysis?.status || '未実行'}</p>
         {report.selection_gap_analysis && <Disclosure title="DEV選択と独立最適性評価の差（再選択には利用しない）" data={report.selection_gap_analysis}/>}
         <p><strong>Dogwood否定経路:</strong> {report.dogwood_negative_audit?.status || '未実行'}</p>
@@ -119,7 +121,28 @@ function WorkflowReportPanel({report}: {report: Dict}) {
       </div>
     </>}
     {!assessment && <div className="notice">09の意思決定レポートが存在しません。未実行・失敗した工程がある場合は、利用可能な結果だけを表示しています。</div>}
+    {report.diagnostic_axes && <>
+      <h4>08 診断の独立6軸評価（RAWのみ）</h4>
+      <p className="muted">原因分類・実装・根拠・改訂行動・要件適合・フィールド間整合性。各軸のPASSは他軸を保証しません。Blind再試行は初回独立評価ではありません。</p>
+      <div className="assessment-items">
+        {(report.diagnostic_axes.groups || []).map((g: Dict, i: number)=><article className="assessment-item" key={`${g.group}-${g.model_role}-${i}`}>
+          <strong>{g.group} / {g.model_role}</strong>
+          <p className="muted">完了 {g.completed}/{g.planned} · 再試行 {g.replayed_cases} · Blind初回独立性 {g.group==='blind_raw'?(g.usable_for_first_pass_generalization?'成立':'未成立'):'対象外'}</p>
+          <div className="top-stats">
+            {Object.entries(g.axes || {}).map(([name, value])=><Metric key={name} caption={name.replaceAll('_',' ')} value={`${(value as Dict).passed}/${(value as Dict).planned} ${(value as Dict).status}`} subtle/>)}
+          </div>
+          <Disclosure title="軸別の失敗ケースと採点根拠" data={g.axes}/>
+        </article>)}
+      </div>
+    </>}
     {bench && <Disclosure title="08 診断の実行件数・RAW結果（モデル別）" data={{summary:bench,reliability_gate:diag.reliability_gate}}/>}
+    {report.diagnostic_snapshot && <>
+      <h4>08 最新スナップショットの照合</h4>
+      <p><strong>最新ベンチマーク:</strong> {report.diagnostic_snapshot.canonical_record || '未取得'} ／ <strong>再試行記録:</strong> {report.diagnostic_snapshot.benchmark_retry_count}</p>
+      {report.diagnostic_snapshot.workflow_vs_benchmark_consistent===false && <div className="notice">保存済みワークフローと最新ベンチマークの状態が一致しません。08の判定は最新のbenchmark.jsonから表示しています。</div>}
+      {report.diagnostic_snapshot.index_consistent===false && <div className="notice">最新スナップショット索引が一致しません。監査ZIPのcanonical_recordを確認してください。</div>}
+      <Disclosure title="最新と履歴の証跡（旧retry JSONを最終判定には使用しない）" data={report.diagnostic_snapshot}/>
+    </>}
     <Disclosure title="10 レポートの根拠・実行状態（JSON）" data={{workflow_id:report.workflow_id, stages:report.stages, linked_ids:report.linked_ids, sources:report.sources}}/>
     <p className="muted">このレポートは保存済み成果物の表示です。再推論・再実験・自動承認は行いません。</p>
   </section>;
@@ -283,7 +306,7 @@ export default function App() {
 
   return <div className="app-shell">
     <header className="masthead">
-      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.27.0</div>
+      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.28.0</div>
       <h1>Claims Operations <span>Planner</span></h1>
       <p className="lead">German InsurTech事業開発：審査人員を増やさず、保険金請求の期限超過を減らせるか。</p>
       <div className="tags"><span>架空顧客 / 合成請求データ</span><span>Qwen3-Coder + ODA-Fin-RL-8B · Ollama / Metal</span><span>E2B isolated execution</span><span>R0 → R1 requirement refinement</span></div>
@@ -297,8 +320,9 @@ export default function App() {
       </div>
       <h3 className="intro-subtitle">主な機能と画面の進め方</h3>
       <ol className="feature-overview">
-        <li><span className="feature-index">00</span><div><strong>公開資料の根拠を取得・関連性を検査</strong><p>FCA/FOS保険資料・銀行インタビュー・苦情を検索。案件領域との不一致を検出し、人間による根拠の確認を必須にします。</p></div></li>
-        <li><span className="feature-index">10</span><div><strong>00〜09を一括実行してZIP保存</strong><p>保険の公開資料を検索→課題との関連性を検査→人間設定のKPI契約→固定の合成R0/R1検証。領域不一致は遮断し、原本もZIPへ保存します。</p></div></li>
+        <li><span className="feature-index">10</span><div><strong>00〜09を一括実行してZIP保存</strong><p>一括実行の入口。公開資料の取得・レビューと合成R0/R1検証を開始し、明示的な人間承認を挟みます。</p></div></li>
+        <li><span className="feature-index">10R</span><div><strong>一括実行レポート</strong><p>COMPLETE/PARTIALになった後、10の直下・00の手前に評価結果を表示します。</p></div></li>
+        <li><span className="feature-index">00</span><div><strong>公開資料の根拠を取得・関連性を検査（個別操作）</strong><p>FCA/FOS保険資料・銀行インタビュー・苦情を個別に検索します。10のデータセット選択と同期します。</p></div></li>
         <li><span className="feature-index">01–02</span><div><strong>顧客課題・サービス設計</strong><p>業務目標、制約、受入テストを整理し、サービス設計案を構造化します。</p></div></li>
         <li><span className="feature-index">03</span><div><strong>R0を隔離実行</strong><p>FIFO仕様をE2Bで実行し、仕様適合性と合成KPIを独立評価します。</p></div></li>
         <li><span className="feature-index">04–05</span><div><strong>二つのLLM診断・人間承認</strong><p>QwenとODAの診断を比較し、要件改訂の可否を人間が判断します。</p></div></li>
@@ -339,49 +363,6 @@ export default function App() {
     {error && <div className="error" role="alert"><strong>エラー:</strong> {error}</div>}
     {busy && <p className="running">{busy} 実行中。大きなQwenモデルとE2Bの処理には時間がかかる場合があります。</p>}
 
-    <section className="card evidence-rag-panel" aria-labelledby="evidence-rag-title">
-      <header className="section-header"><div className="step-number">00</div><div>
-        <h2 id="evidence-rag-title">Evidence-grounded Requirements RAG</h2>
-        <p>公表された保険請求業務の問題背景や金融サービス利用者の発言を検索します。銀行資料を保険業務の要件根拠と誤認しないよう領域も判定します。</p>
-      </div></header>
-      <div className="notice"><strong>問題背景 ≠ 原因の証明 ≠ 顧客要件。</strong>FCA・FOSの公開資料は保険請求の遅延等の問題を示しますが、FIFO・資格配分が原因だとは証明しません。銀行向けインタビューは保険の業務設計の根拠として利用できません。出所・利用条件を確認してください。</div>
-      <label htmlFor="evidence-dataset">取得する公開金融データ</label>
-      <select id="evidence-dataset" value={evidenceDataset} onChange={e=>{setEvidenceDataset(e.target.value as 'community_credit'|'cfpb_sample'|'insurance_claims_uk');setDatasetMeta(null);setRagIndex(null);setRagResult(null);}}>
-        {evidenceDatasets.length ? evidenceDatasets.map((x:Dict)=><option value={x.id} key={x.id}>{x.title}</option>) : <><option value="insurance_claims_uk">FCA/FOS — UK insurance claim handling</option><option value="community_credit">Community Credit interviews (banking)</option><option value="cfpb_sample">CFPB complaints sample (banking)</option></>}
-      </select>
-      <p className="muted">{evidenceDatasets.find((x:Dict)=>x.id===evidenceDataset)?.notice}</p>
-      <p className="muted"><a target="_blank" rel="noreferrer" href={evidenceDatasets.find((x:Dict)=>x.id===evidenceDataset)?.source || 'https://zenodo.org/records/10425908'}>配布元・利用条件を確認</a></p>
-      <div className="button-row">
-        {button('データセットを取得（アプリへ保存）','evidence-download',async()=>{
-          const x=await call<Dict>('/evidence/download',{dataset_id:evidenceDataset});setDatasetMeta(x);
-          const d=await call<{datasets:Dict[]}>('/evidence/datasets');setEvidenceDatasets(d.datasets);
-        })}
-        <a className="download-link" href={`${BACKEND}/evidence/datasets/${evidenceDataset}/download`} download>取得済みデータセットを別ZIPでダウンロード</a>
-        {button('検索インデックスを構築','evidence-index',async()=>{const x=await call<Dict>('/evidence/index',{dataset_id:evidenceDataset});setRagIndex(x);})}
-      </div>
-      {datasetMeta && <Disclosure title="ダウンロード出所とSHA256" data={datasetMeta}/>}
-      {ragIndex && <p className="muted">{ragIndex.chunk_count} passages indexed / {ragIndex.method}</p>}
-      <label htmlFor="rag-query">事業課題を検索する質問・キーワード</label>
-      <textarea id="rag-query" rows={2} value={evidenceQuery} onChange={e=>setEvidenceQuery(e.target.value)}/>
-      <label className="radio"><input type="checkbox" checked={llmExtraction} onChange={e=>setLlmExtraction(e.target.checked)}/>Qwenで根拠付き要求仮説を追加抽出（モデルは提案のみ、意味的な正しさは未検証）</label>
-      <div className="button-row">{button('検索・根拠付き要求候補を生成','rag',async()=>{
-        const x=await call<Dict>('/evidence/requirements',{dataset_id:evidenceDataset,query:evidenceQuery,llm_extraction:llmExtraction});setRagResult(x);
-      },evidenceQuery.trim().length<3)}</div>
-      {ragResult && <div className="assessment-report">
-        <div className="assessment-report-head"><div><h3>Retrieved Evidence / Requirement Candidates</h3>
-        <p className="muted">{ragResult.rag_id} / 元資料へのポインタを検証済み、意味的支持関係は未検証</p></div><Status good={false}>REQUIRES VALIDATION</Status></div>
-        <div className="evidence-register">{ragResult.evidence?.map((e:Dict)=><div key={e.evidence_id}>
-          <strong>{e.evidence_id} — {e.source_file}</strong><p>{e.quote}</p>
-          <small>chars {e.start_char}–{e.end_char} / {e.source_type}（HTML資料は抽出テキスト基準の位置）</small>
-          <small>support: {e.support_status} / validity: {e.validity}</small>
-        </div>)}</div>
-        <Disclosure title="課題との関連性・要件候補・未検証項目" data={{topic_alignment:ragResult.topic_alignment,candidates:ragResult.requirement_candidates,evaluation:ragResult.evaluation}}/>
-        {ragResult.llm_suggestions && <Disclosure title="Qwenが生成した要求仮説（必ず人間が検証）" data={ragResult.llm_suggestions}/>}
-        <a className="download-link" href={`${BACKEND}/evidence/results/${ragResult.rag_id}/bundle`}>RAG根拠・要求候補のZIPを保存</a>
-        <p className="muted">10の公開データモードは、ここを事前に操作しなくても、ダウンロード・索引化・検索を新たに実行します。人間が根拠を選んで承認した仮説だけを01の文脈に反映します。</p>
-      </div>}
-    </section>
-
     <Group no={10} title="00〜09 一括実行＋保存 — Full Workflow" desc="公開データモードでは、00で金融データ取得・索引化・根拠検索を自動実行し、根拠の人間レビュー後に01〜09へ進みます。05の要件改訂も別途承認が必要です。成果物は一つのZIPに保存します。">
       <div className="assessment-item full-run-quick-settings">
         <h3>一括実行の基本入力（01の設定と共通）</h3>
@@ -410,11 +391,15 @@ export default function App() {
       </div>
       {evidenceMode==='public' && <div className="assessment-item">
         <p><strong>00で自動実行する処理:</strong> データ取得（またはSHA256でキャッシュ検証）→ 検索インデックス更新 → 根拠検索 → 要件仮説抽出（任意）</p>
-        <p className="muted">使用データセット：<strong>{evidenceDataset}</strong> / 現在の00画面で選択しているデータを使います。別途00のボタンを操作する必要はありません。</p>
-        <p className="muted">検索クエリ：{evidenceQuery}</p>
-        <p className="muted">Qwenの要求仮説抽出：{llmExtraction?'有効（未承認）':'無効（人間が検索結果から要求仮説を記述）'}</p>
+        <label htmlFor="full-run-evidence-dataset">一括実行で使用する公開データセット（00の選択と共通）</label>
+        <select id="full-run-evidence-dataset" value={evidenceDataset} onChange={e=>{setEvidenceDataset(e.target.value as 'community_credit'|'cfpb_sample'|'insurance_claims_uk');setDatasetMeta(null);setRagIndex(null);setRagResult(null);}}>
+          {evidenceDatasets.length ? evidenceDatasets.map((x:Dict)=><option key={x.id} value={x.id}>{x.title}</option>) : <><option value="insurance_claims_uk">FCA/FOS — UK insurance claim handling</option><option value="community_credit">Community Credit interviews (banking)</option><option value="cfpb_sample">CFPB complaints sample (banking)</option></>}
+        </select>
+        <label htmlFor="full-run-evidence-query">一括実行で使う公開根拠の検索クエリ（00と共通）</label>
+        <textarea id="full-run-evidence-query" rows={2} value={evidenceQuery} onChange={e=>setEvidenceQuery(e.target.value)} />
+        <label className="radio"><input type="checkbox" checked={llmExtraction} onChange={e=>setLlmExtraction(e.target.checked)} />Qwenで根拠付き要件仮説を抽出（未承認）</label>
         <p className="muted"><strong>公開資料の対象:</strong> {evidenceDataset==='insurance_claims_uk'?'保険請求の遅延・苦情（FCA/FOS）':'個人向け金融サービス。保険請求のR0/R1へは連携不可'}</p>
-        <p className="muted">データセットとクエリを変更する場合は、上の00セクションで変更してください。</p>
+        <p className="muted">ここでの選択は、下の00の手動検索欄にも反映します。10の一括実行は00のボタンを手動で操作しなくても必要な00処理を実行します。</p>
       </div>}
       <div className="two-cols">
         <label className="radio"><input type="checkbox" checked={diagnosticRepair} onChange={e=>setDiagnosticRepair(e.target.checked)}/>04・08のLLM診断を入力事実に基づいて一度再試行。元の採点も保存</label>
@@ -444,7 +429,7 @@ export default function App() {
         },!fullRunId.trim(),'secondary')}
       </div>
       {fullRun && <section className="assessment-report" aria-label="00〜09 一括実行状況">
-        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.27.0</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
+        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.28.0</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
           <Status good={fullRun.status==='COMPLETE'}>{fullRun.status}</Status></div>
         {fullRun.topic_alignment && <div className="notice"><strong>公開資料と保険請求課題の対応:</strong> {fullRun.topic_alignment.status} — {fullRun.topic_alignment.reason}。一致は原文の意味的支持・因果の証明ではありません。</div>}
         {fullRun.grounded_contract_status && <p className="muted">担当者割当KPIの検証: {fullRun.grounded_contract_status}（該当要件のみ）</p>}
@@ -469,18 +454,6 @@ export default function App() {
           <strong>08f 独立したランダム化行動HOLDOUT：</strong>{fullRun.blind_optimality.status} / {fullRun.blind_optimality.suite_size || 0}件
           <p className="muted">証明された最適性ギャップは、ソルバーがOPTIMALを返したケースだけ計算しています。CP-SATが未導入の場合は小規模全探索に切り替わります。</p>
           <Disclosure title="08fの比較成績とソルバーの状態（根拠ZIPにも保存）" data={fullRun.blind_optimality}/>
-        </div>}
-        {['COMPLETE','PARTIAL'].includes(fullRun.status) && <div className="full-run-inline-report">
-          {fullRunReport && fullRunReport.workflow_id === fullRun.workflow_id && fullRunReport.updated_at === fullRun.updated_at ?
-            <WorkflowReportPanel report={fullRunReport}/> :
-            <div className="notice" role="status">{fullRunReportError ? `レポートの取得に失敗しました：${fullRunReportError}` : '保存済み成果物からレポートを読み込んでいます。'}</div>}
-          {fullRunReportError && <div className="button-row">
-            {button('レポートを再読み込み','full-run-report-reload',async()=>{
-              setFullRunReportError('');
-              try { setFullRunReport(await call<Dict>(`/full-run/${fullRun.workflow_id}/report`)); }
-              catch(e) { setFullRunReportError(e instanceof Error ? e.message : String(e)); throw e; }
-            },false,'secondary')}
-          </div>}
         </div>}
         <ol className="workflow-progress">
           {fullRun.stages?.map((x:Dict)=><li key={x.name}><span className="step-label">{x.name}</span><span className={'assessment-state '+(x.status==='FAILED'?'hold':x.status==='COMPLETED'?'supported_synthetic':'demo_controlled')}>{x.status}</span><small>{x.detail}</small></li>)}
@@ -630,6 +603,70 @@ export default function App() {
         {fullRun.status==='RUNNING' && <p className="muted">実行中です。公開データの取得・索引化・検索はサーバー側で処理します。画面は約1.5秒ごとに保存済みの工程状況を更新します。Workflow IDで再表示できます。</p>}
       </section>}
     </Group>
+
+    {/* The terminal report is a distinct block BELOW 10 and ABOVE 00.
+        It does not move with the manual 00 controls or cause any extra execution. */}
+    {fullRun && ['COMPLETE','PARTIAL'].includes(fullRun.status) && <section className="card full-run-report-placement" aria-label="10の出力レポート">
+      <header className="section-header"><div className="step-number">10R</div><div>
+        <h2>10 実行結果レポート</h2>
+        <p>一括実行の結果を表示します。以下の00画面より先に閲覧できます。</p>
+      </div></header>
+      <div className="full-run-inline-report">
+        {fullRunReport && fullRunReport.workflow_id === fullRun.workflow_id && fullRunReport.updated_at === fullRun.updated_at ?
+          <WorkflowReportPanel report={fullRunReport}/> :
+          <div className="notice" role="status">{fullRunReportError ? `レポートの取得に失敗しました：${fullRunReportError}` : '保存済み成果物からレポートを読み込んでいます。'}</div>}
+        {fullRunReportError && <div className="button-row">
+          {button('レポートを再読み込み','full-run-report-reload',async()=>{
+            setFullRunReportError('');
+            try { setFullRunReport(await call<Dict>(`/full-run/${fullRun.workflow_id}/report`)); }
+            catch(e) { setFullRunReportError(e instanceof Error ? e.message : String(e)); throw e; }
+          },false,'secondary')}
+        </div>}
+      </div>
+    </section>}
+
+    <section className="card evidence-rag-panel" aria-labelledby="evidence-rag-title">
+      <header className="section-header"><div className="step-number">00</div><div>
+        <h2 id="evidence-rag-title">Evidence-grounded Requirements RAG</h2>
+        <p>公表された保険請求業務の問題背景や金融サービス利用者の発言を検索します。銀行資料を保険業務の要件根拠と誤認しないよう領域も判定します。</p>
+      </div></header>
+      <div className="notice"><strong>問題背景 ≠ 原因の証明 ≠ 顧客要件。</strong>FCA・FOSの公開資料は保険請求の遅延等の問題を示しますが、FIFO・資格配分が原因だとは証明しません。銀行向けインタビューは保険の業務設計の根拠として利用できません。出所・利用条件を確認してください。</div>
+      <label htmlFor="evidence-dataset">取得する公開金融データ</label>
+      <select id="evidence-dataset" value={evidenceDataset} onChange={e=>{setEvidenceDataset(e.target.value as 'community_credit'|'cfpb_sample'|'insurance_claims_uk');setDatasetMeta(null);setRagIndex(null);setRagResult(null);}}>
+        {evidenceDatasets.length ? evidenceDatasets.map((x:Dict)=><option value={x.id} key={x.id}>{x.title}</option>) : <><option value="insurance_claims_uk">FCA/FOS — UK insurance claim handling</option><option value="community_credit">Community Credit interviews (banking)</option><option value="cfpb_sample">CFPB complaints sample (banking)</option></>}
+      </select>
+      <p className="muted">{evidenceDatasets.find((x:Dict)=>x.id===evidenceDataset)?.notice}</p>
+      <p className="muted"><a target="_blank" rel="noreferrer" href={evidenceDatasets.find((x:Dict)=>x.id===evidenceDataset)?.source || 'https://zenodo.org/records/10425908'}>配布元・利用条件を確認</a></p>
+      <div className="button-row">
+        {button('データセットを取得（アプリへ保存）','evidence-download',async()=>{
+          const x=await call<Dict>('/evidence/download',{dataset_id:evidenceDataset});setDatasetMeta(x);
+          const d=await call<{datasets:Dict[]}>('/evidence/datasets');setEvidenceDatasets(d.datasets);
+        })}
+        <a className="download-link" href={`${BACKEND}/evidence/datasets/${evidenceDataset}/download`} download>取得済みデータセットを別ZIPでダウンロード</a>
+        {button('検索インデックスを構築','evidence-index',async()=>{const x=await call<Dict>('/evidence/index',{dataset_id:evidenceDataset});setRagIndex(x);})}
+      </div>
+      {datasetMeta && <Disclosure title="ダウンロード出所とSHA256" data={datasetMeta}/>}
+      {ragIndex && <p className="muted">{ragIndex.chunk_count} passages indexed / {ragIndex.method}</p>}
+      <label htmlFor="rag-query">事業課題を検索する質問・キーワード</label>
+      <textarea id="rag-query" rows={2} value={evidenceQuery} onChange={e=>setEvidenceQuery(e.target.value)}/>
+      <label className="radio"><input type="checkbox" checked={llmExtraction} onChange={e=>setLlmExtraction(e.target.checked)}/>Qwenで根拠付き要求仮説を追加抽出（モデルは提案のみ、意味的な正しさは未検証）</label>
+      <div className="button-row">{button('検索・根拠付き要求候補を生成','rag',async()=>{
+        const x=await call<Dict>('/evidence/requirements',{dataset_id:evidenceDataset,query:evidenceQuery,llm_extraction:llmExtraction});setRagResult(x);
+      },evidenceQuery.trim().length<3)}</div>
+      {ragResult && <div className="assessment-report">
+        <div className="assessment-report-head"><div><h3>Retrieved Evidence / Requirement Candidates</h3>
+        <p className="muted">{ragResult.rag_id} / 元資料へのポインタを検証済み、意味的支持関係は未検証</p></div><Status good={false}>REQUIRES VALIDATION</Status></div>
+        <div className="evidence-register">{ragResult.evidence?.map((e:Dict)=><div key={e.evidence_id}>
+          <strong>{e.evidence_id} — {e.source_file}</strong><p>{e.quote}</p>
+          <small>chars {e.start_char}–{e.end_char} / {e.source_type}（HTML資料は抽出テキスト基準の位置）</small>
+          <small>support: {e.support_status} / validity: {e.validity}</small>
+        </div>)}</div>
+        <Disclosure title="課題との関連性・要件候補・未検証項目" data={{topic_alignment:ragResult.topic_alignment,candidates:ragResult.requirement_candidates,evaluation:ragResult.evaluation}}/>
+        {ragResult.llm_suggestions && <Disclosure title="Qwenが生成した要求仮説（必ず人間が検証）" data={ragResult.llm_suggestions}/>}
+        <a className="download-link" href={`${BACKEND}/evidence/results/${ragResult.rag_id}/bundle`}>RAG根拠・要求候補のZIPを保存</a>
+        <p className="muted">10の公開データモードは、ここを事前に操作しなくても、ダウンロード・索引化・検索を新たに実行します。人間が根拠を選んで承認した仮説だけを01の文脈に反映します。</p>
+      </div>}
+    </section>
 
     <Group no={1} title="顧客課題・価値仮説" desc="想定顧客はドイツの保険業務SaaS企業。多国展開は仮説であり、既存顧客を示すものではありません。">
       <label htmlFor="brief">顧客ブリーフ（編集可能）</label>

@@ -1,12 +1,13 @@
 {
   "name": "claims-operations-planner",
-  "version": "0.27.0",
+  "version": "0.28.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "verify:layout": "node scripts/verify-layout.cjs"
   },
   "dependencies": {
     "react": "^19.1.0",

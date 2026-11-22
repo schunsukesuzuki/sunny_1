@@ -166,3 +166,8 @@ footer { margin-top: 35px; padding: 22px 5px; border-top: 1px solid #d4e1dd; col
 .workflow-report .top-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 @media(max-width:940px) { .workflow-report .top-stats { grid-template-columns: repeat(2, minmax(0,1fr)); } }
 @media(max-width:680px) { .workflow-report { padding: 14px; } .workflow-report .top-stats { grid-template-columns: 1fr; } }
+
+/* v0.27.1: report is an independent section immediately after step 10. */
+.full-run-report-placement { border-color: #b8d7cb; background: #f8fcf9; }
+.full-run-report-placement .step-number { font-size: 12px; letter-spacing: -.04em; }
+.full-run-report-placement .full-run-inline-report { margin-bottom: 0; }

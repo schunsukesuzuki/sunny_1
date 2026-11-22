@@ -1,0 +1,31 @@
+{
+  "version": "DEV-ROBUST-COHORT-v0.28.0",
+  "seed_ids": [
+    920000,
+    920001,
+    920002,
+    920003
+  ],
+  "scenarios": {
+    "920000": {
+      "name": "dev_skill_scarcity_shift",
+      "dataset_sha256": "6fd1900cf339d31b6ecb7bbca6d33ab5f9fb09ba83168233d02b9d916e63d1f1"
+    },
+    "920001": {
+      "name": "dev_capacity_shift",
+      "dataset_sha256": "6ec9c702532ca9be96d700d44ec97d2b94c44ef733d9b15d23a7b08c2aa40908"
+    },
+    "920002": {
+      "name": "dev_deadline_shift",
+      "dataset_sha256": "c9006f5c743c4a5e4325fc1d44d08638964287884a71772b2c309945702b71a6"
+    },
+    "920003": {
+      "name": "dev_arrival_shift",
+      "dataset_sha256": "e36ec748ac823282e1066155a7749fbda22370d28a334d3803c9c7933a3aa3de"
+    }
+  },
+  "preselection_only": true,
+  "holdout_overlap": false,
+  "08f_overlap": false,
+  "purpose": "Four deterministic synthetic distribution shifts to break DEV ties; NOT a claim about real generalization."
+}

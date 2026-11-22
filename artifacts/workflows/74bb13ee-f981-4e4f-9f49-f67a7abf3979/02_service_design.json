@@ -1,0 +1,61 @@
+{
+  "service_design": {
+    "product_scope": "保険業務SaaSのサービス設計",
+    "actors": [
+      "顧客（ドイツ国内実績、欧州展開検討）",
+      "審査担当者（固定人員・勤務時間）",
+      "システム（自動化されたケース割当）"
+    ],
+    "use_cases": [
+      "案件の到着と優先順位決定",
+      "審査担当者の利用可能時間とのマッチング",
+      "期限超過の最小化",
+      "人間による保険金請求可否判断"
+    ],
+    "domain_entities": [
+      "案件（審査所要時間、期限、保険金請求額、必要資格）",
+      "審査担当者（資格、勤務時間、休日）",
+      "システムルール（FIFO、期限超過制限）"
+    ],
+    "service_flow": [
+      "案件到着",
+      "自動優先順位決定（FIFO）",
+      "審査担当者マッチング",
+      "期限超過チェック",
+      "人間による判断"
+    ],
+    "hard_constraints": [
+      "固定の審査人員・勤務時間",
+      "先着順（FIFO）",
+      "期限超過を減らす",
+      "人間が保険金請求可否判断"
+    ],
+    "objectives": [
+      "FIFOルールの正確な実装",
+      "期限超過の最小化",
+      "顧客固有のEU法規制適合の検証（未実施）"
+    ],
+    "interfaces": [
+      "案件入力インターフェース",
+      "審査担当者マッチングインターフェース",
+      "期限超過通知インターフェース",
+      "人間判断インターフェース"
+    ],
+    "acceptance_tests": [
+      "FIFOルールの正確性検証",
+      "期限超過率の測定",
+      "審査担当者時間割の整合性確認"
+    ],
+    "alternatives": [
+      "期限超過を減らすための優先順位ルール変更（未実施）",
+      "EU法規制適合の検証（未実施）"
+    ],
+    "external_validation_needed": [
+      "顧客固有のEU法規制適合",
+      "実際の業務効率改善"
+    ],
+    "design_source": "qwen_draft_unapproved"
+  },
+  "approved": false,
+  "warning": "LLM-generated service design is a draft; the independent acceptance contract is pinned."
+}

@@ -43,7 +43,7 @@ def make_manifest(artifact_dir: Path, export_id: str, identifiers: dict,
             files.append(entry)
             total+=size
     incomplete=bool(missing or skipped or any(stage.get('status') not in ('COMPLETED','COMPLETED_WITH_FINDINGS') for stage in stages))
-    return {'format_version':'AUDIT-EXPORT-v0.25.0', 'producer_version':'0.27.0', 'export_id':export_id,
+    return {'format_version':'AUDIT-EXPORT-v0.25.0', 'producer_version':'0.28.0', 'export_id':export_id,
             'created_at':created_at,'status':'PARTIAL' if incomplete else 'COMPLETE',
             'experiment_id':identifiers.get('experiments'),
             'linked_ids':identifiers,'stages':stages,'files':files,'missing':missing,
@@ -53,7 +53,7 @@ def make_manifest(artifact_dir: Path, export_id: str, identifiers: dict,
 
 
 def make_intro(manifest:dict, assessment:dict|None)->str:
-    lines=['# Claims Operations Planner — v0.27 Feature Contracts + Diagnostic + Dogwood Audit Package','',
+    lines=['# Claims Operations Planner — v0.28 DEV Robustness + Diagnostic Axes + Dogwood Audit Package','',
            f"- Export: `{manifest['export_id']}`",
            f"- Original experiment: `{manifest['experiment_id']}`",
            f"- Export completeness: **{manifest['status']}**",
@@ -85,6 +85,9 @@ def make_intro(manifest:dict, assessment:dict|None)->str:
                   '8c. `workflows/<id>/08c_grounded_kpi_verification.json` — bounded deterministic evaluation; SYNTHETIC ONLY',
                   '8e. `workflows/<id>/08e_feature_acceptance.json` — feature-specific typed acceptance; no cross-feature substitution',
                   '8f. `workflows/<id>/08f_selection_gap_analysis.json` — post-selection blind exact comparison; cannot alter DEV decision',
+                  '6b. `experiments/<id>/dev_robustness_preselection.json` — pre-HOLDOUT DEV and four stress fixtures, leave-one-out sensitivity, no 08f input',
+                  '8a. `benchmarks/<id>/diagnostic_axes.json`, `workflows/<id>/08_diagnostic_axes.json` — independent RAW diagnostic axes (fixed initial/latest, blind), no assisted answer substitution',
+                  '8s. `workflows/<id>/08_latest_state_index.json` — current benchmark.json is authoritative; earlier retry snapshots are historical',
                   '8g. `workflows/<id>/08g_dogwood_negative_audit.json` — synthetic Rust deny-path and ledger mismatch evidence',
                   '1. `workflows/<id>/01_input.json` and `02_service_design.json` — input and generated service design (v0.15 full batch)',
                   '2. `assessments/<id>/report.md` — business/delivery decision and evidence register',

@@ -1,0 +1,320 @@
+{
+  "version": "PRESELECTION-DEV-ROBUSTNESS-v0.28.0",
+  "status": "TIE_UNRESOLVED_BY_DEV",
+  "selection_uncertainty": "TIED_WITH_ANOTHER_ELIGIBLE_CANDIDATE",
+  "requires_human_review_of_selection": true,
+  "top_rank_score": [
+    0,
+    0,
+    3,
+    3,
+    2,
+    1,
+    1,
+    1
+  ],
+  "runner_up_rank_score": [
+    0,
+    0,
+    3,
+    3,
+    2,
+    1,
+    1,
+    1
+  ],
+  "selected_candidate_id": "skill_deadline_scarcity",
+  "selected_engine": "skill_deadline_scarcity",
+  "selected_source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+  "eligible_ranking": [
+    "skill_deadline_scarcity",
+    "skill_bounded_beam"
+  ],
+  "profiles": [
+    {
+      "candidate_id": "skill_deadline_scarcity",
+      "engine": "skill_deadline_scarcity",
+      "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+      "dev_score": [
+        0,
+        0
+      ],
+      "dev_case_metrics": [
+        {
+          "seed": 142,
+          "missed": 0,
+          "unassigned": 0,
+          "valid": true
+        },
+        {
+          "seed": 143,
+          "missed": 0,
+          "unassigned": 0,
+          "valid": true
+        },
+        {
+          "seed": 144,
+          "missed": 0,
+          "unassigned": 0,
+          "valid": true
+        }
+      ],
+      "stress_scenarios": [
+        {
+          "seed": 910000,
+          "scenario": "capacity_pressure",
+          "missed": 0,
+          "unassigned": 0,
+          "reference_missed": 0,
+          "reference_unassigned": 0,
+          "regret_missed": 0,
+          "regret_unassigned": 0
+        },
+        {
+          "seed": 910001,
+          "scenario": "skill_bottleneck",
+          "missed": 1,
+          "unassigned": 1,
+          "reference_missed": 1,
+          "reference_unassigned": 1,
+          "regret_missed": 0,
+          "regret_unassigned": 0
+        },
+        {
+          "seed": 910002,
+          "scenario": "deadline_compression",
+          "missed": 0,
+          "unassigned": 0,
+          "reference_missed": 0,
+          "reference_unassigned": 0,
+          "regret_missed": 0,
+          "regret_unassigned": 0
+        },
+        {
+          "seed": 910003,
+          "scenario": "arrival_reordering",
+          "missed": 0,
+          "unassigned": 0,
+          "reference_missed": 0,
+          "reference_unassigned": 0,
+          "regret_missed": 0,
+          "regret_unassigned": 0
+        }
+      ],
+      "extra_dev_scenarios": [
+        {
+          "seed": 920000,
+          "missed": 3,
+          "unassigned": 2,
+          "valid": true
+        },
+        {
+          "seed": 920001,
+          "missed": 0,
+          "unassigned": 0,
+          "valid": true
+        },
+        {
+          "seed": 920002,
+          "missed": 0,
+          "unassigned": 0,
+          "valid": true
+        },
+        {
+          "seed": 920003,
+          "missed": 0,
+          "unassigned": 0,
+          "valid": true
+        }
+      ],
+      "robust_rank_key": [
+        0,
+        0,
+        3,
+        3,
+        2,
+        1,
+        1,
+        1
+      ],
+      "input_complete": true,
+      "extra_dev_input_complete": true,
+      "source_order": 3
+    },
+    {
+      "candidate_id": "skill_bounded_beam",
+      "engine": "skill_bounded_beam",
+      "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+      "dev_score": [
+        0,
+        0
+      ],
+      "dev_case_metrics": [
+        {
+          "seed": 142,
+          "missed": 0,
+          "unassigned": 0,
+          "valid": true
+        },
+        {
+          "seed": 143,
+          "missed": 0,
+          "unassigned": 0,
+          "valid": true
+        },
+        {
+          "seed": 144,
+          "missed": 0,
+          "unassigned": 0,
+          "valid": true
+        }
+      ],
+      "stress_scenarios": [
+        {
+          "seed": 910000,
+          "scenario": "capacity_pressure",
+          "missed": 0,
+          "unassigned": 0,
+          "reference_missed": 0,
+          "reference_unassigned": 0,
+          "regret_missed": 0,
+          "regret_unassigned": 0
+        },
+        {
+          "seed": 910001,
+          "scenario": "skill_bottleneck",
+          "missed": 1,
+          "unassigned": 1,
+          "reference_missed": 1,
+          "reference_unassigned": 1,
+          "regret_missed": 0,
+          "regret_unassigned": 0
+        },
+        {
+          "seed": 910002,
+          "scenario": "deadline_compression",
+          "missed": 0,
+          "unassigned": 0,
+          "reference_missed": 0,
+          "reference_unassigned": 0,
+          "regret_missed": 0,
+          "regret_unassigned": 0
+        },
+        {
+          "seed": 910003,
+          "scenario": "arrival_reordering",
+          "missed": 0,
+          "unassigned": 0,
+          "reference_missed": 0,
+          "reference_unassigned": 0,
+          "regret_missed": 0,
+          "regret_unassigned": 0
+        }
+      ],
+      "extra_dev_scenarios": [
+        {
+          "seed": 920000,
+          "missed": 3,
+          "unassigned": 2,
+          "valid": true
+        },
+        {
+          "seed": 920001,
+          "missed": 0,
+          "unassigned": 0,
+          "valid": true
+        },
+        {
+          "seed": 920002,
+          "missed": 0,
+          "unassigned": 0,
+          "valid": true
+        },
+        {
+          "seed": 920003,
+          "missed": 0,
+          "unassigned": 0,
+          "valid": true
+        }
+      ],
+      "robust_rank_key": [
+        0,
+        0,
+        3,
+        3,
+        2,
+        1,
+        1,
+        1
+      ],
+      "input_complete": true,
+      "extra_dev_input_complete": true,
+      "source_order": 4
+    }
+  ],
+  "comparable_stress": true,
+  "stress_seeds": [
+    910000,
+    910001,
+    910002,
+    910003
+  ],
+  "extra_dev_cohort_present": true,
+  "extra_dev_comparable": true,
+  "extra_dev_seeds": [
+    920000,
+    920001,
+    920002,
+    920003
+  ],
+  "leave_one_stress_out": [
+    {
+      "omitted_stress_seed": 910000,
+      "winner_candidate_id": "skill_deadline_scarcity",
+      "changed_winner": false
+    },
+    {
+      "omitted_stress_seed": 910001,
+      "winner_candidate_id": "skill_deadline_scarcity",
+      "changed_winner": false
+    },
+    {
+      "omitted_stress_seed": 910002,
+      "winner_candidate_id": "skill_deadline_scarcity",
+      "changed_winner": false
+    },
+    {
+      "omitted_stress_seed": 910003,
+      "winner_candidate_id": "skill_deadline_scarcity",
+      "changed_winner": false
+    }
+  ],
+  "leave_one_extra_dev_out": [
+    {
+      "omitted_extra_dev_seed": 920000,
+      "winner_candidate_id": "skill_deadline_scarcity",
+      "changed_winner": false
+    },
+    {
+      "omitted_extra_dev_seed": 920001,
+      "winner_candidate_id": "skill_deadline_scarcity",
+      "changed_winner": false
+    },
+    {
+      "omitted_extra_dev_seed": 920002,
+      "winner_candidate_id": "skill_deadline_scarcity",
+      "changed_winner": false
+    },
+    {
+      "omitted_extra_dev_seed": 920003,
+      "winner_candidate_id": "skill_deadline_scarcity",
+      "changed_winner": false
+    }
+  ],
+  "dev_selection_only": true,
+  "holdout_used_for_selection": false,
+  "08f_used_for_selection": false,
+  "post_selection_feedback_used": false,
+  "policy": "Gate first. Rank eligible candidates by DEV missed, DEV unassigned, then extra DEV cohort worst missed, total missed, total unassigned, then pinned stress worst missed, total missed, total unassigned, stable order. Incomplete cohorts are excluded equally across candidates.",
+  "limitations": "Four additional synthetic DEV cases plus four fixed stress cases; leave-one-out is sensitivity, NOT statistical confidence or real-world generalization. DEV case scoring is not a production SLA guarantee."
+}

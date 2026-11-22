@@ -1,4 +1,4 @@
-"""Claims Operations Planner v0.27: auditable LLM and pinned Domain Skill comparison."""
+"""Claims Operations Planner v0.28: auditable LLM and pinned Domain Skill comparison."""
 from __future__ import annotations
 
 import asyncio
@@ -31,7 +31,9 @@ from . import authorization_ledger as al
 from . import diagnostic_reliability as dr
 from . import diagnostic_consistency as dc
 from . import diagnostic_semantics as ds
+from . import diagnostic_axes as dax
 from . import dev_selection_audit as dsa
+from . import dev_robustness_fixtures as drf
 from . import diagnostic_execution as de
 from . import business_assessment as ba
 from . import policy_validation as pv
@@ -77,7 +79,7 @@ def store(kind: str, id_: str, filename: str, data: object):
     return target
 
 
-app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.27.0")
+app = FastAPI(title="Claims Operations Planner · AI Venture Feasibility Studio", version="0.28.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                    allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
@@ -283,7 +285,7 @@ def claims_allocation_skill_manifest():
 
 @app.get("/api/sample")
 def sample():
-    return {"title": "Claims Operations Planner", "version": "0.27.0", "customer_profile": "German InsurTech SaaS (fictional)",
+    return {"title": "Claims Operations Planner", "version": "0.28.0", "customer_profile": "German InsurTech SaaS (fictional)",
             "brief": BRIEF, "contract_r0": CONTRACT_R0, "contract_r1": CONTRACT_R1,
             "service_design_r0": SERVICE_R0, "service_design_r1": SERVICE_R1,
             "synthetic_counterexample": SIMULATED_EVIDENCE,
@@ -296,7 +298,7 @@ def sample():
 
 @app.get("/api/health")
 async def health():
-    return {"app": "ok", "version": "0.27.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
+    return {"app": "ok", "version": "0.28.0", "e2b_configured": bool(os.getenv("E2B_API_KEY")),
             "ollama": await llm.status()}
 
 
@@ -330,7 +332,7 @@ async def run_r0(body: R0Request):
     held_metrics = {name: _aggregate([m for m in metrics if m["seed"] in holdout]) for name, metrics in results.items()}
     if not dev_metrics["fifo"]["valid"] or not held_metrics["fifo"]["valid"]:
         raise HTTPException(502, "R0 FIFOの独立評価が失敗しました。")
-    data = {"run_id": rid, "created_at": now(), "version": "0.27.0", "contract": CONTRACT_R0,
+    data = {"run_id": rid, "created_at": now(), "version": "0.28.0", "contract": CONTRACT_R0,
             "service_design": body.service_design or SERVICE_R0, "brief": body.brief,
             "seed": body.seed, "dev_seeds": dev, "holdout_seeds": holdout,
             "development": dev_metrics, "holdout": held_metrics,
@@ -656,10 +658,14 @@ async def evaluate_r1(body: EvaluateRequest):
     # remains a completely separate population and is never used in repairs.
     dev_probes = pv.policy_probes()
     dev_stresses = pv.stress_scenarios()
-    full_dev_data = {**dev_data, **dev_probes, **dev_stresses}
+    robustness_dev=drf.cohort()  # Synthetic DEV perturbations predeclared BEFORE evaluation.
+    store('experiments',eid,'dev_robustness_cohort_manifest.json',drf.manifest())
+    for robust_seed,robust_dataset in robustness_dev.items():
+        store('experiments',eid,f'dev_robustness_dataset_{robust_seed}.json',robust_dataset)
+    full_dev_data = {**dev_data, **dev_probes, **dev_stresses, **robustness_dev}
     fifo, deadline = get_reference_sources()
     try:
-        dev_refs = await asyncio.to_thread(run_in_e2b, {**dev_data, **dev_stresses}, {"fifo": fifo, "deadline": deadline})
+        dev_refs = await asyncio.to_thread(run_in_e2b, {**dev_data, **dev_stresses, **robustness_dev}, {"fifo": fifo, "deadline": deadline})
     except Exception as exc:
         store_failure(eid, "E2B DEV reference", exc)
         raise HTTPException(502, "E2B DEV参照評価に失敗: " + str(exc)[:240]) from exc
@@ -668,6 +674,11 @@ async def evaluate_r1(body: EvaluateRequest):
         {k:[r for r in v if r.seed in dev_data] for k,v in dev_refs.items()}, dev_data)
     stress_refs = _evaluate_e2b(
         {k:[r for r in v if r.seed in dev_stresses] for k,v in dev_refs.items()}, dev_stresses)
+    robustness_refs = _evaluate_e2b(
+        {k:[r for r in v if r.seed in robustness_dev] for k,v in dev_refs.items()}, robustness_dev)
+    store('experiments',eid,'dev_robustness_reference.json',{
+        'cohort_version':drf.VERSION,'reference_metrics':robustness_refs,
+        'not_an_optimality_oracle':True})
     attempts = []
     selected = None
     selected_metric = None
@@ -679,6 +690,8 @@ async def evaluate_r1(body: EvaluateRequest):
             dev_runs = [r for r in raw['generated'] if r.seed in dev_data]
             probe_runs = [r for r in raw['generated'] if r.seed in dev_probes]
             stress_runs = [r for r in raw['generated'] if r.seed in dev_stresses]
+            robust_runs = [r for r in raw['generated'] if r.seed in robustness_dev]
+            robustness_rows = _evaluate_e2b({'generated':robust_runs}, robustness_dev)['generated']
             metrics = _evaluate_e2b({'generated':dev_runs}, dev_data)['generated']
             probes = [pv.evaluate_probe(dev_probes[r.seed],r.output,r.error) for r in probe_runs]
             stress_metrics = _evaluate_e2b({'generated':stress_runs}, dev_stresses)['generated']
@@ -697,6 +710,7 @@ async def evaluate_r1(body: EvaluateRequest):
         except Exception as exc:
             probes = []
             stress_checks = []
+            robustness_rows = []
             metrics = [{"seed": s, "valid": False, "violations": ["E2B error: " + str(exc)[:180]],
                         "missed_deadlines": None, "assigned_hours": None} for s in dev_seeds]
         store_attempt_code(eid, ix, current_code, previous_code)
@@ -716,7 +730,8 @@ async def evaluate_r1(body: EvaluateRequest):
                        m.get('missed_deadlines',10**9)<=b.get('missed_deadlines',-1)
                        for m,b in zip(metrics,base)),
                    "selection_gate":selection,
-                   "behavioral_probes":probes, "stress_checks":stress_checks}
+                   "behavioral_probes":probes, "stress_checks":stress_checks,
+                   'robustness_dev_rows':robustness_rows}
         attempts.append(attempt)
         store("experiments", eid, f"attempt_{ix:02d}.json", attempt)
         if meets_business and (selected_metric is None or
@@ -771,6 +786,7 @@ async def evaluate_r1(body: EvaluateRequest):
             probes_rows=[pv.evaluate_probe(dev_probes[r.seed],r.output,r.error)
                          for r in series if r.seed in dev_probes]
             stress_rows=_evaluate_e2b({name:[r for r in series if r.seed in dev_stresses]},dev_stresses)[name]
+            robustness_rows=_evaluate_e2b({name:[r for r in series if r.seed in robustness_dev]},robustness_dev)[name]
             stress_by_seed={r['seed']:r for r in stress_rows}
             stress_reference={r['seed']:r for r in stress_refs['deadline']}
             stress_checks=[{'seed':sn,'scenario':ds['scenario'],
@@ -787,7 +803,7 @@ async def evaluate_r1(body: EvaluateRequest):
             row={'engine':name,'provenance':'PINNED_REVIEWED_DOMAIN_SKILL_NOT_LLM',
                  'source_sha256':sha256(skill_sources[name]),'selection_gate':skill_gate,
                  'dev':skill_agg,'dev_rows':dev_rows,'behavioral_probes':probes_rows,
-                 'stress_checks':stress_checks,
+                 'stress_checks':stress_checks,'robustness_dev_rows':robustness_rows,
                  'sandbox_execution_seconds':round(sum(r.elapsed_seconds for r in series),3),
                  'llm_tokens':'NOT_MEASURED', 'holdout_executed':False}
             skill_records.append(row)
@@ -800,6 +816,28 @@ async def evaluate_r1(body: EvaluateRequest):
                 selected_metric=skill_agg
                 selected_dev_score=skill_score
                 selected_engine=name
+    # v0.28: preselect using only earlier-pinned DEV and stress outcomes.  The
+    # 06 HOLDOUT and 08f oracle have NOT been created at this point.
+    dev_candidates_preselection=dsa.compile_candidates(attempts,skill_records)
+    preselection=dsa.drb.choose(dev_candidates_preselection)
+    store('experiments',eid,'dev_robustness_preselection.json',preselection)
+    winning_id=preselection.get('selected_candidate_id')
+    chosen_candidate=next((c for c in dev_candidates_preselection if c['candidate_id']==winning_id),None)
+    if chosen_candidate:
+        selected_engine=chosen_candidate['engine']
+        selected_metric=next((c['evaluation'] for c in attempts
+            if chosen_candidate['candidate_id']=='llm_attempt_'+str(c['attempt'])),None)
+        if selected_engine=='llm_generated':
+            selected=(path_for('experiments',eid)/(
+                'attempt_'+chosen_candidate['candidate_id'].split('_')[-1].zfill(2)+'.py')).read_text(encoding='utf-8')
+        else:
+            selected=skill_sources[selected_engine]
+            selected_metric=next((c['dev'] for c in skill_records if c['engine']==selected_engine),None)
+        assert sha256(selected)==chosen_candidate['source_sha256'], 'DEV selected source identity mismatch'
+    else:
+        selected=None
+        selected_engine=None
+        selected_metric=None
     held = None
     comparator_metrics = {}
     holdout_executed = False
@@ -888,6 +926,7 @@ async def evaluate_r1(body: EvaluateRequest):
                                     selected_source_hash=sha256(selected) if selected else None)
     store('experiments',eid,'dev_selection_rationale.json',dev_selection_trace)
     result['dev_selection_rationale']=dev_selection_trace
+    result['dev_robustness_preselection']=preselection
     store("experiments", eid, "dev_selection_audit.json", {
         'candidate_ranking':dev_selection_trace,
         'version':dsel.VERSION,'attempts':[{'attempt':a['attempt'],'source_sha256':a['code_sha256'],
@@ -1037,6 +1076,7 @@ def report_r1(result: dict, parent: dict, proposal: dict) -> str:
 
 - DEV: `{result['dev_seeds']}`。Qwenに渡す修正指示はDEV由来のみ。
 - DEV candidate gate: **`{result['selection_status']}`** (`{result['selection_gate_version']}`) — KPI + deadline/qualification behavioral probes + four stress scenarios.
+- v0.28 preselection robustness: **`{result.get('dev_robustness_preselection', {}).get('status', 'NOT_RUN')}`**; selection uncertainty and leave-one-stress-out sensitivity are separately audited; NOT a statistical generalization guarantee.
 - DEV selected attempt: `{result['selected_attempt']}`; no eligible candidate means the untouched holdout is **NOT_EXECUTED**, not a PASS.
 - Detailed gate reasons/code hashes: `dev_selection_audit.json`.
 - The 08b post-selection policy check repeats fixed DEV probes/stresses; it is NOT an untouched independent behavioral holdout.
@@ -1182,7 +1222,7 @@ def benchmark_fixtures():
 
 
 def _benchmark_report(record: dict) -> str:
-    lines = ["# Claims Operations Planner v0.27 — Diagnostic Benchmark", "",
+    lines = ["# Claims Operations Planner v0.28 — Diagnostic Benchmark", "",
         "> **合成フィクスチャの独立採点です。実顧客要件の正しさ・EU規制適合性を検証しません。**", "",
         f"- Benchmark ID: `{record['benchmark_id']}`", f"- Date: {record['created_at']}",
         f"- Fixtures: `{record['fixture_version']}` / Rubric: `{record['rubric_version']}`",
@@ -1201,7 +1241,21 @@ def _benchmark_report(record: dict) -> str:
               "| model | timeouts | completed | planned | structural raw consistency |", "|---|---:|---:|---:|---:|"]
     for name, val in record['summary'].items():
         lines.append(f"|{name}|{val.get('timeout_calls', 0)}|{val['completed']}|{val['planned']}|{val.get('structural_consistency_passed', 'n/a')}|")
-    lines += ["", "## Trial-level evidence", "",
+    axes = record.get('diagnostic_axes') or dax.summarize(record)
+    lines += ['', '## v0.28 RAW dimension-by-dimension audit', '',
+              '| group / model | cause | implementation | evidence | revision | requirement fit | cross-field |',
+              '|---|---|---|---|---|---|---|']
+    for g in axes['groups']:
+        a=g['axes']
+        def cell(name):
+            x=a[name]
+            return f"{x['passed']}/{x['planned']} ({x['status']})"
+        lines.append('|'+g['group']+' / '+g['model_role']+'|'+ '|'.join(cell(k) for k in (
+            'cause_classification','implementation_correctness','evidence_quality',
+            'revision_action','requirement_fit','cross_field_consistency'))+'|')
+    lines += ['', 'RAW axes are independent; a passing classification does not validate the revision. '
+              'Blind replay is NOT fresh evidence. No production/legal certification.', '']
+    lines += ["", "## Trial-level evidence", "", 
               "| case | repetition | model | classification | result | score | failures |",
               "|---|---:|---|---|---|---:|---|"]
     for tr in record['trials']:
@@ -1221,7 +1275,7 @@ def _benchmark_report(record: dict) -> str:
         for role,x in record['blind_generalization']['summary'].items():
             lines.append(f"|{role}|{x['passed']}|{x.get('assisted_passed',0)}|{x.get('grounding_applied',0)}|{x['completed']}|{x['planned']}|")
     gate = record.get("reliability_gate") or {}
-    lines += ["", "## v0.27 raw diagnostic reliability gate", "",
+    lines += ["", "## v0.28 raw diagnostic reliability gate", "",
               f"- Status: **{gate.get('status', 'NOT_RUN')}**",
               f"- Human adjudication required: **{gate.get('human_adjudication_required', True)}**",
               f"- Prespecified criteria: {gate.get('predeclared_criteria', 'Not available')}",
@@ -1364,6 +1418,8 @@ async def run_benchmark(body: BenchmarkRequest):
           "methodology":"Two-layer audit: raw model prediction (unaltered), optional deterministic input-only evidence-ID binding, optional second model inference, and fresh blind raw+assisted scores. The fixture oracle grades ONLY, never enters model prompts or grounder. Assistance is not a model-level diagnostic success. Fixed rubric unchanged. Cross-field consistency is a separate check.",
           "caveat":"Rule-based checks, no gold-standard EU customer requirement or regulatory validation."}
     data["reliability_gate"] = dr.assess(data)
+    data['diagnostic_axes'] = dax.summarize(data)
+    store('benchmarks',bid,'diagnostic_axes.json',data['diagnostic_axes'])
     store("benchmarks",bid,"diagnostic_reliability_gate.json",data["reliability_gate"])
     store("benchmarks",bid,"benchmark.json",data)
     store("benchmarks",bid,"report.md",_benchmark_report(data))
@@ -1521,6 +1577,8 @@ async def retry_incomplete_benchmark(body: BenchmarkRetryRequest):
                     record['blind_generalization']['trials'],record['models'])
             record['status']=de.status_of(record['trials'],record['blind_generalization']['trials'])
             record['reliability_gate']=dr.assess(record)
+            record['diagnostic_axes']=dax.summarize(record)
+            _atomic_rewrite('benchmarks',bid,'diagnostic_axes.json',record['diagnostic_axes'])
             _atomic_rewrite('benchmarks',bid,'benchmark.json',record)
             _atomic_rewrite('benchmarks',bid,'diagnostic_reliability_gate.json',record['reliability_gate'])
             _atomic_rewrite('benchmarks',bid,'report.md',_benchmark_report(record))

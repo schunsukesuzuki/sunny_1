@@ -1,0 +1,30 @@
+{
+  "name": "generated",
+  "seed": 900002,
+  "source_sha256": "d535233e3b673ddf36036004d92e4cf826d87edcf644fd49548bc400bd9fb401",
+  "sandbox_id": "iqp6usmdoag9g65ecnofa",
+  "elapsed_seconds": 0.333,
+  "stdout": "",
+  "stderr": "",
+  "output": {
+    "assignments": [
+      {
+        "case_id": "COMMON",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "COMMON",
+        "reviewer_id": "R-B",
+        "day": 0,
+        "hours": 1
+      }
+    ],
+    "unassigned_case_ids": [
+      "SCARCE"
+    ]
+  },
+  "output_sha256": "e8b4dcc4515bd270eba88d72305bc6457c19acc831e4b2d23721eb4bfbe85f03",
+  "error": null
+}

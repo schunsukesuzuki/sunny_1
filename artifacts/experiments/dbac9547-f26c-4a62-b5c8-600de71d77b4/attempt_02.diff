@@ -1,0 +1,147 @@
+--- previous.py
++++ attempt_02.py
+@@ -1,5 +1,4 @@
+ import json
+-from collections import defaultdict
+ 
+ def load_input():
+     with open('/home/user/input.json', 'r') as f:
+@@ -13,14 +12,10 @@
+     with open('/home/user/output.json', 'w') as f:
+         json.dump(output, f, indent=2)
+ 
+-def is_skill_match(case_skill, reviewer_skills):
+-    return case_skill in reviewer_skills
++def is_skill_match(case, reviewer):
++    return case["required_skill"] in reviewer["skills"]
+ 
+ def can_assign(case, reviewer, day):
+-    # Check if reviewer has the required skill
+-    if not is_skill_match(case["required_skill"], reviewer["skills"]):
+-        return False
+-    
+     # Check if reviewer has capacity for this day
+     if day >= len(reviewer["daily_capacity_hours"]):
+         return False
+@@ -29,70 +24,78 @@
+     if daily_capacity < case["duration_hours"]:
+         return False
+     
++    # Check if reviewer has skill match
++    if not is_skill_match(case, reviewer):
++        return False
++    
+     return True
+ 
+ def assign_case_to_reviewer(case, reviewers, day):
+-    # Find a suitable reviewer for the case on the given day
++    # Find a reviewer who can handle this case on the given day
+     for reviewer in reviewers:
+         if can_assign(case, reviewer, day):
+-            # Check if reviewer has capacity for this case duration
+-            if reviewer["daily_capacity_hours"][day] >= case["duration_hours"]:
+-                return reviewer
++            # Check if reviewer has capacity for this day
++            if day < len(reviewer["daily_capacity_hours"]):
++                daily_capacity = reviewer["daily_capacity_hours"][day]
++                if daily_capacity >= case["duration_hours"]:
++                    return reviewer
+     return None
+ 
+-def prioritize_cases(cases):
+-    # Sort cases by deadline (earlier deadlines first) and then by business priority (higher first)
+-    return sorted(cases, key=lambda x: (x["deadline_day"], -x["business_priority"]))
++def prioritize_cases(cases, reviewers):
++    # Sort cases by deadline day (earlier deadlines first)
++    sorted_cases = sorted(cases, key=lambda x: x["deadline_day"])
++    return sorted_cases
+ 
+-def main():
+-    data = load_input()
+-    days = data["days"]
+-    cases = data["cases"]
+-    reviewers = data["reviewers"]
++def schedule_assignments(input_data):
++    days = input_data["days"]
++    cases = input_data["cases"]
++    reviewers = input_data["reviewers"]
+     
+     # Initialize assignments and unassigned cases
+     assignments = []
+     unassigned_case_ids = []
+     
+-    # Track reviewer capacity usage per day
+-    reviewer_capacity_usage = defaultdict(lambda: [0] * days)
++    # Track reviewer daily capacity usage
++    reviewer_daily_usage = {}
++    for reviewer in reviewers:
++        reviewer_daily_usage[reviewer["reviewer_id"]] = [0] * days
+     
+-    # Prioritize cases by deadline and business priority
+-    prioritized_cases = prioritize_cases(cases)
++    # Sort cases by deadline day (earlier deadlines first)
++    sorted_cases = prioritize_cases(cases, reviewers)
+     
+-    # Assign each case to a reviewer
+-    for case in prioritized_cases:
++    # Assign cases to reviewers
++    for case in sorted_cases:
+         assigned = False
+         
+-        # Try to assign the case to a reviewer on each day
+-        for day in range(days):
+-            if assigned:
+-                break
+-            
+-            # Find a suitable reviewer for this case on this day
+-            reviewer = assign_case_to_reviewer(case, reviewers, day)
+-            
+-            if reviewer is not None:
+-                # Check if the reviewer has capacity
+-                if reviewer["daily_capacity_hours"][day] >= case["duration_hours"]:
+-                    # Assign the case to this reviewer on this day
+-                    assignments.append({
+-                        "case_id": case["case_id"],
+-                        "reviewer_id": reviewer["reviewer_id"],
+-                        "day": day,
+-                        "hours": case["duration_hours"]
+-                    })
+-                    
+-                    # Update reviewer capacity
+-                    reviewer["daily_capacity_hours"][day] -= case["duration_hours"]
+-                    
+-                    assigned = True
+-                    break
++        # Try to assign the case on its deadline day or earlier
++        for day in range(case["deadline_day"] + 1):
++            if not assigned:
++                reviewer = assign_case_to_reviewer(case, reviewers, day)
++                if reviewer:
++                    # Check if reviewer has capacity for this day
++                    if day < len(reviewer["daily_capacity_hours"]):
++                        daily_capacity = reviewer["daily_capacity_hours"][day]
++                        if daily_capacity >= case["duration_hours"]:
++                            # Assign the case
++                            assignments.append({
++                                "case_id": case["case_id"],
++                                "reviewer_id": reviewer["reviewer_id"],
++                                "day": day,
++                                "hours": case["duration_hours"]
++                            })
++                            
++                            # Update reviewer capacity
++                            reviewer_daily_usage[reviewer["reviewer_id"]][day] += case["duration_hours"]
++                            assigned = True
++                            break
+         
+         if not assigned:
+             unassigned_case_ids.append(case["case_id"])
+     
+-    save_output(assignments, unassigned_case_ids)
++    return assignments, unassigned_case_ids
+ 
++# Main execution
+ if __name__ == "__main__":
+-    main()+    input_data = load_input()
++    assignments, unassigned_case_ids = schedule_assignments(input_data)
++    save_output(assignments, unassigned_case_ids)

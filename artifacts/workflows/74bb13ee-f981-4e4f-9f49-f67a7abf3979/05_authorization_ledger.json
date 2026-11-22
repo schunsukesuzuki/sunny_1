@@ -1,0 +1,19 @@
+{
+  "version": "AUTH-LEDGER-v0.25.0",
+  "approval_id": "f19fc279-85ee-475a-bd36-e3c95e6786f0",
+  "verified": true,
+  "journal_total_entries": 1,
+  "approval_seq": 1,
+  "approval_event_hash": "7e37cf1bf21f953bf1586be29209d9336bf34dad69f49515b51326e8cc3f3a3d",
+  "revoked": false,
+  "revocation_seq": null,
+  "revocation_event_hash": null,
+  "last_chain_hash": "7e37cf1bf21f953bf1586be29209d9336bf34dad69f49515b51326e8cc3f3a3d",
+  "approval_record_sha256": "57b6fa9b89bb764613b9f16fcac7f992e23f90449155c7575674cde20115d1c8",
+  "actor_authentication": "SELF_REPORTED",
+  "integrity": "UNKEYED_SHA256_NOT_TAMPER_PROOF",
+  "identity_verification": "NONE",
+  "dogwood_history_persistent": false,
+  "production_authorization": false,
+  "note": "SQLite persists local approval evidence; Dogwood replays validated events per decision. No identity provider or continuous Dogwood history."
+}

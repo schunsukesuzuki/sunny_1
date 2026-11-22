@@ -132,6 +132,11 @@ def test_fullrun_retry_updates_zip_not_r1_and_does_not_repeat_dogwood(client,mon
     assert after['dogwood_authorization']==before['dogwood_authorization']
     assert after['diagnostic_execution_status']=='COMPLETE'
     assert after['diagnostic_reliability_status']=='HOLD_HUMAN_ADJUDICATION'
+    final_report=client.get('/api/full-run/'+state['workflow_id']+'/report').json()
+    assert final_report['diagnostic_snapshot']['index_consistent']
+    assert final_report['diagnostic_snapshot']['benchmark_retry_count']==1
+    assert final_report['diagnostic']['execution_status']=='COMPLETE'
+    assert final_report['diagnostic_axes']
     with zipfile.ZipFile(io.BytesIO(client.get(after['bundle_url']).content)) as z:
         manifest=json.loads(z.read('manifest.json'))
         assert manifest['status']=='COMPLETE'

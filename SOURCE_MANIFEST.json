@@ -1,13 +1,13 @@
 {
-  "source_package_version": "0.27.0",
-  "source_base": "0.26.1",
+  "source_package_version": "0.28.0",
+  "source_base": "0.27.1",
   "artifact_type": "complete source snapshot",
   "runtime_dependencies_not_bundled": true,
   "verification": "SHA-256 of source bytes; SOURCE_MANIFEST.json excluded from its own hashes",
-  "python_regression_tests": "152 passed",
-  "public_notification_acceptance_integration": "PASSED_MOCKED_EXTERNAL_INTERFACES",
-  "frontend_tsx_syntax_parse": "PASSED_NOT_TYPECHECK",
-  "frontend_full_vite_build": "NOT_EXECUTED_NODE_MODULES_UNAVAILABLE",
+  "python_regression_tests": "160 passed",
+  "frontend_tsx_syntax_parse": "PASSED",
+  "frontend_layout_ast_check": "PASSED_10_REPORT_00_01_TO_09",
+  "frontend_full_vite_build": "NOT_EXECUTED_REACT_VITE_DEPENDENCIES_UNAVAILABLE",
   "native_rust_build": "NOT_EXECUTED_IN_PACKAGING_ENVIRONMENT",
   "real_ollama_e2b": "NOT_EXECUTED_IN_PACKAGING_ENVIRONMENT",
   "files": [
@@ -23,8 +23,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 17489,
-      "sha256": "0f3f9d95fb30e25c7521faa1f945940c277412395a77142af26980be9304590a"
+      "bytes": 20678,
+      "sha256": "5a0b13adda6801a4f059f68f2b854f1f6a89c2acd1d23bb66144b633e052ef56"
     },
     {
       "path": "LICENSE",
@@ -33,8 +33,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 35238,
-      "sha256": "9de47d551f6b5eee951abe2d53b5963540c4ee77590465351e36e8604e4b1fb2"
+      "bytes": 37118,
+      "sha256": "2bca674482e0ff24594166fba446b387dea1c5fec152eba84ba8d9bc1446ca53"
     },
     {
       "path": "artifacts/.gitkeep",
@@ -77,14 +77,29 @@
       "sha256": "49d72f562c536df46a7508bf0b1684811439b806d0a5179f9fa3ae9acb18ebd7"
     },
     {
+      "path": "backend/app/dev_robustness.py",
+      "bytes": 9596,
+      "sha256": "1bd8c8d8fc13c31801eb7bef67adc9ac28172727ac3ae1e09246ec71e4c2e8c6"
+    },
+    {
+      "path": "backend/app/dev_robustness_fixtures.py",
+      "bytes": 1955,
+      "sha256": "94d9a5379ed668291a16d5b17211fbfda4a8ea9b01b535b7b6c74f7fa6fe335d"
+    },
+    {
       "path": "backend/app/dev_selection.py",
       "bytes": 2765,
       "sha256": "b4703e76445131a04820b0dbffb1a8825349ebbd717462df74ca3fabb3b682bb"
     },
     {
       "path": "backend/app/dev_selection_audit.py",
-      "bytes": 2849,
-      "sha256": "5780a83bc2d55d88f543295015c5125103e1c1e99868ecbaf6b12d019c5c1235"
+      "bytes": 3333,
+      "sha256": "6493e4698a2b2d5c33312a190ba671ffbf7ae71a7b8639d049c81696b4bb4d7c"
+    },
+    {
+      "path": "backend/app/diagnostic_axes.py",
+      "bytes": 5538,
+      "sha256": "fa5cba3a3d082693e74e8f6cb79ec74abf2c79be545cf3c2633984a248979b81"
     },
     {
       "path": "backend/app/diagnostic_benchmark.py",
@@ -148,8 +163,8 @@
     },
     {
       "path": "backend/app/export_bundle.py",
-      "bytes": 10576,
-      "sha256": "4ad0a97fe9d32956c1340758908a47a5709fa5526d0b30bb2db3fd5240d260f6"
+      "bytes": 11099,
+      "sha256": "a8278b5dd2e9fdde1e2cdb5eed1b9afa8cc129cc06841d61469b1185d0c1ae2a"
     },
     {
       "path": "backend/app/feature_acceptance.py",
@@ -158,8 +173,8 @@
     },
     {
       "path": "backend/app/full_run.py",
-      "bytes": 73433,
-      "sha256": "599fe7064f96b525b8611656bc450b110b3af0df8610d5de4862a0c5b92386e0"
+      "bytes": 77131,
+      "sha256": "20d01307f95ffef8da5f6190026c08788500b2a08fcc8d68825c2470a2952343"
     },
     {
       "path": "backend/app/grounded_contract.py",
@@ -173,8 +188,8 @@
     },
     {
       "path": "backend/app/main.py",
-      "bytes": 108243,
-      "sha256": "49947f431a2f02b18c9dcd9a35a0d46010f305becd8db5c6310b0bfde09acefc"
+      "bytes": 112266,
+      "sha256": "c055bff7351aa45843e67b2373e6162cbe1a6d9b6222a831ccf1988b6c379351"
     },
     {
       "path": "backend/app/notification_demo.py",
@@ -398,13 +413,18 @@
     },
     {
       "path": "backend/tests/test_v026_diagnostic_execution.py",
-      "bytes": 9469,
-      "sha256": "17a8a4a56c03f422f20376a1579d56e182f24bf6550435ee15f44f67a11fc2e7"
+      "bytes": 9808,
+      "sha256": "bfedc66577470059dc92dc584dbec0aa8b0766485ae193389fe1bcc0690a161e"
     },
     {
       "path": "backend/tests/test_v027_feature_semantic_selection_dogwood.py",
-      "bytes": 10894,
-      "sha256": "723817fc5a27c3345e2e66a4c1c09497c989127c544f6d420fe23ba6a5839f6c"
+      "bytes": 10946,
+      "sha256": "0744ba1adcba483c6ea5f4de8b4a8403341a16d72c1a841e1b7e45406280749f"
+    },
+    {
+      "path": "backend/tests/test_v028_robust_dev_diagnostic_snapshot.py",
+      "bytes": 9480,
+      "sha256": "9849232d4b09c578d38e856851ec1181f6896763524b0c4cfc080d00c03cbe34"
     },
     {
       "path": "backend/tests/test_vertical_v09.py",
@@ -532,6 +552,16 @@
       "sha256": "bb6b4a688ade8d826efa68e0188b77f3cbc35b46c31f1664cc4c3a8778b22f97"
     },
     {
+      "path": "docs/v0271-step10-report-before-step00.md",
+      "bytes": 1547,
+      "sha256": "db47b0abf1c5255258dd4684bbc5260bdf6889f59b9671cfee5e887b3b8ac7d4"
+    },
+    {
+      "path": "docs/v028-dev-robustness-diagnostic-axes-latest-report.md",
+      "bytes": 6257,
+      "sha256": "601730626bd9b8d3e6ff1c6b40626c2341161e58193b22a31db418023a387d59"
+    },
+    {
       "path": "docs/v08-claims-experiment-protocol.md",
       "bytes": 3593,
       "sha256": "99a9d6f4a087ce74a1e1138d9232330d948dbea31b557bf62451153322988492"
@@ -583,13 +613,18 @@
     },
     {
       "path": "frontend/package.json",
-      "bytes": 465,
-      "sha256": "1e99e318c8e5ce9395a8d26d7b8ada4f15af7cd63a74bc117e8f51b2c78ff5d7"
+      "bytes": 520,
+      "sha256": "5e39a6db1515bf203c394886b06cce299614811538d6174445b8e79090b14e7b"
+    },
+    {
+      "path": "frontend/scripts/verify-layout.cjs",
+      "bytes": 2850,
+      "sha256": "dffe0beaff520a632681058b7d0cd1af144fc8186e619cf96c2e38c4f3cb49d2"
     },
     {
       "path": "frontend/src/App.tsx",
-      "bytes": 94007,
-      "sha256": "9e80d97f8380a83548b39f7562673a9fcfb38c26cc2a7981ddd41d48848ecb9b"
+      "bytes": 97983,
+      "sha256": "cb64f412e2ea465964955390eb5b04599f0aa0d328016a9e05b0deb63d07eb22"
     },
     {
       "path": "frontend/src/main.tsx",
@@ -598,8 +633,8 @@
     },
     {
       "path": "frontend/src/styles.css",
-      "bytes": 13974,
-      "sha256": "2c5f198b525883951716fec364533e0d045b933766f3cc793d98e5c47699f6f7"
+      "bytes": 14283,
+      "sha256": "6ff21498fa09a9a249fbed340b8f19bfa7020599fe772a5350e5460301e0f5de"
     },
     {
       "path": "frontend/src/types.ts",

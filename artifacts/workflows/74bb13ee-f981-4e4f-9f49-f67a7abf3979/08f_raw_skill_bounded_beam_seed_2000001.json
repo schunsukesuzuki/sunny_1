@@ -1,0 +1,46 @@
+{
+  "name": "skill_bounded_beam",
+  "seed": 2000001,
+  "source_sha256": "ae77a4c93a992388530c5a554a0665300fd6d19c5e91132791dccf7bff5c82f4",
+  "sandbox_id": "i9wioin35k54vew4x4wwb",
+  "elapsed_seconds": 0.322,
+  "stdout": "",
+  "stderr": "",
+  "output": {
+    "assignments": [
+      {
+        "case_id": "BL01-01",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "BL01-00",
+        "reviewer_id": "R-B",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "BL01-02",
+        "reviewer_id": "R-B",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "BL01-03",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "BL01-04",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 2
+      }
+    ],
+    "unassigned_case_ids": []
+  },
+  "output_sha256": "1a0b9aceeacea90d6ef330d8d84ba2fec742aee052b1528e039ac984c4cb1fd5",
+  "error": null
+}

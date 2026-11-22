@@ -27,6 +27,7 @@ from . import boundary_assurance as ba
 from . import dogwood_authorization as da
 from . import authorization_ledger as al
 from . import diagnostic_reliability as dr
+from . import diagnostic_axes as dax
 from . import feature_acceptance as fa
 from . import dogwood_negative_audit as dna
 from . import selection_gap_analysis as sga
@@ -439,6 +440,17 @@ def register(app, m) -> None:
                 state["linked_ids"]["benchmarks"]=bench["benchmark_id"]
                 reliability = bench.get("reliability_gate") or dr.assess(bench)
                 add_file(wid,"08_diagnostic_reliability_gate.json",reliability)
+                add_file(wid,"08_diagnostic_axes.json",bench.get('diagnostic_axes') or dax.summarize(bench))
+                add_file(wid,"08_latest_state_index.json",{
+                    'version':'DIAGNOSTIC-CURRENT-SNAPSHOT-v0.28.0',
+                    'benchmark_id':bench['benchmark_id'],
+                    'latest_source':f"benchmarks/{bench['benchmark_id']}/benchmark.json",
+                    'current_execution_status':reliability.get('execution_status'),
+                    'current_quality_status':reliability.get('quality_status'),
+                    'retry_count':len(bench.get('retry_history') or []),
+                    'prior_snapshots_are_history':True,
+                    'last_update_utc':m.now(),
+                })
                 state["diagnostic_reliability_status"] = reliability["status"]
                 state["diagnostic_execution_status"] = reliability.get('execution_status','UNKNOWN')
                 st=('COMPLETED_WITH_FINDINGS' if bench['status']=='COMPLETED' else
@@ -914,6 +926,19 @@ def register(app, m) -> None:
             'quality_status':reliability['status'],
             'retry_is_blind_fresh':False,'created_at':m.now()})
         add_file(workflow_id,'08_diagnostic_reliability_retry_'+m.fresh_id()+'.json',reliability)
+        # Keep prior audit snapshots append-only, but rewrite the explicitly
+        # DERIVED current-index and axis summary to match the canonical latest
+        # benchmark.json. Never change a completed raw model trial.
+        m._atomic_rewrite('workflows',workflow_id,'08_diagnostic_axes.json',
+                          retry.get('diagnostic_axes') or dax.summarize(retry))
+        m._atomic_rewrite('workflows',workflow_id,'08_latest_state_index.json',{
+            'version':'DIAGNOSTIC-CURRENT-SNAPSHOT-v0.28.0',
+            'benchmark_id':bid,'latest_source':f'benchmarks/{bid}/benchmark.json',
+            'current_execution_status':reliability.get('execution_status'),
+            'current_quality_status':reliability.get('quality_status'),
+            'retry_count':len(retry.get('retry_history') or []),
+            'prior_snapshots_are_history':True,'last_update_utc':m.now(),
+        })
         st=('COMPLETED_WITH_FINDINGS' if retry['status']=='COMPLETED' else 'INCOMPLETE'
             if retry['status'] in ('INCOMPLETE','INCOMPLETE_TIMEOUT','INCOMPLETE_EXECUTION') else 'FAILED')
         step(state,'08_diagnostic_benchmark',st,
@@ -989,8 +1014,24 @@ def register(app, m) -> None:
         dogwood_file = folder(state['workflow_id']) / '05_dogwood_authorization.json'
         authorization = json.loads(dogwood_file.read_text(encoding='utf-8')) if dogwood_file.is_file() else None
         gate = (benchmark or {}).get('reliability_gate') or {}
+        benchmark_axes=(benchmark or {}).get('diagnostic_axes') or (dax.summarize(benchmark) if benchmark else None)
+        exp_id=ids.get('experiments')
+        robustness=None
+        if exp_id:
+            preselect_file=m.path_for('experiments',exp_id)/'dev_robustness_preselection.json'
+            if preselect_file.is_file():
+                robustness=json.loads(preselect_file.read_text(encoding='utf-8'))
+        idx_file=folder(state['workflow_id'])/'08_latest_state_index.json'
+        index=json.loads(idx_file.read_text(encoding='utf-8')) if idx_file.is_file() else None
+        index_consistent=bool(benchmark and index and index.get('benchmark_id')==ids.get('benchmarks') and
+                              index.get('current_execution_status')==gate.get('execution_status') and
+                              index.get('current_quality_status')==gate.get('quality_status') and
+                              index.get('retry_count')==len(benchmark.get('retry_history') or []))
+        status_consistent=bool(benchmark and state.get('diagnostic_reliability_status')==gate.get('status') and
+                               state.get('diagnostic_execution_status')==gate.get('execution_status'))
         return {
-            'report_version': '0.27.0',
+            'report_version': '0.27.0', # backward-compatible view contract
+            'producer_version': '0.28.0',
             'workflow_id': state['workflow_id'],
             'updated_at': state.get('updated_at'),
             'status': state['status'],
@@ -1003,11 +1044,22 @@ def register(app, m) -> None:
             'requirement_trace_status': state.get('requirement_trace_status'),
             'feature_acceptance': json.loads((folder(state['workflow_id'])/'08e_feature_acceptance.json').read_text(encoding='utf-8')) if (folder(state['workflow_id'])/'08e_feature_acceptance.json').is_file() else None,
             'selection_gap_analysis': json.loads((folder(state['workflow_id'])/'08f_selection_gap_analysis.json').read_text(encoding='utf-8')) if (folder(state['workflow_id'])/'08f_selection_gap_analysis.json').is_file() else None,
+            'dev_robustness_preselection':robustness,
+            'diagnostic_axes':benchmark_axes,
+            'diagnostic_snapshot':{
+                'canonical_record': f'benchmarks/{ids["benchmarks"]}/benchmark.json' if ids.get('benchmarks') else None,
+                'current_index':index,
+                'index_consistent':index_consistent if index else None,
+                'workflow_vs_benchmark_consistent':status_consistent if benchmark else None,
+                'benchmark_retry_count':len((benchmark or {}).get('retry_history') or []),
+                'source_is_latest_benchmark_json':bool(benchmark),
+                'historical_snapshots_not_authoritative':True,
+            },
             'dogwood_negative_audit': json.loads((folder(state['workflow_id'])/'08g_dogwood_negative_audit.json').read_text(encoding='utf-8')) if (folder(state['workflow_id'])/'08g_dogwood_negative_audit.json').is_file() else None,
             'boundary_status': state.get('boundary_status'),
             'diagnostic': {
-                'execution_status': state.get('diagnostic_execution_status') or gate.get('execution_status'),
-                'quality_status': state.get('diagnostic_reliability_status') or gate.get('quality_status'),
+                'execution_status': gate.get('execution_status') if benchmark else state.get('diagnostic_execution_status'),
+                'quality_status': gate.get('quality_status') if benchmark else state.get('diagnostic_reliability_status'),
                 'benchmark_summary': (benchmark or {}).get('summary'),
                 'reliability_gate': gate or None,
             },
@@ -1034,5 +1086,5 @@ def register(app, m) -> None:
         file=m.path_for("exports",state["export_id"])/"complete_audit_package.zip"
         if not file.is_file():
             raise HTTPException(409,"ZIP is not ready; check workflow status")
-        return FileResponse(file,filename=f"claims_full_run_v027_{workflow_id}.zip",media_type="application/zip")
+        return FileResponse(file,filename=f"claims_full_run_v028_{workflow_id}.zip",media_type="application/zip")
 
