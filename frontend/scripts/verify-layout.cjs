@@ -49,3 +49,10 @@ assert.ok(source.includes("data.status==='NOT_STARTED' && fullRun.status==='COMP
 assert.ok(source.includes("provisional_mode:fullRun.status==='PARTIAL'&&advisoryProvisionalMode"), 'PARTIAL generation must be explicitly requested');
 assert.ok(source.includes('advisory.deterministic_public_context.map'), 'selected public context must render independently from hypotheses');
 console.log('PASS: top-level UI order = 10 -> 10R report -> 00 -> 01..09, terminal/read-only safeguards preserved');
+
+// v0.33: demo values are effective input values and the report displays imperfect drafts.
+for (const fragment of ['budget_eur:30000','team_size:2','delivery_weeks:8','pm_fte:0.2',
+                       "advisory?.status==='DRAFT_WITH_WARNINGS'", 'advisory.contract_issues',
+                       "['DRAFT_UNAPPROVED','DRAFT_WITH_WARNINGS']", 'AI概算・費用仮説']) {
+  assert.ok(source.includes(fragment), `v0.33 reviewable-report UI missing: ${fragment}`);
+}

@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import './styles.css';
 
 type Dict = Record<string, any>;
-type AdvisoryConstraints = {budget_eur:number|null;team_size:number|null;delivery_weeks:number|null;engineering_scope:string;operational_constraints:string;stakeholder_notes:string};
-const DEFAULT_ADVISORY_CONSTRAINTS:AdvisoryConstraints = {budget_eur:null,team_size:null,delivery_weeks:null,engineering_scope:'',operational_constraints:'',stakeholder_notes:''};
+type AdvisoryConstraints = {budget_eur:number|null;team_size:number|null;delivery_weeks:number|null;pm_fte:number|null;engineering_scope:string;operational_constraints:string;stakeholder_notes:string};
+// Mirrored to backend/app/advisory.py: demo assumptions, NOT confirmed client facts.
+const DEFAULT_ADVISORY_CONSTRAINTS:AdvisoryConstraints = {budget_eur:30000,team_size:2,delivery_weeks:8,pm_fte:0.2,engineering_scope:'既存システム・既存APIの活用を優先',operational_constraints:'専任運用担当なし。低運用負荷を優先',stakeholder_notes:''};
 type HistoryKind = 'runs' | 'experiments' | 'proposals' | 'benchmarks' | 'assessments' | 'policy_validations' | 'exports' | 'workflows';
 const BACKEND = '/api';
 const BENCHMARK_CASES: {id:string;label:string}[] = [
@@ -64,7 +65,7 @@ function AdvisoryPanel({advisory, constraints, onConstraintsChange, onGenerate, 
    onApplyBrief:()=>void;busy:boolean;error:string;
    workflowStatus:string;provisionalMode:boolean;onProvisionalModeChange:(v:boolean)=>void}) {
   const draft:Dict|null=advisory?.draft || null;
-  const numberField=(key:'budget_eur'|'team_size'|'delivery_weeks',value:string)=>{
+  const numberField=(key:'budget_eur'|'team_size'|'delivery_weeks'|'pm_fte',value:string)=>{
     onConstraintsChange({...constraints,[key]:value===''?null:Number(value)});
   };
   return <section className="advisory-panel" aria-label="10R AI技術提案ドラフト">
@@ -72,19 +73,23 @@ function AdvisoryPanel({advisory, constraints, onConstraintsChange, onGenerate, 
       <h3>顧客課題と制約下での技術提案（AIドラフト）</h3>
       <p className="muted">生成版 {advisory?.version || '—'} · {advisory?.model || 'Qwen/Ollama'} · {advisory?.status || '読み込み中'}</p></div>
       <Status good={false}>未承認の仮説</Status></div>
-    <p className="muted">これは評価結果に基づく提案のたたき台であり、顧客課題の真因、価格、ROI、法的適合、技術採用の承認ではありません。提案が不成立でも後続の実行レポートを表示します。</p>
+    <p className="muted">これは評価結果に基づく提案のたたき台です。顧客課題の真因、価格、ROI、法的適合、技術採用の承認ではありません。提案に未解決の警告があってもドラフトを表示し、その下の実行レポートは常に維持します。</p>
+    <div className="notice"><strong>デモ用の仮定値（顧客未確認）</strong>：予算 €30,000、開発2名、PM 0.2 FTE、8週間。既存システム優先・専任運用なし。実際の顧客条件ではありません。変更・空欄化して再生成できます。予算は費用見積とは異なります。</div>
     <div className="two-cols">
       <div><label htmlFor="advisory-budget">プロジェクト予算（EUR、空欄＝未確認）</label>
-        <input id="advisory-budget" type="number" min="0" value={constraints.budget_eur??''} onChange={e=>numberField('budget_eur',e.target.value)}/></div>
+        <input id="advisory-budget" type="number" min="0" placeholder="30000（デモ仮定）" value={constraints.budget_eur??''} onChange={e=>numberField('budget_eur',e.target.value)}/></div>
       <div><label htmlFor="advisory-team">開発担当人数（空欄＝未確認）</label>
-        <input id="advisory-team" type="number" min="1" value={constraints.team_size??''} onChange={e=>numberField('team_size',e.target.value)}/></div>
+        <input id="advisory-team" type="number" min="1" placeholder="2（デモ仮定）" value={constraints.team_size??''} onChange={e=>numberField('team_size',e.target.value)}/></div>
       <div><label htmlFor="advisory-weeks">目標期間（週、空欄＝未確認）</label>
-        <input id="advisory-weeks" type="number" min="1" value={constraints.delivery_weeks??''} onChange={e=>numberField('delivery_weeks',e.target.value)}/></div>
+        <input id="advisory-weeks" type="number" min="1" placeholder="8（デモ仮定）" value={constraints.delivery_weeks??''} onChange={e=>numberField('delivery_weeks',e.target.value)}/></div>
+      <div><label htmlFor="advisory-pm-fte">PM稼働率（FTE・デモ仮定）</label>
+        <input id="advisory-pm-fte" type="number" min="0" max="1" step="0.1" placeholder="0.2" value={constraints.pm_fte??''} onChange={e=>numberField('pm_fte',e.target.value)}/></div>
       <div><label htmlFor="advisory-scope">技術的・開発範囲の制約</label>
         <input id="advisory-scope" maxLength={1200} value={constraints.engineering_scope} onChange={e=>onConstraintsChange({...constraints,engineering_scope:e.target.value})} placeholder="例：既存システムとのAPI連携のみ"/></div>
     </div>
     <label htmlFor="advisory-operational">運用・契約・セキュリティの制約</label>
     <textarea id="advisory-operational" rows={2} maxLength={1200} value={constraints.operational_constraints} onChange={e=>onConstraintsChange({...constraints,operational_constraints:e.target.value})}/>
+    <p className="muted">初期値は実入力として仮適用されますが、未検証の例示です。欄を空にするとその項目は「不明」で保存します。</p>
     <label htmlFor="advisory-notes">PM／技術者による修正前提・顧客ヒアリングメモ</label>
     <textarea id="advisory-notes" rows={2} maxLength={1200} value={constraints.stakeholder_notes} onChange={e=>onConstraintsChange({...constraints,stakeholder_notes:e.target.value})}/>
     {workflowStatus==='PARTIAL' && <div className="notice" role="status">
@@ -92,14 +97,16 @@ function AdvisoryPanel({advisory, constraints, onConstraintsChange, onGenerate, 
       <label><input type="checkbox" checked={provisionalMode} onChange={e=>onProvisionalModeChange(e.target.checked)}/>
         未完了の評価を前提とする暫定提案を明示的に生成する（顧客向け最終案ではありません）</label>
     </div>}
-    <div className="button-row"><button type="button" onClick={onGenerate}
+    <div className="button-row"><button type="button" className="secondary" onClick={()=>onConstraintsChange({...DEFAULT_ADVISORY_CONSTRAINTS})}>仮定値に戻す</button><button type="button" onClick={onGenerate}
       disabled={busy||advisory?.status==='RUNNING'||(workflowStatus==='PARTIAL'&&!provisionalMode)}>
       {advisory?.status==='RUNNING'?'提案を生成中…': draft?'修正した前提で提案を再生成':'技術提案を生成'}</button></div>
     {advisory?.status==='RUNNING' && <p role="status" className="notice">基盤モデルが提案を生成しています。10Rの下の評価結果は閲覧できます。Macの性能によって時間がかかります。</p>}
     {(advisory?.status==='STALE_ADVISORY'||advisory?.freshness_status==='STALE_SOURCE') && <div className="notice" role="alert"><strong>STALE_ADVISORY：提案の根拠が古くなっています。</strong> {advisory?.freshness_warning || '保存された評価結果が更新されました。'} 最新の08診断・09事業評価から「提案を再生成」してください。下の評価レポートは最新の保存済み成果物です。旧提案は監査履歴として保持され、レビューは受け付けません。</div>}
-    {advisory?.status==='GENERATION_FAILED' && <div className="notice" role="alert"><strong>提案生成に失敗：</strong>{advisory?.error?.message || '詳細不明'}。評価レポートは影響を受けません。必要なら再生成してください。</div>}
+    {advisory?.status==='GENERATION_FAILED' && <div className="notice" role="alert"><strong>基盤モデルから型付きドラフトを取得できませんでした：</strong>{advisory?.error?.message || '詳細不明'}。上記の仮定値と下の独立評価レポートは閲覧できます。必要なら再生成してください。</div>}
+    {advisory?.status==='DRAFT_WITH_WARNINGS' && <div className="notice" role="alert"><strong>未承認ドラフト（要修正）</strong>：形式的に表示可能ですが、次の技術案・説明には不整合があります。採用の推奨や業務上の適合確認ではありません。<ul>{Object.entries(advisory.contract_issues||{}).flatMap(([field,issues])=>(issues as string[]).map((msg,i)=><li key={field+i}>{field}：{msg}</li>))}</ul></div>}
     {advisory?.primary_requirement && <p className="muted"><strong>主たる要件:</strong> {advisory.primary_requirement.requirement_id} ／{advisory.primary_requirement.type} ／{advisory.primary_requirement.feature_id}（顧客未承認）</p>}
     {advisory?.provisional_mode && <div className="notice" role="alert"><strong>暫定ドラフト：</strong>PARTIALの評価を参照しています。COMPLETE後に再生成・再レビューしてください。</div>}
+    {advisory?.assumptions_origin && <Disclosure title="各前提の由来（デモ仮定／変更値、すべて顧客未確認）" data={advisory.assumptions_origin}/>}
     {advisory?.deterministic_public_context?.length>0 && <div className="assessment-item">
       <h4>選定済み公開根拠（モデル生成ではない）</h4>
       <p className="muted">引用ID・URLは人間が選定した元データから固定して表示します。顧客固有の課題を裏付けるものではありません。</p>
@@ -107,7 +114,8 @@ function AdvisoryPanel({advisory, constraints, onConstraintsChange, onGenerate, 
         <strong>{item.evidence_id}</strong>：{item.source_file||item.source_url||'出典未記入'}
         <p className="muted">{item.quote_context_untrusted||'原文抜粋なし'}</p>
       </li>)}</ul></div>}
-    {advisory?.repair_actions?.length>0 && <Disclosure title="不整合セクションのみを再生成した記録" data={advisory.repair_actions}/>}
+    {advisory?.repair_actions?.length>0 && <Disclosure title="部分修復の結果（失敗時も原文ドラフトを保持）" data={advisory.repair_actions}/>}
+    {advisory?.estimate_notices?.length>0 && <div className="notice">金額はモデルによる未検証の参考概算です。入力予算、事業ROI、契約上の見積とは区別してください。</div>}
     {advisory?.required_attention?.length>0 && <div className="notice"><strong>検証結果に基づく必須の確認事項（LLM生成ではない）</strong><ul>{advisory.required_attention.map((a:Dict,i:number)=><li key={i}>{a.finding}：{a.suggested_test}（{a.source_ref}）</li>)}</ul></div>}
     {error && <div className="error" role="alert">{error}</div>}
     {draft && <div className="advisory-draft">
@@ -121,7 +129,8 @@ function AdvisoryPanel({advisory, constraints, onConstraintsChange, onGenerate, 
         <strong>{o.label==='low_complexity'?'A：低コスト・シンプル案':o.label==='balanced'?'B：標準案':'C：研究開発案'}</strong>
         <p>{o.solution}</p><p><strong>対象要件:</strong> {o.target_requirement_ids?.join('、')||'未照合'} ／ <strong>機能への対応:</strong> {o.direct_requirement_coverage||'未照合'}</p>
         <p><strong>相対工数／提供リスク:</strong> {o.relative_effort||'未比較'} ／ {o.delivery_risk||'未比較'}</p><p><strong>制約適合:</strong> {o.fit_to_constraints}</p>
-        <p><strong>費用見積の根拠:</strong> {o.estimated_cost_basis}</p>
+        <p><strong>AI概算・費用仮説（確定見積ではない）:</strong> {o.estimated_cost_basis}</p>
+        {(advisory?.contract_issues||{})[`technical_options[${i}]`] && <p className="notice"><strong>要レビュー:</strong> {(advisory.contract_issues[`technical_options[${i}]`]||[]).join('／')}</p>}
         <p><strong>必要な役割:</strong> {o.necessary_roles?.join('、')||'未確認'}</p>
         <p><strong>トレードオフ:</strong> {o.main_tradeoffs?.join('／')||'未確認'}</p>
         <p><strong>追加検証:</strong> {o.validation}</p></article>)}</div>
@@ -142,7 +151,7 @@ function AdvisoryPanel({advisory, constraints, onConstraintsChange, onGenerate, 
         <label htmlFor="advisory-actor">レビュー担当者</label><input id="advisory-actor" value={actor} onChange={e=>setActor(e.target.value)}/>
         <label htmlFor="advisory-review-reason">判断・修正の理由</label><textarea id="advisory-review-reason" rows={2} value={reviewReason} onChange={e=>setReviewReason(e.target.value)}/>
         <label htmlFor="advisory-next-brief">次回の顧客ブリーフ案（人間が編集）</label><textarea id="advisory-next-brief" rows={3} value={nextBrief} onChange={e=>setNextBrief(e.target.value)}/>
-        <div className="button-row"><button type="button" disabled={busy||advisory?.status!=='DRAFT_UNAPPROVED'||advisory?.freshness_status==='STALE_SOURCE'||actor.trim().length<2||reviewReason.trim().length<10} onClick={onReview}>
+        <div className="button-row"><button type="button" disabled={busy||!['DRAFT_UNAPPROVED','DRAFT_WITH_WARNINGS'].includes(advisory?.status)||advisory?.freshness_status==='STALE_SOURCE'||actor.trim().length<2||reviewReason.trim().length<10} onClick={onReview}>
           レビューを履歴に保存（次回実行はしない）</button>
           <button type="button" className="secondary" onClick={onApplyBrief} disabled={busy||nextBrief.trim().length<20}>
             編集したブリーフを01・10の入力欄へ反映</button></div>
@@ -385,7 +394,7 @@ export default function App() {
         }
         if (live) {
           setAdvisory(data);
-          if(data.constraints) setAdvisoryConstraints(data.constraints as AdvisoryConstraints);
+          if(data.constraints) setAdvisoryConstraints({...DEFAULT_ADVISORY_CONSTRAINTS,...data.constraints} as AdvisoryConstraints);
         }
       } catch(e) { if(live) setAdvisoryError(e instanceof Error?e.message:String(e)); }
     })();

@@ -139,7 +139,7 @@ def test_changed_constraints_recorded_as_non_approval_diff(tmp_path,monkeypatch)
     client.post(f'/api/full-run/{wid}/advisory',json={'constraints':{}})
     client.post(f'/api/full-run/{wid}/advisory',json={'constraints':{'budget_eur':12000,'team_size':2},'regenerate':True})
     final=client.get(f'/api/full-run/{wid}/advisory').json()
-    assert final['revision_diff']['changed_constraints']['budget_eur']=={'before':None,'after':12000}
-    assert final['revision_diff']['changed_constraints']['team_size']=={'before':None,'after':2}
+    assert final['revision_diff']['changed_constraints']['budget_eur']=={'before':30000,'after':12000}
+    assert 'team_size' not in final['revision_diff']['changed_constraints']  # unchanged from demo default
     assert final['revision_diff']['source_changed'] is False
     assert final['approval_status']=='NOT_APPROVED'

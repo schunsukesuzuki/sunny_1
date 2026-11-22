@@ -1,0 +1,22 @@
+{
+  "approval_id": "59375a88-ef50-4f5f-ad67-2dee575442ac",
+  "proposal_id": "1660baf7-2678-46ef-9bc0-dd6f934a86e7",
+  "parent_run_id": "f669ec1c-29d7-429e-a49c-c64d05a48d2f",
+  "decision": "approved",
+  "actor": "Claims Product Owner (demo)",
+  "actor_authentication": "SELF_REPORTED",
+  "rationale": "模擬反例に基づく技術検証として、期限優先方式への改訂を承認。事業妥当性は未検証。",
+  "timestamp_utc": "2026-11-22T06:49:55+00:00",
+  "contract_r0_sha256": "630a7406a20803842949317e4f6e177e67061c8098d7299fbb2b184535829f19",
+  "contract_r1_sha256": "6bc9ca1d3ffa4de231ccf42863ec7f1c4cea6407eaef2e1234f91388117c371a",
+  "service_sha256": "2f88e6c7234e985ac9997d0c35bd60922962f4ba56c18dd485ef6bfbbf99ac9f",
+  "evidence_sha256": "4fdb43ce8a95c64705bf0eaa5f54c06266d6db54eccfc060f984d1700851a6cc",
+  "finance_diagnosis_sha256": "608475892f36974bbbe624b24efffc5d5507b0aaa1a473dc22a76248db356c4f",
+  "finance_model": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+  "domain_review_override": false,
+  "acknowledges_independent_r0_pass": false,
+  "override_rationale": null,
+  "original_oda_rubric_status": "PASS",
+  "original_oda_rubric_failures": [],
+  "approval_path": "rubric_pass_human_approved"
+}

@@ -150,7 +150,7 @@ def test_v028_report_latest_gate_overrides_historical_state_and_flags_mismatch(t
     assert report['diagnostic_snapshot']['workflow_vs_benchmark_consistent'] is False
     assert report['diagnostic_snapshot']['benchmark_retry_count']==1
     assert report['report_version']=='0.27.0'  # stable report contract
-    assert report['producer_version'] in ('0.28.0','0.29.0','0.30.0','0.31.0','0.32.0')  # producer advances, contract remains stable
+    assert report['producer_version'] in ('0.28.0','0.29.0','0.30.0','0.31.0','0.32.0','0.33.0')  # producer advances, contract remains stable
 
 
 def test_v028_batch_audit_zip_includes_new_artifacts(client,monkeypatch):

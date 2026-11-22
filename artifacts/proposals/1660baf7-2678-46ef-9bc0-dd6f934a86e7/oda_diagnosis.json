@@ -1,0 +1,19 @@
+{
+  "classification": "implementation_bug",
+  "r0_implementation_assessment": "correct",
+  "business_requirement_assessment": "mismatch",
+  "synthetic_requirement_fit": null,
+  "real_customer_validity": "unverified",
+  "scheduling_precedence": "none",
+  "supporting_evidence_ids": [
+    "SIM-SLA-001"
+  ],
+  "root_cause": "R0 contract specifies strict FIFO without deadline considerations; synthetic evidence demonstrates business objective conflict",
+  "suggested_requirement_change": "Prioritize deadline_first_fifo_tiebreak over strict FIFO",
+  "business_tradeoffs": [],
+  "compliance_questions": [
+    "deadline_first_fifo_tiebreak violates R0 contract's FIFO requirement",
+    "R0 contract does not address deadline misses as measurable business objective"
+  ],
+  "remaining_uncertainty": "real_customer_validity=unverified"
+}

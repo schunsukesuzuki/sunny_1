@@ -1,0 +1,260 @@
+{
+  "engine": "skill_deadline_scarcity",
+  "provenance": "PINNED_REVIEWED_DOMAIN_SKILL_NOT_LLM",
+  "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+  "selection_gate": {
+    "gate_version": "R1-DEV-SELECTION-GATE-v0.19.0",
+    "eligible": true,
+    "reasons": [],
+    "dev_cases": 3,
+    "behavioral_probes_pass": true,
+    "stress_scenarios_checked": 4,
+    "selection_rule": "Require valid DEV, strict improvement over FIFO on at least one DEV seed, equal hours, two behavioral probes and no stress regression against the fixed heuristic.",
+    "holdout_used_for_selection": false
+  },
+  "dev": {
+    "valid": true,
+    "missed_total": 0,
+    "unassigned_total": 0,
+    "worked_hours_total": 100,
+    "deadline_hit_rate": 1.0,
+    "all_claims_completed": true,
+    "violations": [],
+    "seeds": [
+      142,
+      143,
+      144
+    ]
+  },
+  "dev_rows": [
+    {
+      "valid": true,
+      "violations": [],
+      "missed_deadlines": 0,
+      "on_time": 18,
+      "completed": 18,
+      "assigned_hours": 31,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 1.0,
+      "seed": 142,
+      "sandbox_id": "i8q5kksev9fnwluwgb1mf",
+      "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+      "output_sha256": "fdc22b6f942e09ae40ece4029a04a650a6896643605fdbf802fadf2ae8748ce9",
+      "dataset_sha256": "448d3ad7876d740e2756419cb8d45eb846cc5182cb9f0327ee95158cfc27cea4",
+      "elapsed_seconds": 0.438,
+      "stderr": ""
+    },
+    {
+      "valid": true,
+      "violations": [],
+      "missed_deadlines": 0,
+      "on_time": 18,
+      "completed": 18,
+      "assigned_hours": 32,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 1.0,
+      "seed": 143,
+      "sandbox_id": "i8q5kksev9fnwluwgb1mf",
+      "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+      "output_sha256": "3466c3e7290e816a18da862bce65ba1ae60f7cfed626884352bcfe170608a5af",
+      "dataset_sha256": "6a62c88e044b7a09eb8633e38c07e9165f03370bc92620c15d0a05895be5d618",
+      "elapsed_seconds": 0.345,
+      "stderr": ""
+    },
+    {
+      "valid": true,
+      "violations": [],
+      "missed_deadlines": 0,
+      "on_time": 18,
+      "completed": 18,
+      "assigned_hours": 37,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 1.0,
+      "seed": 144,
+      "sandbox_id": "i8q5kksev9fnwluwgb1mf",
+      "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+      "output_sha256": "9dfa5e5fd157b580088560ebd07d847593bdad42bc902fc231c8bd17f5226120",
+      "dataset_sha256": "ce8763d22d707c696c13199c1518ec2f4fab33a89975bcbcd21a03e4f30bdd82",
+      "elapsed_seconds": 0.365,
+      "stderr": ""
+    }
+  ],
+  "behavioral_probes": [
+    {
+      "seed": 900001,
+      "scenario": "deadline_risk_probe",
+      "dataset_sha256": "5575eb9625e7050872d5f7cf582afd8cac3afa69270b3caabea8b79125e54cde",
+      "valid": true,
+      "checks": {
+        "urgent_served_on_due_day": true,
+        "both_cases_served": true
+      },
+      "pass": true,
+      "missed_deadlines": 0,
+      "unassigned_cases": 0,
+      "violations": [],
+      "execution_error": null
+    },
+    {
+      "seed": 900002,
+      "scenario": "scarce_qualification_probe",
+      "dataset_sha256": "152f675fe5e0514271365f4aaa711a15de12aa7266f46756994ccdbf8d4595df",
+      "valid": true,
+      "checks": {
+        "scarce_case_uses_sole_specialist": true,
+        "common_case_preserves_specialist_capacity": true,
+        "all_cases_served": true
+      },
+      "pass": true,
+      "missed_deadlines": 0,
+      "unassigned_cases": 0,
+      "violations": [],
+      "execution_error": null
+    }
+  ],
+  "stress_checks": [
+    {
+      "seed": 910000,
+      "scenario": "capacity_pressure",
+      "generated": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      }
+    },
+    {
+      "seed": 910001,
+      "scenario": "skill_bottleneck",
+      "generated": {
+        "valid": true,
+        "missed": 1,
+        "unassigned": 1
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 1,
+        "unassigned": 1
+      }
+    },
+    {
+      "seed": 910002,
+      "scenario": "deadline_compression",
+      "generated": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      }
+    },
+    {
+      "seed": 910003,
+      "scenario": "arrival_reordering",
+      "generated": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      },
+      "deadline": {
+        "valid": true,
+        "missed": 0,
+        "unassigned": 0
+      }
+    }
+  ],
+  "robustness_dev_rows": [
+    {
+      "valid": true,
+      "violations": [],
+      "missed_deadlines": 3,
+      "on_time": 15,
+      "completed": 16,
+      "assigned_hours": 29,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 2,
+      "deadline_hit_rate": 0.83333,
+      "seed": 920000,
+      "sandbox_id": "i8q5kksev9fnwluwgb1mf",
+      "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+      "output_sha256": "531702b43048492a308a3328f107d108b8efd7b0b9dcd60ee08346f637932747",
+      "dataset_sha256": "6fd1900cf339d31b6ecb7bbca6d33ab5f9fb09ba83168233d02b9d916e63d1f1",
+      "elapsed_seconds": 0.343,
+      "stderr": ""
+    },
+    {
+      "valid": true,
+      "violations": [],
+      "missed_deadlines": 0,
+      "on_time": 18,
+      "completed": 18,
+      "assigned_hours": 29,
+      "total_cases": 18,
+      "planned_capacity_hours": 42,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 1.0,
+      "seed": 920001,
+      "sandbox_id": "i8q5kksev9fnwluwgb1mf",
+      "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+      "output_sha256": "db620a33a8786a5249a8e5f998dab33c5f3b661067c60ae8ce8804b665e1f7bb",
+      "dataset_sha256": "6ec9c702532ca9be96d700d44ec97d2b94c44ef733d9b15d23a7b08c2aa40908",
+      "elapsed_seconds": 0.363,
+      "stderr": ""
+    },
+    {
+      "valid": true,
+      "violations": [],
+      "missed_deadlines": 0,
+      "on_time": 18,
+      "completed": 18,
+      "assigned_hours": 31,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 1.0,
+      "seed": 920002,
+      "sandbox_id": "i8q5kksev9fnwluwgb1mf",
+      "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+      "output_sha256": "e019d6e28bf649177171eaf5aabebe77ad23975b1bb1dbff91fb70c556b50e82",
+      "dataset_sha256": "c9006f5c743c4a5e4325fc1d44d08638964287884a71772b2c309945702b71a6",
+      "elapsed_seconds": 0.337,
+      "stderr": ""
+    },
+    {
+      "valid": true,
+      "violations": [],
+      "missed_deadlines": 0,
+      "on_time": 18,
+      "completed": 18,
+      "assigned_hours": 29,
+      "total_cases": 18,
+      "planned_capacity_hours": 60,
+      "unassigned_cases": 0,
+      "deadline_hit_rate": 1.0,
+      "seed": 920003,
+      "sandbox_id": "i8q5kksev9fnwluwgb1mf",
+      "source_sha256": "19ff6932096cd02f84b3bd9adb8f47c893ff67a892fbd79a509134dc509efb99",
+      "output_sha256": "2e4c84b21eb1b8c3704e0e01736cf0f3175fb8957a6fb86d9f633f265cb21037",
+      "dataset_sha256": "e36ec748ac823282e1066155a7749fbda22370d28a334d3803c9c7933a3aa3de",
+      "elapsed_seconds": 0.373,
+      "stderr": ""
+    }
+  ],
+  "sandbox_execution_seconds": 4.637,
+  "llm_tokens": "NOT_MEASURED",
+  "holdout_executed": false
+}

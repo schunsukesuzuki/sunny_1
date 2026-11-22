@@ -1,0 +1,269 @@
+{
+  "proposal_id": "1660baf7-2678-46ef-9bc0-dd6f934a86e7",
+  "parent_run_id": "f669ec1c-29d7-429e-a49c-c64d05a48d2f",
+  "created_at": "2026-11-22T06:32:15+00:00",
+  "condition": "counterexample",
+  "evidence": [
+    {
+      "evidence_id": "SIM-SLA-001",
+      "requirement_id": "REQ-QUEUE-001",
+      "provenance": "synthetic",
+      "verdict": "contradict",
+      "human_verified": false,
+      "source_reference": "fixtures/claims_fifo_deadline_counterexample_v1",
+      "observation": "架空のClaims Operations Manager: FIFOでは期限の長い高額案件が先に処理され、後着の短納期案件が期限超過する。総稼働時間を増やさず期限超過件数を減らしたい。"
+    }
+  ],
+  "diagnosis": {
+    "classification": "requirement_mismatch",
+    "supporting_evidence_ids": [
+      "SIM-SLA-001"
+    ],
+    "reasoning": "The synthetic evidence SIM-SLA-001, attributed to a 'fictional Claims Operations Manager', directly contradicts the FIFO implementation's behavior as observed in the DEV result. While the implementation correctly follows FIFO ordering (as indicated by the 'fifo' section showing all claims completed with a deadline hit rate of 0.7963 and missed total of 11), the counterexample demonstrates that this FIFO approach leads to high-value, long-deadline cases being processed before short-notice, high-priority cases, resulting in more deadline breaches than desired. This indicates that the business objective of minimizing deadline breaches, while maintaining FIFO ordering, is not met by the current implementation.",
+    "suggested_requirement_change": "The requirement should be updated to prioritize deadline adherence over strict FIFO ordering when there are conflicting priorities between case urgency and arrival order, especially for cases with significantly different deadlines. A hybrid approach that considers both arrival order and deadline proximity could be implemented.",
+    "remaining_uncertainty": "The synthetic evidence does not provide sufficient data to determine the exact number of hours required to process all cases without overtime or to validate the specific skill requirements for each reviewer, but it does indicate a conflict between the current FIFO implementation and the stated business objective of minimizing deadline breaches."
+  },
+  "diagnosis_matches_rubric": true,
+  "finance_diagnosis": {
+    "classification": "requirement_mismatch",
+    "r0_implementation_assessment": "correct",
+    "business_requirement_assessment": "mismatch",
+    "synthetic_requirement_fit": null,
+    "real_customer_validity": "unverified",
+    "scheduling_precedence": "none",
+    "supporting_evidence_ids": [
+      "SIM-SLA-001"
+    ],
+    "root_cause": "R0 contract specifies strict FIFO without deadline considerations; synthetic evidence demonstrates business objective conflict",
+    "suggested_requirement_change": "Prioritize deadline_first_fifo_tiebreak over strict FIFO",
+    "business_tradeoffs": [],
+    "compliance_questions": [
+      "deadline_first_fifo_tiebreak violates R0 contract's FIFO requirement",
+      "R0 contract does not address deadline misses as measurable business objective"
+    ],
+    "remaining_uncertainty": "real_customer_validity=unverified"
+  },
+  "finance_diagnosis_matches_rubric": true,
+  "finance_diagnosis_rubric_failures": [],
+  "qwen_diagnostic_quality": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "classification_ok": true,
+    "implementation_read_ok": true,
+    "evidence_traceability_ok": true,
+    "revision_consistency_ok": true,
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_business_validity": "UNVERIFIED",
+    "reported_business_requirement_assessment": null,
+    "checks": {
+      "classification": true,
+      "implementation_vs_specification": true,
+      "evidence_ids": true,
+      "revision_policy_consistency": true,
+      "business_fit_not_overclaimed": true
+    },
+    "pass": true,
+    "failure_codes": [],
+    "note": "Heuristic lexical contradictions need human inspection; no legal/market certification."
+  },
+  "oda_diagnostic_quality": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "classification_ok": true,
+    "implementation_read_ok": true,
+    "evidence_traceability_ok": true,
+    "revision_consistency_ok": true,
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_business_validity": "UNVERIFIED",
+    "reported_business_requirement_assessment": "mismatch",
+    "checks": {
+      "classification": true,
+      "implementation_vs_specification": true,
+      "evidence_ids": true,
+      "revision_policy_consistency": true,
+      "business_fit_not_overclaimed": true
+    },
+    "pass": true,
+    "failure_codes": [],
+    "note": "Heuristic lexical contradictions need human inspection; no legal/market certification."
+  },
+  "diagnostic_repair": {
+    "enabled": true,
+    "attempts": {
+      "oda": {
+        "initial_pass": false,
+        "public_feedback": [
+          "The independently executed R0 passed its original FIFO contract; explain why that does not establish a software bug."
+        ],
+        "revised": true,
+        "revised_answer": {
+          "classification": "requirement_mismatch",
+          "r0_implementation_assessment": "correct",
+          "business_requirement_assessment": "mismatch",
+          "synthetic_requirement_fit": null,
+          "real_customer_validity": "unverified",
+          "scheduling_precedence": "none",
+          "supporting_evidence_ids": [
+            "SIM-SLA-001"
+          ],
+          "root_cause": "R0 contract specifies strict FIFO without deadline considerations; synthetic evidence demonstrates business objective conflict",
+          "suggested_requirement_change": "Prioritize deadline_first_fifo_tiebreak over strict FIFO",
+          "business_tradeoffs": [],
+          "compliance_questions": [
+            "deadline_first_fifo_tiebreak violates R0 contract's FIFO requirement",
+            "R0 contract does not address deadline misses as measurable business objective"
+          ],
+          "remaining_uncertainty": "real_customer_validity=unverified"
+        },
+        "revised_score": {
+          "rubric_version": "DIAG-RUBRIC-v0.10.1",
+          "classification_ok": true,
+          "implementation_read_ok": true,
+          "evidence_traceability_ok": true,
+          "revision_consistency_ok": true,
+          "synthetic_requirement_fit": "mismatch",
+          "real_customer_business_validity": "UNVERIFIED",
+          "reported_business_requirement_assessment": "mismatch",
+          "checks": {
+            "classification": true,
+            "implementation_vs_specification": true,
+            "evidence_ids": true,
+            "revision_policy_consistency": true,
+            "business_fit_not_overclaimed": true
+          },
+          "pass": true,
+          "failure_codes": [],
+          "note": "Heuristic lexical contradictions need human inspection; no legal/market certification."
+        },
+        "final_pass": true
+      }
+    },
+    "principle": "Second model inference, NOT deterministic corrected labels; hidden rubric failures never injected into prompts"
+  },
+  "diagnostic_initial_scores": {
+    "qwen": {
+      "rubric_version": "DIAG-RUBRIC-v0.10.1",
+      "classification_ok": true,
+      "implementation_read_ok": true,
+      "evidence_traceability_ok": true,
+      "revision_consistency_ok": true,
+      "synthetic_requirement_fit": "mismatch",
+      "real_customer_business_validity": "UNVERIFIED",
+      "reported_business_requirement_assessment": null,
+      "checks": {
+        "classification": true,
+        "implementation_vs_specification": true,
+        "evidence_ids": true,
+        "revision_policy_consistency": true,
+        "business_fit_not_overclaimed": true
+      },
+      "pass": true,
+      "failure_codes": [],
+      "note": "Heuristic lexical contradictions need human inspection; no legal/market certification."
+    },
+    "oda": {
+      "rubric_version": "DIAG-RUBRIC-v0.10.1",
+      "classification_ok": false,
+      "implementation_read_ok": true,
+      "evidence_traceability_ok": true,
+      "revision_consistency_ok": true,
+      "synthetic_requirement_fit": "unverified",
+      "real_customer_business_validity": "UNVERIFIED",
+      "reported_business_requirement_assessment": "mismatch",
+      "checks": {
+        "classification": false,
+        "implementation_vs_specification": true,
+        "evidence_ids": true,
+        "revision_policy_consistency": true,
+        "business_fit_not_overclaimed": true
+      },
+      "pass": false,
+      "failure_codes": [
+        "CLASSIFICATION_MISMATCH"
+      ],
+      "note": "Heuristic lexical contradictions need human inspection; no legal/market certification."
+    }
+  },
+  "synthetic_requirement_fit": "mismatch",
+  "real_customer_business_validity": "UNVERIFIED",
+  "model_comparison": {
+    "qwen": "qwen3-coder:30b",
+    "oda_fin_rl_8b": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M",
+    "same_inputs_independent": true,
+    "classification_agreement": true,
+    "qwen_rubric_pass": true,
+    "finance_rubric_pass": true
+  },
+  "contract_before": {
+    "id": "REQ-QUEUE-001",
+    "version": "CLAIMS-R0-FIFO-v1",
+    "rule": "Process cases in ascending arrival_order (FIFO), selecting earliest feasible qualified reviewer-day",
+    "target": "Implement FIFO exactly; do not guarantee fewer deadline breaches",
+    "fixed": [
+      "reviewer eligibility",
+      "duration",
+      "daily hours",
+      "no overtime",
+      "human claims decisions"
+    ]
+  },
+  "proposed_contract": {
+    "id": "REQ-QUEUE-001",
+    "version": "CLAIMS-R1-SLA-v1",
+    "rule": "Prioritize deadline risk and scarce qualified reviewers rather than arrival order",
+    "target": "Reduce missed deadlines without increasing planned or actual reviewer hours",
+    "fixed": [
+      "reviewer eligibility",
+      "duration",
+      "daily hours",
+      "no overtime",
+      "human claims decisions"
+    ]
+  },
+  "proposed_service_design": {
+    "actors": [
+      "Claims Operations Manager",
+      "Claims Reviewer"
+    ],
+    "use_cases": [
+      "Assess deadline exposure",
+      "Schedule skilled reviewers by due date",
+      "Escalate unassigned/late cases to manager"
+    ],
+    "entities": [
+      "Claim",
+      "Reviewer",
+      "DailyCapacity",
+      "Assignment",
+      "Deadline"
+    ],
+    "data_contract": "input.json contains days, cases[], reviewers[]; output.json contains assignments[], unassigned_case_ids[]",
+    "hard_constraints": [
+      "one assignment maximum per claim",
+      "qualified reviewer",
+      "no hours beyond daily capacity",
+      "duration unchanged",
+      "nonnegative integer day"
+    ],
+    "acceptance": [
+      "independent R1 validity",
+      "missed deadline count vs R0",
+      "no growth in actual reviewer-hours",
+      "human approval of policy"
+    ],
+    "out_of_scope": [
+      "claim payment decisions",
+      "fraud scoring",
+      "medical/health personal records"
+    ],
+    "source": "predeclared_experiment_specification_not_llm_generated"
+  },
+  "contract_delta": [
+    "REQ-QUEUE-001 stable ID",
+    "FIFO arrival order → deadline / skill aware ordering",
+    "No increase in planned reviewer hours or overtime",
+    "Same qualification and duration constraints",
+    "Independent pinned R1 evaluator; model cannot edit test rules",
+    "Synthetic deadline KPI compared on new HOLDOUT"
+  ],
+  "status": "AWAITING_HUMAN_APPROVAL",
+  "external_validity": "UNVERIFIED"
+}

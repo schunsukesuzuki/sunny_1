@@ -1,5 +1,14 @@
 # Change log
 
+## v0.33.0 — Demo assumptions + human-reviewable imperfect proposals (2026-11-22)
+
+- **Explicit demo budget and staffing:** 10R now uses example values `€30,000`, 2 engineers, PM 0.2 FTE, 8 weeks, existing APIs first, and no dedicated ops; the backend uses the same defaults. They are marked **UNVERIFIED** in UI and audit. Users can edit, blank fields to represent unknown, and regenerate manually.
+- **Budget is not a cost estimate:** Numeric estimates in `estimated_cost_basis` are permitted but visibly labeled `UNVERIFIED_COST_ESTIMATE`, not binding vendor quotes or customer-confirmed budgets.
+- **Draft visibility separated from hard authorization:** Typed draft with residual semantic warnings is **stored and displayed** as `DRAFT_WITH_WARNINGS`; individual options and issue descriptions remain accessible. An invalid targeted repair no longer discards the valid typed proposal. Structural/Ollama failure remains `GENERATION_FAILED`, while the independent 00–09 report and demo scenario stay visible.
+- **Scoped bounded repair:** Only failed item(s), not all technical alternatives, receive at most one attempt; unsuccessful repairs are recorded and the original item is retained. Warning status can receive human feedback (never production approval). Source freshness/staleness and explicit approval requirements remain unchanged.
+- **No pipeline policy changes:** Dogwood, strict constraints and human approval, CP-SAT and DEV/HOLDOUT, diagnostic gates and production `NO_GO` logic stay intact. Audit ZIP format remains `AUDIT-EXPORT-v0.25.0` with producer `0.33.0` and corrected downloadable ZIP name `claims_full_run_v033_...zip`.
+- Python regression 184 PASS; TSX layout + syntax checks PASS; full Vite build / live Ollama / Docker / Rust / E2B not executed in packaging environment. See `docs/v033-demo-assumptions-and-reviewable-drafts.md`.
+
 ## v0.32.0 — Priority-high-only advisory safeguards (2026-11-22)
 
 - **Deterministic citations / LLM hypotheses separated:** `PUB-*` IDs, source URL and excerpts come only from the human-selected evidence register, saved in `deterministic_public_context`. Model-generated customer problems always remain `hypothesis_unverified` with no source references. No independent semantic support for a specific customer is claimed.

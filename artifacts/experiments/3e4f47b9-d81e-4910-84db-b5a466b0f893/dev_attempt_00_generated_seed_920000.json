@@ -1,0 +1,242 @@
+{
+  "name": "generated",
+  "seed": 920000,
+  "source_sha256": "70990929a39ff2184742f7b3baf7724db4d6941ca3bc419c722c0930a2412ce8",
+  "sandbox_id": "i380hc3ax3wq2npzpa26t",
+  "elapsed_seconds": 0.318,
+  "stdout": "",
+  "stderr": "",
+  "output": {
+    "assignments": [
+      {
+        "case_id": "C007",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "C008",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "C009",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "C016",
+        "reviewer_id": "R-B",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "C018",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "C010",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "C013",
+        "reviewer_id": "R-B",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "C001",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 3
+      },
+      {
+        "case_id": "C004",
+        "reviewer_id": "R-B",
+        "day": 0,
+        "hours": 3
+      },
+      {
+        "case_id": "C007",
+        "reviewer_id": "R-A",
+        "day": 1,
+        "hours": 1
+      },
+      {
+        "case_id": "C008",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 1
+      },
+      {
+        "case_id": "C009",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 2
+      },
+      {
+        "case_id": "C016",
+        "reviewer_id": "R-B",
+        "day": 1,
+        "hours": 1
+      },
+      {
+        "case_id": "C018",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 2
+      },
+      {
+        "case_id": "C010",
+        "reviewer_id": "R-A",
+        "day": 1,
+        "hours": 1
+      },
+      {
+        "case_id": "C013",
+        "reviewer_id": "R-B",
+        "day": 1,
+        "hours": 1
+      },
+      {
+        "case_id": "C001",
+        "reviewer_id": "R-A",
+        "day": 1,
+        "hours": 3
+      },
+      {
+        "case_id": "C004",
+        "reviewer_id": "R-B",
+        "day": 1,
+        "hours": 3
+      },
+      {
+        "case_id": "C007",
+        "reviewer_id": "R-A",
+        "day": 2,
+        "hours": 1
+      },
+      {
+        "case_id": "C008",
+        "reviewer_id": "R-C",
+        "day": 2,
+        "hours": 1
+      },
+      {
+        "case_id": "C009",
+        "reviewer_id": "R-C",
+        "day": 2,
+        "hours": 2
+      },
+      {
+        "case_id": "C016",
+        "reviewer_id": "R-B",
+        "day": 2,
+        "hours": 1
+      },
+      {
+        "case_id": "C018",
+        "reviewer_id": "R-C",
+        "day": 2,
+        "hours": 2
+      },
+      {
+        "case_id": "C010",
+        "reviewer_id": "R-A",
+        "day": 2,
+        "hours": 1
+      },
+      {
+        "case_id": "C013",
+        "reviewer_id": "R-B",
+        "day": 2,
+        "hours": 1
+      },
+      {
+        "case_id": "C001",
+        "reviewer_id": "R-A",
+        "day": 2,
+        "hours": 3
+      },
+      {
+        "case_id": "C004",
+        "reviewer_id": "R-B",
+        "day": 2,
+        "hours": 3
+      },
+      {
+        "case_id": "C007",
+        "reviewer_id": "R-A",
+        "day": 3,
+        "hours": 1
+      },
+      {
+        "case_id": "C008",
+        "reviewer_id": "R-C",
+        "day": 3,
+        "hours": 1
+      },
+      {
+        "case_id": "C009",
+        "reviewer_id": "R-C",
+        "day": 3,
+        "hours": 2
+      },
+      {
+        "case_id": "C016",
+        "reviewer_id": "R-B",
+        "day": 3,
+        "hours": 1
+      },
+      {
+        "case_id": "C018",
+        "reviewer_id": "R-C",
+        "day": 3,
+        "hours": 2
+      },
+      {
+        "case_id": "C010",
+        "reviewer_id": "R-A",
+        "day": 3,
+        "hours": 1
+      },
+      {
+        "case_id": "C013",
+        "reviewer_id": "R-B",
+        "day": 3,
+        "hours": 1
+      },
+      {
+        "case_id": "C001",
+        "reviewer_id": "R-A",
+        "day": 3,
+        "hours": 3
+      },
+      {
+        "case_id": "C004",
+        "reviewer_id": "R-B",
+        "day": 3,
+        "hours": 3
+      }
+    ],
+    "unassigned_case_ids": [
+      "C011",
+      "C017",
+      "C005",
+      "C012",
+      "C014",
+      "C015",
+      "C002",
+      "C003",
+      "C006"
+    ]
+  },
+  "output_sha256": "ae9355e2d4faf729087f3ae8ceb884c51c21eecdc484064c82ee3f94a99395e6",
+  "error": null
+}

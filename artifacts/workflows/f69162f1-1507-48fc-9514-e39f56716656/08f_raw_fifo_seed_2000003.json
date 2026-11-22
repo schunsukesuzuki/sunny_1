@@ -1,0 +1,48 @@
+{
+  "name": "fifo",
+  "seed": 2000003,
+  "source_sha256": "df2ab7c14eb233fc6389441e5fff403ffbaf2a9e84f1bde64d596ee24114838a",
+  "sandbox_id": "ig7cbkotwr5cvbwjya3km",
+  "elapsed_seconds": 0.328,
+  "stdout": "",
+  "stderr": "",
+  "output": {
+    "assignments": [
+      {
+        "case_id": "BL03-01",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 2
+      },
+      {
+        "case_id": "BL03-05",
+        "reviewer_id": "R-B",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "BL03-04",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "BL03-00",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 2
+      },
+      {
+        "case_id": "BL03-03",
+        "reviewer_id": "R-B",
+        "day": 1,
+        "hours": 2
+      }
+    ],
+    "unassigned_case_ids": [
+      "BL03-02"
+    ]
+  },
+  "output_sha256": "b8df87d8198da65b7a514d781d83bb59a9e9075f96254961e591ba3d49ffec3b",
+  "error": null
+}

@@ -1,0 +1,29 @@
+{
+  "version": "DOGWOOD-APPROVAL-GATE-v0.25.0",
+  "boundary": "05_to_06_dogwood",
+  "status": "PASS",
+  "violations": [],
+  "checks_performed": [
+    "dogwood_temporal_approval"
+  ],
+  "authorization": {
+    "version": "DOGWOOD-APPROVAL-GATE-v0.25.0",
+    "status": "ALLOW",
+    "decision": "ALLOW",
+    "reason": "Dogwood temporal policy verdict",
+    "workflow_id": "f69162f1-1507-48fc-9514-e39f56716656",
+    "proposal_id": "1660baf7-2678-46ef-9bc0-dd6f934a86e7",
+    "approval_id": "59375a88-ef50-4f5f-ad67-2dee575442ac",
+    "configured_mode": "enforce",
+    "engine": "dogwood-local-engine",
+    "history_events": 1,
+    "elapsed_ms": 25,
+    "policy_sha256": "1c87fd7c7629c7c1933f6088d6ed768575a927b966a3345e9dd7da068d03ba98",
+    "schema_sha256": "fd203bf2bc9ca59132dbcd3c9aae2a448b854d70ffde81853858fb36fddc757a",
+    "scope": "SQLITE_PERSISTED_LOCAL_EVIDENCE; EPHEMERAL_DOGWOOD_REPLAY; NOT_CONTINUOUS_AUTHORIZATION",
+    "production_authorization": false
+  },
+  "semantic_validity": "NOT_PROVEN",
+  "production_authorization": false,
+  "certificates": []
+}

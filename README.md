@@ -40,10 +40,12 @@
 
 > **v0.10:** 要件診断の多軸独立採点・Qwen/ODAの合成ベンチマーク・過去ログ再採点を追加。詳細は `docs/v010-requirement-diagnostic-benchmark.md`。
 
-# Claims Operations Planner — AI Venture Feasibility Studio v0.32.0
+# Claims Operations Planner — AI Venture Feasibility Studio v0.33.0
 
 ドイツの保険業務SaaS企業（**架空**）の事業開発PoC。**Qwen3-Coder 30B** はサービス設計・Pythonコード生成、**OpenDataArena/ODA-Fin-RL-8B** は金融ドメイン要件診断を担当。E2Bは生成コードを隔離して実行し、独立した決定的評価器で審査割当・期限・資格・稼働上限を検証します。v0.8にあったMarkdown結果保存を維持し、生成コード・差分・各試行のE2B実行証跡・履歴取得を拡張しました。
 
+
+> **v0.33.0 — デモ前提付き暫定提案／警告付き表示：** 10Rの予算€30,000、開発2名、PM 0.2 FTE、期間8週間、既存システム優先・専任運用担当なしは**架空の未確認条件**として初期表示され、APIにも適用されます。入力・更新・空欄化が可能です。顧客の予算とLLMによる費用概算は別に扱い、数値を含むだけでは提案を破棄しません。LLMの出力が構造的に有効なら、不整合が残っても`DRAFT_WITH_WARNINGS`として案ごとの問題点を表示・保存し、PMがレビュー・再生成できます。Dogwood認可と本番採用のFail-Closedは維持します。構造化応答自体を取得できない場合も、デモ前提と00〜09の評価レポートは表示します。詳細は `docs/v033-demo-assumptions-and-reviewable-drafts.md`。
 
 > **v0.32.0 — 10Pの責務境界とCOMPLETE同期（優先度「高」の3項目のみ）：**
 > ① 人間が選択した公開根拠のPUB ID・URL・原文位置は決定論的に記録し、モデル生成の顧客課題仮説（常に未検証）とは別欄で表示。公開出典が想定顧客の真因を証明するとは扱いません。

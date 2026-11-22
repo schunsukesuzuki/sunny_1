@@ -77,7 +77,7 @@ def test_auto_proposal_version_review_and_zip(tmp_path,monkeypatch):
         for name in (f'workflows/{wid}/10p_advisory_v0001.json',f'workflows/{wid}/10p_advisory_v0002.json',
                      f'workflows/{wid}/10p_review_v0001.json'):
             assert name in z.namelist()
-        assert json.loads(z.read('manifest.json'))['producer_version']=='0.32.0'
+        assert json.loads(z.read('manifest.json'))['producer_version']=='0.33.0'
     assert client.get(f'/api/full-run/{wid}/report').json()['business_assessment'] is None
 
 
@@ -105,7 +105,7 @@ def test_only_terminal_and_no_silent_assumptions(tmp_path,monkeypatch):
     assert client.get(f'/api/full-run/{wid}/advisory').status_code==409
     assert client.post(f'/api/full-run/{wid}/advisory',json={'constraints':{}}).status_code==409
     assert client.post(f'/api/full-run/{wid}/advisory',json={'constraints':{'budget_eur':-100}}).status_code in (409,422)
-    assert advisory.AdvisoryConstraints().model_dump()['budget_eur'] is None
+    assert advisory.AdvisoryConstraints().model_dump()['budget_eur']==30_000  # unverified demo scenario
 
 
 def test_llm_citations_cannot_become_claim_provenance(monkeypatch):

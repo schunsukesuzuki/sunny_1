@@ -1,0 +1,7 @@
+{
+  "parent_run_id": "f669ec1c-29d7-429e-a49c-c64d05a48d2f",
+  "evidence_condition": "counterexample",
+  "created_at": "2026-11-22T06:30:47+00:00",
+  "coding_model": "qwen3-coder:30b",
+  "finance_model": "hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M"
+}

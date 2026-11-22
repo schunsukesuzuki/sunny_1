@@ -1,0 +1,61 @@
+{
+  "status": "OPTIMAL",
+  "solver": "OR_TOOLS_CP_SAT",
+  "solution": {
+    "assignments": [
+      {
+        "case_id": "BL03-01",
+        "reviewer_id": "R-C",
+        "day": 1,
+        "hours": 2
+      },
+      {
+        "case_id": "BL03-05",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "BL03-04",
+        "reviewer_id": "R-C",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "BL03-00",
+        "reviewer_id": "R-A",
+        "day": 1,
+        "hours": 2
+      },
+      {
+        "case_id": "BL03-03",
+        "reviewer_id": "R-B",
+        "day": 0,
+        "hours": 2
+      }
+    ],
+    "unassigned_case_ids": [
+      "BL03-02"
+    ]
+  },
+  "objective": [
+    4,
+    5
+  ],
+  "best_objective_bound": 33.0,
+  "elapsed_seconds": 0.0005,
+  "metrics": {
+    "valid": true,
+    "violations": [],
+    "missed_deadlines": 2,
+    "on_time": 4,
+    "completed": 5,
+    "assigned_hours": 8,
+    "total_cases": 6,
+    "planned_capacity_hours": 13,
+    "unassigned_cases": 1,
+    "deadline_hit_rate": 0.66667
+  },
+  "cp_sat_status": "OPTIMAL",
+  "input_sha256": "1952d37d1cd8ee824565dd9cda1693eb3654fe2a326d2d589ec19e6088b9609b"
+}

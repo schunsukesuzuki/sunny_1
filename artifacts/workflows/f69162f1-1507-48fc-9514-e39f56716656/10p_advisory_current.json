@@ -1,0 +1,330 @@
+{
+  "workflow_id": "f69162f1-1507-48fc-9514-e39f56716656",
+  "version": 1,
+  "status": "DRAFT_WITH_WARNINGS",
+  "created_at": "2026-11-22T06:55:13+00:00",
+  "source_hash": "757ad7679ace80814084839b8b36a531c0f1edcac5924503118f7dcf85584b5a",
+  "source_snapshot": {
+    "schema": "ADVISORY-SOURCE-v0.32.0",
+    "workflow_id": "f69162f1-1507-48fc-9514-e39f56716656",
+    "workflow_status": "COMPLETE",
+    "workflow_updated_at": "2026-11-22T06:55:10+00:00",
+    "linked_ids": {
+      "runs": "f669ec1c-29d7-429e-a49c-c64d05a48d2f",
+      "proposals": "1660baf7-2678-46ef-9bc0-dd6f934a86e7",
+      "approvals": "59375a88-ef50-4f5f-ad67-2dee575442ac",
+      "experiments": "3e4f47b9-d81e-4910-84db-b5a466b0f893",
+      "policy_validations": "65575280-1f1e-4509-93ff-c55d230a58ad",
+      "benchmarks": "a6c4641a-aeb0-47a0-a637-a2a4f2302fdd",
+      "assessments": "9c3162c6-5fe1-4c9f-bc5f-73f7da43dd11",
+      "workflows": "f69162f1-1507-48fc-9514-e39f56716656"
+    },
+    "canonical_file_sha256": {
+      "00b_human_evidence_review.json": "54212c50167c12d634ff137d7c08d9fba7e16fe0426dc2f01db4ffaec5a2f801",
+      "00c_grounded_test_contract.json": "d4b47bf8f1003da0b35453333ce3e1c43a74919100b45fdbe1014849a8464c35",
+      "08e_requirement_trace.json": "6161d5c2a749af3c28f376d8ae968cb39566d7a11a7934fbc51d8254159b4805",
+      "08e_feature_acceptance.json": "1fcb5bc747c29a2d6e35080e7ddc430773784f6b3319cb5b69e68644e973e6ef",
+      "08f_selection_gap_analysis.json": "ef1b56c174c839e56208f248df497df2c8c7a4617d1743c6a02179da4a3e08a3",
+      "08_latest_state_index.json": "48a1cc2825c052a7499117e0fb1bfb1316353631ab815198e87ee68bf20d49c7",
+      "benchmark.json": "28fe4648e4f053a44dd0bce02052667a84412700e5655df267bb4946abd9f800",
+      "assessment.json": "2696ea7548e1379ab24ad52c1480698c123677cdd56d426175ffaa622e0ebb25",
+      "workflow.json": "7bf46f0fe354393b0a2224621538d641147fd8e7ffe8c6d0fd2e147e96975503"
+    },
+    "read_only_report_sha256": "39118229d14440100674f41236e1f4cccc69e1c1b583724e9ad399b5f288c246",
+    "model_context_sha256": "77c75e4e2947fd5ab880e496511a4e1336f6f98ed8718861b9290d5d4c39306c"
+  },
+  "source_workflow_status": "COMPLETE",
+  "constraints": {
+    "budget_eur": 30000,
+    "team_size": 2,
+    "delivery_weeks": 8,
+    "pm_fte": 0.2,
+    "engineering_scope": "既存システム・既存APIの活用を優先",
+    "operational_constraints": "専任運用担当なし。低運用負荷を優先",
+    "stakeholder_notes": ""
+  },
+  "model": "qwen3-coder:30b",
+  "approval_status": "NOT_APPROVED",
+  "primary_requirement": {
+    "requirement_id": "REQ-PUBLIC-001",
+    "type": "claim_progress_updates",
+    "feature_id": "FEATURE-CLAIM-PROGRESS-NOTIFICATION",
+    "reviewed_hypothesis": "Insurers must provide clear and timely updates on claim processing steps",
+    "approved_by_customer": false,
+    "required_acceptance_tests": [
+      "NOTIFY-ON-STATUS-CHANGE",
+      "NOTIFY-WITHIN-THRESHOLD",
+      "NOTIFY-CORRECT-RECIPIENT",
+      "NEGATIVE-CONTROL-NO-UPDATE"
+    ]
+  },
+  "provisional_mode": false,
+  "assumptions_origin": {
+    "budget_eur": {
+      "value": 30000,
+      "basis": "DEMO_PLACEHOLDER_UNVERIFIED",
+      "is_customer_confirmed": false
+    },
+    "team_size": {
+      "value": 2,
+      "basis": "DEMO_PLACEHOLDER_UNVERIFIED",
+      "is_customer_confirmed": false
+    },
+    "delivery_weeks": {
+      "value": 8,
+      "basis": "DEMO_PLACEHOLDER_UNVERIFIED",
+      "is_customer_confirmed": false
+    },
+    "pm_fte": {
+      "value": 0.2,
+      "basis": "DEMO_PLACEHOLDER_UNVERIFIED",
+      "is_customer_confirmed": false
+    },
+    "engineering_scope": {
+      "value": "既存システム・既存APIの活用を優先",
+      "basis": "DEMO_PLACEHOLDER_UNVERIFIED",
+      "is_customer_confirmed": false
+    },
+    "operational_constraints": {
+      "value": "専任運用担当なし。低運用負荷を優先",
+      "basis": "DEMO_PLACEHOLDER_UNVERIFIED",
+      "is_customer_confirmed": false
+    },
+    "stakeholder_notes": {
+      "value": "",
+      "basis": "DEMO_PLACEHOLDER_UNVERIFIED",
+      "is_customer_confirmed": false
+    }
+  },
+  "scenario_basis": "UNVERIFIED_DEMO_ASSUMPTIONS_NOT_CLIENT_BUDGET",
+  "deterministic_public_context": [
+    {
+      "evidence_id": "PUB-003",
+      "source_url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication",
+      "source_file": "fos_insurance_delays.html",
+      "quote_context_untrusted": "sing the redress system greater clarity and confidence.\nRachel Lam, Interim Ombudsman Managing Director at the Financial Ombudsman Service, said:\nWhen people make an insurance claim, they are often dealing with disruption and uncertainty. Avoidable delays can make a difficult situation harder, especially when customers are left chasing for answers.\nWhere complaints involve delays, communication or supporting customer",
+      "support_scope": "PUBLIC_CONTEXT_ONLY_NOT_CUSTOMER_PROOF",
+      "binding": "DETERMINISTIC_FROM_HUMAN_SELECTED_EVIDENCE"
+    },
+    {
+      "evidence_id": "PUB-006",
+      "source_url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication",
+      "source_file": "fos_insurance_delays.html",
+      "quote_context_untrusted": "what is causing delays, who is responsible for the next step and when to expect an update.\nIdentify additional needs for vulnerable consumers early. Adapt communication and ensure urgent or sensitive cases are escalated promptly, including by third parties.\nRecurring problems included customers having to chase updates and being left unsure what would happen next. For those affected, a delayed claim can mean living wi",
+      "support_scope": "PUBLIC_CONTEXT_ONLY_NOT_CUSTOMER_PROOF",
+      "binding": "DETERMINISTIC_FROM_HUMAN_SELECTED_EVIDENCE"
+    }
+  ],
+  "source_refs": [
+    "workflow.json",
+    "assessment.json",
+    "benchmark.json",
+    "08e_feature_acceptance.json",
+    "08f_selection_gap_analysis.json",
+    "08e_requirement_trace.json",
+    "00b_human_evidence_review.json",
+    "00c_grounded_test_contract.json",
+    "PUB-003",
+    "PUB-006"
+  ],
+  "required_attention": [
+    {
+      "code": "NOTIFICATION_NOT_INTEGRATED",
+      "finding": "通知専用合成試験とR1担当者割当は別機能。統合受入は未検証。",
+      "suggested_test": "通知トリガー・宛先・遅延・障害復旧を結合したE2E試験",
+      "source_ref": "08e_feature_acceptance.json"
+    },
+    {
+      "code": "DIAGNOSTIC_HOLD",
+      "finding": "診断品質HOLDは自律的要件変更の承認ではない。",
+      "suggested_test": "原因分類・根拠・改訂行動を独立にレビュー",
+      "source_ref": "benchmark.json"
+    },
+    {
+      "code": "DEV_NON_DISCRIMINATIVE",
+      "finding": "DEV候補を識別できたケースが0件。",
+      "suggested_test": "候補の行動が分岐する資格・容量・期限競合のDEV条件を事前設計",
+      "source_ref": "workflow.json"
+    }
+  ],
+  "notice": "AI proposal draft, not a validated customer need, deployment authorization or proof of ROI",
+  "repair_actions": [
+    {
+      "section": "technical_options[0]",
+      "reason_codes": [
+        "Low/balanced plans must directly address the requested feature"
+      ],
+      "before_sha256": "a085ff357f6a10a3d079d15053f97949f0c8008cd84d3c58875bb1103e78e18e",
+      "attempt": 1,
+      "actor": "LLM_SUGGESTED_REPAIR_NOT_APPROVAL",
+      "status": "REJECTED_STILL_INCONSISTENT",
+      "remaining_issues": [
+        "Low/balanced plans must directly address the requested feature"
+      ],
+      "other_sections_preserved": true
+    },
+    {
+      "section": "technical_options[1]",
+      "reason_codes": [
+        "Low/balanced plans must directly address the requested feature"
+      ],
+      "before_sha256": "c3a8f736c115e6efebc535e3fae4c4c74b181df40dfac9c171098379604b0c32",
+      "attempt": 1,
+      "actor": "LLM_SUGGESTED_REPAIR_NOT_APPROVAL",
+      "status": "REJECTED_STILL_INCONSISTENT",
+      "remaining_issues": [
+        "Low/balanced plans must directly address the requested feature"
+      ],
+      "other_sections_preserved": true
+    },
+    {
+      "section": "recommended_next_experiment",
+      "reason_codes": [
+        "Write the field in Japanese"
+      ],
+      "before_sha256": "3ca4c6677f25412889bee5b71695816a4f56281ccbd360619a1036e1778fd2e8",
+      "attempt": 1,
+      "actor": "LLM_SUGGESTED_REPAIR_NOT_APPROVAL",
+      "status": "APPLIED",
+      "after_sha256": "a560516174376832c83c01e5217cd4623da82773eef81d28d849fae1bcc35e77",
+      "other_sections_preserved": true
+    }
+  ],
+  "contract_issues": {
+    "technical_options[0]": [
+      "Low/balanced plans must directly address the requested feature"
+    ],
+    "technical_options[1]": [
+      "Low/balanced plans must directly address the requested feature"
+    ]
+  },
+  "estimate_notices": [],
+  "draft": {
+    "title": "保険請求進捗通知機能の未承認プリセールス提案",
+    "executive_direction": "顧客課題は未検証の仮説であり、本提案は技術案の検討と検証計画を示すものです。実際の業務要件・ROI・法的適合性は未確認です。",
+    "customer_problem_hypotheses": [
+      {
+        "statement": "Insurers must provide clear and timely updates on claim processing steps",
+        "evidence_status": "hypothesis_unverified",
+        "source_refs": [],
+        "unknowns": "顧客のSLA、業務分布、処理時間、資格、例外条件、EU法規制適合性は未検証。"
+      }
+    ],
+    "constraints_and_unknowns": [
+      "予算: EUR 30,000（仮定）",
+      "納期: 8週間（仮定）",
+      "チーム人数: 2人（PM 0.2 FTE）",
+      "運用担当なし、低運用負荷を優先",
+      "既存システム・APIの活用を優先"
+    ],
+    "technical_options": [
+      {
+        "label": "low_complexity",
+        "solution": "既存通知サービスとAPI連携による簡易通知機能構築",
+        "target_requirement_ids": [
+          "REQ-PUBLIC-001"
+        ],
+        "direct_requirement_coverage": "not_addressed",
+        "necessary_roles": [
+          "AI technical reviewer",
+          "DevOps engineer"
+        ],
+        "fit_to_constraints": "既存API活用により低工数で実装可能",
+        "estimated_cost_basis": "保守的見積、単価・対象範囲は仮定",
+        "relative_effort": "low",
+        "delivery_risk": "low",
+        "main_tradeoffs": [
+          "通知の精度とカスタマイズ性が限られる",
+          "既存システムとの統合に制約あり"
+        ],
+        "validation": "合成通知試験のみ実施（E2B評価未実施）"
+      },
+      {
+        "label": "balanced",
+        "solution": "通知トリガー・宛先・遅延・障害復旧を含む統合通知プロトタイプ構築",
+        "target_requirement_ids": [
+          "REQ-PUBLIC-001"
+        ],
+        "direct_requirement_coverage": "not_addressed",
+        "necessary_roles": [
+          "AI technical reviewer",
+          "DevOps engineer",
+          "Product owner"
+        ],
+        "fit_to_constraints": "既存API活用＋新機能追加で中程度工数",
+        "estimated_cost_basis": "中程度見積、単価・対象範囲は仮定",
+        "relative_effort": "medium",
+        "delivery_risk": "medium",
+        "main_tradeoffs": [
+          "通知機能の品質とカスタマイズ性が向上",
+          "運用負荷が増加する可能性"
+        ],
+        "validation": "E2E試験（通知トリガー・宛先・遅延・障害復旧）を検証"
+      },
+      {
+        "label": "research_option",
+        "solution": "通知機能の因果関係と担当者割当最適化を検証する実験的プロトタイプ構築",
+        "target_requirement_ids": [
+          "REQ-PUBLIC-001"
+        ],
+        "direct_requirement_coverage": "not_addressed",
+        "necessary_roles": [
+          "AI technical reviewer",
+          "Data scientist",
+          "Product owner"
+        ],
+        "fit_to_constraints": "新規要件検証に重点を置くため工数が高め",
+        "estimated_cost_basis": "保守的見積、単価・対象範囲は仮定",
+        "relative_effort": "high",
+        "delivery_risk": "high",
+        "main_tradeoffs": [
+          "担当者割当の最適化可能性を検証可能",
+          "実装コストと納期への影響が大きい"
+        ],
+        "validation": "R1担当者割当と通知要件の因果関係を検証"
+      }
+    ],
+    "recommended_next_experiment": "通知トリガー・宛先・遅延・障害復旧を結合したE2E試験の設計と実施。この試験は、現在の合成通知プロトタイプとR1担当者割当の機能が統合されているかを検証するものであり、顧客固有の要件を直接証明するものではない。",
+    "next_experiments": [
+      {
+        "goal": "通知トリガー・宛先・遅延・障害復旧を結合したE2E試験を実施し、統合受入の検証を行う",
+        "procedure": "通知専用合成試験とR1担当者割当を統合して実行",
+        "success_measure": "通知機能の整合性と遅延・障害時の復旧が正常に動作すること",
+        "owner_role": "AI technical reviewer",
+        "evidence_ref": "08e_feature_acceptance.json"
+      }
+    ],
+    "questions_for_customer": [
+      "顧客の業務SLA・分布・処理時間・資格・例外を実測で確認する計画はありますか？",
+      "R1の行動プローブとストレス試験の結果を確認し、不合格時のみ修正する計画はありますか？",
+      "単発診断と診断ベンチマークを分離して誤判定を検証する計画はありますか？"
+    ],
+    "pm_and_engineer_review_points": [
+      "通知機能の品質とカスタマイズ性のバランスを検討",
+      "担当者割当最適化の因果関係を検証する実験の必要性を評価",
+      "既存API活用による工数と品質のトレードオフを明確化"
+    ],
+    "next_iteration_inputs": [
+      "顧客の業務SLA・分布・処理時間・資格・例外を実測で確認",
+      "R1の行動プローブとストレス試験の結果を確認し、不合格時のみ修正する",
+      "単発診断と診断ベンチマークを分離して誤判定を検証"
+    ],
+    "limitations": [
+      "顧客課題は未検証の仮説",
+      "予算・納期・人員は仮定",
+      "費用の数値概算は仮定・単価・対象範囲・不確実性を含む",
+      "通知機能とR1担当者割当は別機能として扱う",
+      "DEV識別力不足、診断HOLD、通知統合未実施の問題点を反映"
+    ]
+  },
+  "display_policy": "SHOW_STRUCTURALLY_VALID_UNAPPROVED_DRAFT_WITH_WARNINGS",
+  "human_review_required": true,
+  "revision_diff": {
+    "previous_version": null,
+    "changed_constraints": {},
+    "changed_fields": [],
+    "source_changed": false,
+    "note": "初回版のため比較対象なし"
+  },
+  "finished_at": "2026-11-22T06:56:02+00:00"
+}

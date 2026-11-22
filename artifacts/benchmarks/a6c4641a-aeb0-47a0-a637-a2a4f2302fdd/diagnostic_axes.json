@@ -1,0 +1,640 @@
+{
+  "version": "RAW-DIAGNOSTIC-AXES-v0.28.0",
+  "benchmark_id": "a6c4641a-aeb0-47a0-a637-a2a4f2302fdd",
+  "benchmark_execution_status": "COMPLETED",
+  "groups": [
+    {
+      "group": "fixed_first_raw",
+      "model_role": "coding",
+      "planned": 2,
+      "completed": 2,
+      "replayed_cases": 0,
+      "fresh_first_pass": false,
+      "usable_for_first_pass_generalization": false,
+      "axes": {
+        "cause_classification": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "cause_classification"
+          ],
+          "failed_cases": [
+            {
+              "case_id": "fifo_sla_conflict",
+              "repetition": 0,
+              "failed_checks": [
+                "cause_classification"
+              ]
+            }
+          ]
+        },
+        "implementation_correctness": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "implementation_correctness",
+            "no_implementation_contradiction"
+          ],
+          "failed_cases": []
+        },
+        "evidence_quality": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "evidence_traceability",
+            "real_world_humility"
+          ],
+          "failed_cases": []
+        },
+        "revision_action": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "revision_targets_requirement",
+            "no_conflicting_revision_policy"
+          ],
+          "failed_cases": [
+            {
+              "case_id": "fifo_sla_conflict",
+              "repetition": 0,
+              "failed_checks": [
+                "revision_targets_requirement"
+              ]
+            }
+          ]
+        },
+        "requirement_fit": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "synthetic_business_fit"
+          ],
+          "failed_cases": [
+            {
+              "case_id": "actual_fifo_implementation_bug",
+              "repetition": 0,
+              "failed_checks": [
+                "synthetic_business_fit"
+              ]
+            }
+          ]
+        },
+        "cross_field_consistency": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "raw_consistency.passed",
+            "raw_semantics.passed"
+          ]
+        }
+      }
+    },
+    {
+      "group": "fixed_first_raw",
+      "model_role": "finance",
+      "planned": 2,
+      "completed": 2,
+      "replayed_cases": 0,
+      "fresh_first_pass": false,
+      "usable_for_first_pass_generalization": false,
+      "axes": {
+        "cause_classification": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "cause_classification"
+          ],
+          "failed_cases": []
+        },
+        "implementation_correctness": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "implementation_correctness",
+            "no_implementation_contradiction"
+          ],
+          "failed_cases": [
+            {
+              "case_id": "fifo_sla_conflict",
+              "repetition": 0,
+              "failed_checks": [
+                "implementation_correctness"
+              ]
+            }
+          ]
+        },
+        "evidence_quality": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "evidence_traceability",
+            "real_world_humility"
+          ],
+          "failed_cases": []
+        },
+        "revision_action": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "revision_targets_requirement",
+            "no_conflicting_revision_policy"
+          ],
+          "failed_cases": []
+        },
+        "requirement_fit": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "synthetic_business_fit"
+          ],
+          "failed_cases": [
+            {
+              "case_id": "actual_fifo_implementation_bug",
+              "repetition": 0,
+              "failed_checks": [
+                "synthetic_business_fit"
+              ]
+            }
+          ]
+        },
+        "cross_field_consistency": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "raw_consistency.passed",
+            "raw_semantics.passed"
+          ]
+        }
+      }
+    },
+    {
+      "group": "fixed_latest_raw",
+      "model_role": "coding",
+      "planned": 2,
+      "completed": 2,
+      "replayed_cases": 0,
+      "fresh_first_pass": false,
+      "usable_for_first_pass_generalization": false,
+      "axes": {
+        "cause_classification": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "cause_classification"
+          ],
+          "failed_cases": []
+        },
+        "implementation_correctness": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "implementation_correctness",
+            "no_implementation_contradiction"
+          ],
+          "failed_cases": []
+        },
+        "evidence_quality": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "evidence_traceability",
+            "real_world_humility"
+          ],
+          "failed_cases": []
+        },
+        "revision_action": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "revision_targets_requirement",
+            "no_conflicting_revision_policy"
+          ],
+          "failed_cases": [
+            {
+              "case_id": "fifo_sla_conflict",
+              "repetition": 0,
+              "failed_checks": [
+                "revision_targets_requirement"
+              ]
+            }
+          ]
+        },
+        "requirement_fit": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "synthetic_business_fit"
+          ],
+          "failed_cases": [
+            {
+              "case_id": "actual_fifo_implementation_bug",
+              "repetition": 0,
+              "failed_checks": [
+                "synthetic_business_fit"
+              ]
+            }
+          ]
+        },
+        "cross_field_consistency": {
+          "status": "HOLD",
+          "passed": 0,
+          "failed": 1,
+          "unscored": 1,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "raw_consistency.passed",
+            "raw_semantics.passed"
+          ]
+        }
+      }
+    },
+    {
+      "group": "fixed_latest_raw",
+      "model_role": "finance",
+      "planned": 2,
+      "completed": 2,
+      "replayed_cases": 0,
+      "fresh_first_pass": false,
+      "usable_for_first_pass_generalization": false,
+      "axes": {
+        "cause_classification": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "cause_classification"
+          ],
+          "failed_cases": []
+        },
+        "implementation_correctness": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "implementation_correctness",
+            "no_implementation_contradiction"
+          ],
+          "failed_cases": []
+        },
+        "evidence_quality": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "evidence_traceability",
+            "real_world_humility"
+          ],
+          "failed_cases": []
+        },
+        "revision_action": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "revision_targets_requirement",
+            "no_conflicting_revision_policy"
+          ],
+          "failed_cases": []
+        },
+        "requirement_fit": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "synthetic_business_fit"
+          ],
+          "failed_cases": [
+            {
+              "case_id": "actual_fifo_implementation_bug",
+              "repetition": 0,
+              "failed_checks": [
+                "synthetic_business_fit"
+              ]
+            }
+          ]
+        },
+        "cross_field_consistency": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 0,
+          "unscored": 1,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "raw_consistency.passed",
+            "raw_semantics.passed"
+          ]
+        }
+      }
+    },
+    {
+      "group": "blind_raw",
+      "model_role": "coding",
+      "planned": 2,
+      "completed": 2,
+      "replayed_cases": 0,
+      "fresh_first_pass": true,
+      "usable_for_first_pass_generalization": true,
+      "axes": {
+        "cause_classification": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "cause_classification"
+          ],
+          "failed_cases": [
+            {
+              "case_id": "deadline_business_mismatch",
+              "repetition": 0,
+              "failed_checks": [
+                "cause_classification"
+              ]
+            }
+          ]
+        },
+        "implementation_correctness": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "implementation_correctness",
+            "no_implementation_contradiction"
+          ],
+          "failed_cases": []
+        },
+        "evidence_quality": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "evidence_traceability",
+            "real_world_humility"
+          ],
+          "failed_cases": []
+        },
+        "revision_action": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "revision_targets_requirement",
+            "no_conflicting_revision_policy"
+          ],
+          "failed_cases": []
+        },
+        "requirement_fit": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "synthetic_business_fit"
+          ],
+          "failed_cases": [
+            {
+              "case_id": "code_breaks_fifo",
+              "repetition": 0,
+              "failed_checks": [
+                "synthetic_business_fit"
+              ]
+            }
+          ]
+        },
+        "cross_field_consistency": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "raw_consistency.passed",
+            "raw_semantics.passed"
+          ]
+        }
+      }
+    },
+    {
+      "group": "blind_raw",
+      "model_role": "finance",
+      "planned": 2,
+      "completed": 2,
+      "replayed_cases": 0,
+      "fresh_first_pass": true,
+      "usable_for_first_pass_generalization": true,
+      "axes": {
+        "cause_classification": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "cause_classification"
+          ],
+          "failed_cases": []
+        },
+        "implementation_correctness": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "implementation_correctness",
+            "no_implementation_contradiction"
+          ],
+          "failed_cases": [
+            {
+              "case_id": "deadline_business_mismatch",
+              "repetition": 0,
+              "failed_checks": [
+                "implementation_correctness"
+              ]
+            }
+          ]
+        },
+        "evidence_quality": {
+          "status": "PASS_SYNTHETIC",
+          "passed": 2,
+          "failed": 0,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "evidence_traceability",
+            "real_world_humility"
+          ],
+          "failed_cases": []
+        },
+        "revision_action": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "revision_targets_requirement",
+            "no_conflicting_revision_policy"
+          ],
+          "failed_cases": [
+            {
+              "case_id": "deadline_business_mismatch",
+              "repetition": 0,
+              "failed_checks": [
+                "revision_targets_requirement"
+              ]
+            }
+          ]
+        },
+        "requirement_fit": {
+          "status": "HOLD",
+          "passed": 0,
+          "failed": 2,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "synthetic_business_fit"
+          ],
+          "failed_cases": [
+            {
+              "case_id": "deadline_business_mismatch",
+              "repetition": 0,
+              "failed_checks": [
+                "synthetic_business_fit"
+              ]
+            },
+            {
+              "case_id": "code_breaks_fifo",
+              "repetition": 0,
+              "failed_checks": [
+                "synthetic_business_fit"
+              ]
+            }
+          ]
+        },
+        "cross_field_consistency": {
+          "status": "HOLD",
+          "passed": 1,
+          "failed": 1,
+          "unscored": 0,
+          "planned": 2,
+          "completed": 2,
+          "checks": [
+            "raw_consistency.passed",
+            "raw_semantics.passed"
+          ]
+        }
+      }
+    }
+  ],
+  "raw_only": true,
+  "assisted_outputs_excluded": true,
+  "oracle_only_used_in_existing_independent_rubric": true,
+  "auto_corrected_diagnosis": false,
+  "production_authorization": false,
+  "limitations": "Pass means an individual criterion passed in small synthetic fixtures. Lexical cross-field checks are not proof of semantic truth. Blind replays are not fresh trials; no causal or legal conclusions."
+}

@@ -1056,7 +1056,7 @@ def register(app, m) -> None:
                                state.get('diagnostic_execution_status')==gate.get('execution_status'))
         return {
             'report_version': '0.27.0', # backward-compatible view contract
-            'producer_version': '0.32.0',
+            'producer_version': '0.33.0',
             'workflow_id': state['workflow_id'],
             'updated_at': state.get('updated_at'),
             'status': state['status'],
@@ -1182,8 +1182,12 @@ def register(app, m) -> None:
             # The generator may return a machine-scoped section repair trace;
             # keep it separate from the model's business proposal fields.
             final['repair_actions']=draft.pop('_repair_actions',[]) if isinstance(draft,dict) else []
+            final['contract_issues']=draft.pop('_contract_issues',{}) if isinstance(draft,dict) else {}
+            final['estimate_notices']=draft.pop('_estimate_notices',[]) if isinstance(draft,dict) else []
             final['draft']=draft
-            final['status']='DRAFT_UNAPPROVED'
+            final['status']='DRAFT_WITH_WARNINGS' if final['contract_issues'] else 'DRAFT_UNAPPROVED'
+            final['display_policy']='SHOW_STRUCTURALLY_VALID_UNAPPROVED_DRAFT_WITH_WARNINGS'
+            final['human_review_required']=True
             # A bounded deterministic diff of past and new drafts. Model never
             # judges whether a changed solution is a business improvement.
             old_versions=sorted(folder(wid).glob('10p_advisory_v[0-9][0-9][0-9][0-9].json'))
@@ -1252,6 +1256,8 @@ def register(app, m) -> None:
                     'model':m.llm.MODEL,'approval_status':'NOT_APPROVED',
                     'primary_requirement':context['primary_requirement'],
                     'provisional_mode':bool(body.provisional_mode),
+                    'assumptions_origin':adv.assumption_provenance(body.constraints),
+                    'scenario_basis':'UNVERIFIED_DEMO_ASSUMPTIONS_NOT_CLIENT_BUDGET',
                     'deterministic_public_context':adv.deterministic_public_context(context),
                     'source_refs':context['allowed_source_refs'],
                     'required_attention':context['required_attention'],
@@ -1273,8 +1279,8 @@ def register(app, m) -> None:
         if not p.exists():
             raise HTTPException(404,'Proposal version not found')
         draft=json.loads(p.read_text(encoding='utf-8'))
-        if draft.get('status')!='DRAFT_UNAPPROVED':
-            raise HTTPException(409,'Only completed draft versions can receive a review')
+        if draft.get('status') not in ('DRAFT_UNAPPROVED','DRAFT_WITH_WARNINGS'):
+            raise HTTPException(409,'Only completed and current draft versions can receive a review')
         if draft.get('source_hash')!=latest_fingerprint:
             raise HTTPException(409,'Stale advisory source; regenerate from latest evaluation before reviewing')
         out=folder(workflow_id)/f'10p_review_v{body.version:04d}.json'
@@ -1282,7 +1288,9 @@ def register(app, m) -> None:
                 'decision':body.decision,'rationale':body.rationale,
                 'next_iteration_brief':body.next_iteration_brief,
                 'created_at':m.now(),'effect':'REVIEW_ONLY_NO_AUTONOMOUS_EXECUTION',
-                'source_hash':draft['source_hash']}
+                'source_hash':draft['source_hash'],
+                'warning_count':sum(len(v) for v in (draft.get('contract_issues') or {}).values()),
+                'not_production_approval':True}
         try:
             fd=os.open(out,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
         except FileExistsError as exc:
@@ -1306,5 +1314,5 @@ def register(app, m) -> None:
         file=m.path_for("exports",state["export_id"])/"complete_audit_package.zip"
         if not file.is_file():
             raise HTTPException(409,"ZIP is not ready; check workflow status")
-        return FileResponse(file,filename=f"claims_full_run_v031_{workflow_id}.zip",media_type="application/zip")
+        return FileResponse(file,filename=f"claims_full_run_v033_{workflow_id}.zip",media_type="application/zip")
 

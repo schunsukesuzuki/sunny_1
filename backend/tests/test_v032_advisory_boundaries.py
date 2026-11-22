@@ -85,13 +85,14 @@ def test_only_failed_technical_options_are_regenerated(monkeypatch):
             return schema.model_validate({**broken,'customer_problem_hypotheses':[
                 {'statement':x['statement'],'unknowns':x['unknowns']}
                 for x in broken['customer_problem_hypotheses']]})
-        assert schema.__name__=='AdvisoryRepair_technical_options'
-        return schema.model_validate({'technical_options':draft['technical_options']})
+        assert schema.__name__=='AdvisoryRepair_technical_options_item'
+        return schema.model_validate({'item':draft['technical_options'][0]})
     monkeypatch.setattr(advisory.llm,'query',mock_query)
     result=asyncio.run(advisory.generate(ctx,advisory.AdvisoryConstraints()))
     assert len(calls)==2
     assert len(result['_repair_actions'])==1
-    assert result['_repair_actions'][0]['section']=='technical_options'
+    assert result['_repair_actions'][0]['section']=='technical_options[0]'
+    assert result['_repair_actions'][0]['status']=='APPLIED'
     assert [x['statement'] for x in result['customer_problem_hypotheses']] == [
         x['statement'] for x in original_statement]
     assert result['technical_options']==draft['technical_options']
@@ -109,11 +110,13 @@ def test_targeted_repair_fails_closed_if_invalid_after_one_attempt(monkeypatch):
             return schema.model_validate({**broken,'customer_problem_hypotheses':[
                 {'statement':x['statement'],'unknowns':x['unknowns']}
                 for x in broken['customer_problem_hypotheses']]})
-        return schema.model_validate({'technical_options':broken['technical_options']})
+        return schema.model_validate({'item':broken['technical_options'][0]})
     monkeypatch.setattr(advisory.llm,'query',bad_query)
-    with pytest.raises(ValueError,match='still violates contracts'):
-        asyncio.run(advisory.generate(ctx,advisory.AdvisoryConstraints()))
-    assert calls==['AdvisoryLLMDraft','AdvisoryRepair_technical_options']
+    draft=asyncio.run(advisory.generate(ctx,advisory.AdvisoryConstraints()))
+    assert draft['technical_options'][0]['solution']=='担当者割当の順位を上げる。'
+    assert 'technical_options[0]' in draft['_contract_issues']
+    assert draft['_repair_actions'][0]['status']=='REJECTED_STILL_INCONSISTENT'
+    assert calls==['AdvisoryLLMDraft','AdvisoryRepair_technical_options_item']
 
 
 def test_partial_workflow_needs_explicit_provisional_mode(tmp_path,monkeypatch):

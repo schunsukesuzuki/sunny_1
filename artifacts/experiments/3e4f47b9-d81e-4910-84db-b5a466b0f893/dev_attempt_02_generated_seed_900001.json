@@ -1,0 +1,28 @@
+{
+  "name": "generated",
+  "seed": 900001,
+  "source_sha256": "536579f74bf7f26461fd13d676f8061a68c3d2c34213736fcf2a5a2d1210e26f",
+  "sandbox_id": "i33nm5llf1jxr0o6qo5at",
+  "elapsed_seconds": 0.331,
+  "stdout": "",
+  "stderr": "",
+  "output": {
+    "assignments": [
+      {
+        "case_id": "URGENT",
+        "reviewer_id": "R-A",
+        "day": 0,
+        "hours": 1
+      },
+      {
+        "case_id": "FLEX",
+        "reviewer_id": "R-A",
+        "day": 1,
+        "hours": 1
+      }
+    ],
+    "unassigned_case_ids": []
+  },
+  "output_sha256": "efa03e9c5158a536045a88441be4732c14b9e39c3d39c42234690d44f20340d7",
+  "error": null
+}

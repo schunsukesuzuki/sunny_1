@@ -1,0 +1,154 @@
+{
+  "case_id": "code_breaks_fifo",
+  "model_role": "coding",
+  "model_id": "qwen3-coder:30b",
+  "input_sha256": "2f3f400a1789cd220f509de1fa98031779aaf30f77fba6dc80dc845dfbee3400",
+  "revision_allowed": false,
+  "status": "COMPLETED",
+  "observable_fact_sheet": {
+    "independent_test_reported_status": "FAIL",
+    "independent_test_verbatim": "FAIL: deterministic ordering check found inversion of two feasible intake cases.",
+    "original_contract": "R0: process claims in arrival_order if both reviewers and capacity allow.",
+    "business_goal_verbatim": "Execute the approved FIFO policy; no separate business SLA comparison is established.",
+    "synthetic_comparison_verbatim": "Claim B arrived after claim A, but implementation put claim B first even though claim A was feasible.",
+    "available_evidence": [
+      {
+        "id": "SYN-BLIND-BUG-6606",
+        "provenance": "synthetic_implementation_trace",
+        "observation": "Observed out-of-order queue assignments while all skills and capacity were available."
+      }
+    ],
+    "customer_interview_count": 0,
+    "note": "These fields restate the public INPUT facts; infer diagnoses independently."
+  },
+  "diagnosis": {
+    "classification": "implementation_bug",
+    "implementation_assessment": "incorrect",
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_validity": "unverified",
+    "supporting_evidence_ids": [
+      "SYN-BLIND-BUG-6606"
+    ],
+    "root_cause": "The implementation does not adhere to the specified R0 contract which requires processing claims in arrival_order when reviewers and capacity allow. The independent test result shows a deterministic ordering check found an inversion of two feasible intake cases, indicating a clear violation of the FIFO policy.",
+    "suggested_requirement_change": "change_required=false",
+    "scheduling_precedence": "none",
+    "change_required": false,
+    "remaining_uncertainty": "insufficient_evidence"
+  },
+  "raw_consistency": {
+    "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+    "status": "CONSISTENT",
+    "passed": true,
+    "failure_codes": [],
+    "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+    "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+  },
+  "raw_semantics": {
+    "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+    "status": "CONSISTENT_WITH_VISIBLE_CONTRACT",
+    "passed": true,
+    "failure_codes": [],
+    "axes": {
+      "classification": "implementation_bug",
+      "implementation": "incorrect",
+      "evidence_ids": [
+        "SYN-BLIND-BUG-6606"
+      ],
+      "revision_policy": "none",
+      "revision_change_required": false
+    },
+    "oracle_access": false,
+    "auto_rewrite": false,
+    "synthetic_semantic_truth_proven": false,
+    "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+  },
+  "rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": true,
+      "implementation_correctness": true,
+      "synthetic_business_fit": false,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": true
+    },
+    "passed": false,
+    "score": 0.875,
+    "failure_codes": [
+      "SYNTHETIC_BUSINESS_FIT"
+    ],
+    "expected_classification": "implementation_bug",
+    "real_customer_business_validity": "UNVERIFIED"
+  },
+  "grounding": {
+    "version": "EVIDENCE-BINDER-v0.21.2",
+    "applied": false,
+    "reason": "MODEL_ALREADY_CITED",
+    "added_evidence_ids": [],
+    "raw_answer": {
+      "classification": "implementation_bug",
+      "implementation_assessment": "incorrect",
+      "synthetic_requirement_fit": "mismatch",
+      "real_customer_validity": "unverified",
+      "supporting_evidence_ids": [
+        "SYN-BLIND-BUG-6606"
+      ],
+      "root_cause": "The implementation does not adhere to the specified R0 contract which requires processing claims in arrival_order when reviewers and capacity allow. The independent test result shows a deterministic ordering check found an inversion of two feasible intake cases, indicating a clear violation of the FIFO policy.",
+      "suggested_requirement_change": "change_required=false",
+      "scheduling_precedence": "none",
+      "change_required": false,
+      "remaining_uncertainty": "insufficient_evidence"
+    },
+    "assisted_answer": {
+      "classification": "implementation_bug",
+      "implementation_assessment": "incorrect",
+      "synthetic_requirement_fit": "mismatch",
+      "real_customer_validity": "unverified",
+      "supporting_evidence_ids": [
+        "SYN-BLIND-BUG-6606"
+      ],
+      "root_cause": "The implementation does not adhere to the specified R0 contract which requires processing claims in arrival_order when reviewers and capacity allow. The independent test result shows a deterministic ordering check found an inversion of two feasible intake cases, indicating a clear violation of the FIFO policy.",
+      "suggested_requirement_change": "change_required=false",
+      "scheduling_precedence": "none",
+      "change_required": false,
+      "remaining_uncertainty": "insufficient_evidence"
+    },
+    "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+  },
+  "assisted_diagnosis": {
+    "classification": "implementation_bug",
+    "implementation_assessment": "incorrect",
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_validity": "unverified",
+    "supporting_evidence_ids": [
+      "SYN-BLIND-BUG-6606"
+    ],
+    "root_cause": "The implementation does not adhere to the specified R0 contract which requires processing claims in arrival_order when reviewers and capacity allow. The independent test result shows a deterministic ordering check found an inversion of two feasible intake cases, indicating a clear violation of the FIFO policy.",
+    "suggested_requirement_change": "change_required=false",
+    "scheduling_precedence": "none",
+    "change_required": false,
+    "remaining_uncertainty": "insufficient_evidence"
+  },
+  "assisted_rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": true,
+      "implementation_correctness": true,
+      "synthetic_business_fit": false,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": true
+    },
+    "passed": false,
+    "score": 0.875,
+    "failure_codes": [
+      "SYNTHETIC_BUSINESS_FIT"
+    ],
+    "expected_classification": "implementation_bug",
+    "real_customer_business_validity": "UNVERIFIED"
+  }
+}

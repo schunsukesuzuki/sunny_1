@@ -1,0 +1,78 @@
+{
+  "version": "BOUNDARY-ASSURANCE-v0.24.0",
+  "nodes": [
+    {
+      "node_id": "workflow",
+      "kind": "workflows",
+      "artifact_id": "f69162f1-1507-48fc-9514-e39f56716656"
+    },
+    {
+      "node_id": "runs",
+      "kind": "runs",
+      "artifact_id": "f669ec1c-29d7-429e-a49c-c64d05a48d2f"
+    },
+    {
+      "node_id": "proposals",
+      "kind": "proposals",
+      "artifact_id": "1660baf7-2678-46ef-9bc0-dd6f934a86e7"
+    },
+    {
+      "node_id": "approvals",
+      "kind": "approvals",
+      "artifact_id": "59375a88-ef50-4f5f-ad67-2dee575442ac"
+    },
+    {
+      "node_id": "experiments",
+      "kind": "experiments",
+      "artifact_id": "3e4f47b9-d81e-4910-84db-b5a466b0f893"
+    },
+    {
+      "node_id": "policy_validations",
+      "kind": "policy_validations",
+      "artifact_id": "65575280-1f1e-4509-93ff-c55d230a58ad"
+    },
+    {
+      "node_id": "benchmarks",
+      "kind": "benchmarks",
+      "artifact_id": "a6c4641a-aeb0-47a0-a637-a2a4f2302fdd"
+    },
+    {
+      "node_id": "dogwood_gate",
+      "kind": "authorization",
+      "artifact_id": "05_dogwood_authorization.json"
+    }
+  ],
+  "edges": [
+    {
+      "source": "workflow",
+      "target": "runs",
+      "type": "DECLARED_DEPENDENCY"
+    },
+    {
+      "source": "runs",
+      "target": "proposals",
+      "type": "DECLARED_DEPENDENCY"
+    },
+    {
+      "source": "proposals",
+      "target": "approvals",
+      "type": "DECLARED_DEPENDENCY"
+    },
+    {
+      "source": "approvals",
+      "target": "dogwood_gate",
+      "type": "DECLARED_DEPENDENCY"
+    },
+    {
+      "source": "dogwood_gate",
+      "target": "experiments",
+      "type": "DECLARED_DEPENDENCY"
+    },
+    {
+      "source": "experiments",
+      "target": "policy_validations",
+      "type": "DECLARED_DEPENDENCY"
+    }
+  ],
+  "semantics": "Declared workflow dependencies only; no proof of semantic support"
+}
