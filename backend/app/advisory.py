@@ -1,4 +1,4 @@
-"""v0.31 evidence-locked, snapshot-aware presales drafts.
+"""v0.32 evidence-separated, section-repairable presales drafts.
 
 Advisory generation is NOT an authorization, proof of need, or R1 algorithm selection.
 References are allowlisted and checked against the actual saved evidence record.
@@ -9,7 +9,7 @@ import hashlib
 import json
 import re
 from typing import Literal
-from pydantic import BaseModel, Field, ConfigDict, model_validator
+from pydantic import BaseModel, Field, ConfigDict, model_validator, create_model
 from . import llm
 
 
@@ -77,6 +77,56 @@ class AdvisoryDraft(BaseModel):
             raise ValueError('Three distinct alternatives required: low_complexity, balanced, research_option')
         return self
 
+
+
+class UnverifiedHypothesis(BaseModel):
+    """LLM output may describe a possibility, never create evidence bindings."""
+    model_config = ConfigDict(extra='forbid')
+    statement: str = Field(min_length=8, max_length=700)
+    unknowns: str = Field(min_length=2, max_length=700)
+
+
+def deterministic_public_context(context: dict) -> list[dict]:
+    """Build citations exclusively from reviewed source records, not model text.
+
+    Source existence is deterministic; semantic support for a specific customer
+    problem remains unverified, even if the URL and PUB identifier are real.
+    """
+    result = []
+    for entry in context.get('reviewed_public_source_context') or []:
+        ref = str(entry.get('evidence_id') or '')
+        if (ref not in context.get('source_register', {})
+                or context['source_register'][ref].get('kind') != 'public_context_excerpt'):
+            continue
+        result.append({
+            'evidence_id': ref,
+            'source_url': entry.get('source_url'),
+            'source_file': entry.get('source_file'),
+            'quote_context_untrusted': entry.get('quote_context_untrusted', ''),
+            'support_scope': 'PUBLIC_CONTEXT_ONLY_NOT_CUSTOMER_PROOF',
+            'binding': 'DETERMINISTIC_FROM_HUMAN_SELECTED_EVIDENCE',
+        })
+    return result
+
+
+def model_hypotheses_as_unverified(values: list[dict]) -> list[dict]:
+    """Never elevate a model-created hypothesis into a sourced observation.
+
+    The model-facing schema lacks status/ref fields. If an existing mock or old
+    API adapter returns extra keys, ignore them rather than grafting PUB IDs
+    onto claims whose semantic relation was not independently checked.
+    """
+    return [{'statement': h['statement'], 'unknowns': h['unknowns'],
+             'evidence_status': 'hypothesis_unverified', 'source_refs': []}
+            for h in values]
+
+
+# The model-facing response is intentionally narrower than the final saved
+# draft: the model cannot issue provenance IDs or assert source_context.
+AdvisoryLLMDraft = create_model(
+    'AdvisoryLLMDraft', __base__=AdvisoryDraft,
+    customer_problem_hypotheses=(list[UnverifiedHypothesis], Field(min_length=1,max_length=5)),
+)
 
 def compact_context(report: dict, workflow_inputs: dict) -> dict:
     """Allowlisted source data only. Source refs are pointers, not semantic proof."""
@@ -192,12 +242,8 @@ def validate_draft(draft: dict, context: dict, assumptions: AdvisoryConstraints 
             raise ValueError('Supported observations require a referenced source')
         if h['evidence_status']=='source_context' and not any(context['source_register'][ref]['kind']=='public_context_excerpt' for ref in h['source_refs']):
             raise ValueError('Public source context requires an actual selected public excerpt ID')
-    if context.get('reviewed_public_source_context') and not any(
-            h['evidence_status']=='source_context' and any(
-                context['source_register'][ref]['kind']=='public_context_excerpt'
-                for ref in h['source_refs'])
-            for h in draft['customer_problem_hypotheses']):
-        raise ValueError('A selected public source needs at least one source-context hypothesis with a real PUB ID')
+    # Reviewed PUB pointers are kept in deterministic_public_context(), not
+    # required as artificial citations on an LLM-authored hypothesis.
     req=primary['requirement_id']
     for o in draft['technical_options']:
         if req not in o['target_requirement_ids']:
@@ -230,6 +276,93 @@ def validate_draft(draft: dict, context: dict, assumptions: AdvisoryConstraints 
         raise ValueError('Proposal is not substantially written in Japanese')
 
 
+
+def section_issues(draft: dict, context: dict, assumptions: AdvisoryConstraints) -> dict[str, list[str]]:
+    """Pin section-local semantic contract errors, without an oracle/LLM judge.
+
+    The output is used solely to request a bounded one-shot rewrite of an
+    invalid section. This does not confer factual or customer validity.
+    """
+    issues: dict[str, list[str]] = {}
+    def problem(section: str, message: str):
+        issues.setdefault(section, []).append(message)
+    req = context['primary_requirement']['requirement_id']
+    allowed = set(context['source_register'])
+    for h in draft.get('customer_problem_hypotheses', []):
+        if any(ref not in allowed for ref in h.get('source_refs', [])):
+            problem('customer_problem_hypotheses','Unknown source ID; do not invent references')
+        if h.get('evidence_status') == 'hypothesis_unverified' and h.get('source_refs'):
+            problem('customer_problem_hypotheses','Unverified hypothesis cannot claim sourced proof')
+    for o in draft.get('technical_options', []):
+        if req not in o['target_requirement_ids'] or any(x != req for x in o['target_requirement_ids']):
+            problem('technical_options',f'Target only verified requirement ID {req}')
+        if o['label'] in ('low_complexity','balanced') and o['direct_requirement_coverage']!='direct':
+            problem('technical_options','Low/balanced plans must directly address the requested feature')
+        if (context['primary_requirement']['type']=='claim_progress_updates'
+                and o['direct_requirement_coverage']=='direct'
+                and not re.search(r'通知|進捗|ステータス|連絡|知らせ|notification|notify|progress update',o['solution'],re.I)):
+            problem('technical_options','Allocation-only solution is not direct notification fulfillment')
+        if (assumptions.budget_eur is None and re.search(
+                r'(?:[€$¥]\s*\d|\d[\d,\.]*\s*(?:EUR|USD|円|ユーロ|ドル))',
+                o['estimated_cost_basis'],re.I)):
+            problem('technical_options','No numerical project cost without a known budget')
+    for e in draft.get('next_experiments', []):
+        if e['evidence_ref'] not in allowed:
+            problem('next_experiments','Use a source register ID for the experiment')
+    jp = re.compile(r'[\u3040-\u30ff\u3400-\u9fff]')
+    for key in ('title','executive_direction','recommended_next_experiment'):
+        if len(jp.findall(draft.get(key,''))) < 3:
+            problem(key,'Write the field in Japanese')
+    if any(len(jp.findall(o['solution']))<3 for o in draft.get('technical_options',[])):
+        problem('technical_options','Write all option solutions in Japanese')
+    return {k:list(dict.fromkeys(messages)) for k,messages in issues.items()}
+
+
+async def targeted_repair(draft: dict, context: dict, assumptions: AdvisoryConstraints,
+                          user_context: str) -> tuple[dict, list[dict]]:
+    """Repair only invalid top-level sections (one attempt per section).
+
+    A valid section is never re-generated, and the unchanged sections are
+    compared byte-for-byte as Python objects. Fail closed if a repaired section
+    still violates the original contract. No blind oracle is in scope.
+    """
+    issues = section_issues(draft,context,assumptions)
+    actions=[]
+    if not issues:
+        validate_draft(draft,context,assumptions)
+        return draft,actions
+    for field, messages in issues.items():
+        field_type=AdvisoryDraft.model_fields[field].annotation
+        schema=create_model('AdvisoryRepair_'+field, **{field:(field_type,Field(...))})
+        prompt=(
+            '日本語でJSONのみ返す。既存のAI技術提案の指定された1セクションだけを直す。'
+            '正解ラベル、HOLDOUT、顧客未確認の事実を創作しない。'
+            'source ID は登録済みIDのみ使用可能。'
+            'hypothesis は未検証であり公開根拠が顧客固有の事実を証明するとは主張しない。'
+            '元の他セクションを変更しない。'
+        )
+        payload={'field_to_repair':field,'issues':messages,'current_field':draft[field],
+                 'required_source_ids':context['allowed_source_refs'],
+                 'primary_requirement':context['primary_requirement'],
+                 'assumptions':assumptions.model_dump(),
+                 'context_summary':user_context[:10500]}
+        answer=await llm.query(schema,prompt,json.dumps(payload,ensure_ascii=False,sort_keys=True),model=llm.MODEL)
+        before=digest(draft[field])
+        replacement=answer.model_dump()[field]
+        if field=='customer_problem_hypotheses':
+            replacement=model_hypotheses_as_unverified(replacement)
+        draft={**draft,field:replacement}
+        action={'section':field,'reason_codes':messages,'before_sha256':before,
+                'after_sha256':digest(replacement),'other_sections_preserved':True,
+                'attempt':1,'actor':'LLM_SECTION_REPAIR_NOT_APPROVAL'}
+        actions.append(action)
+    final_issues=section_issues(draft,context,assumptions)
+    if final_issues:
+        raise ValueError('Targeted advisory repair still violates contracts: '+str(final_issues)[:350])
+    draft=AdvisoryDraft.model_validate(draft).model_dump()
+    validate_draft(draft,context,assumptions)
+    return draft,actions
+
 def revision_diff(previous: dict | None, current: dict) -> dict:
     """Deterministic presentation diff; not LLM interpretation or approval."""
     if not previous or not previous.get('draft'):
@@ -260,8 +393,8 @@ async def generate(context: dict, assumptions: AdvisoryConstraints) -> dict:
         '必要な技術者の役割、相対工数、費用を左右する要因、相互のトレードオフ、追加実験を各案に必ず明記する。'
         '主たるrequirement_idに3案を紐付ける。claim_progress_updates であれば通知・進捗更新を直接解決し、'
         '担当者割当の改善を通知機能の検証と取り違えない。割当最適化は因果の未確認なオプション／依存関係として扱う。'
-        '出典はsource_registerに存在するIDだけをsource_refsに使用。公開資料は顧客固有の根拠ではない。'
-        '公開資料の文脈の引用には選定済みPUB-xxxを使うこと。source_refsを捏造しない。'
+        '公開出典のPUB IDはプログラム側で結合するため、顧客課題仮説にsource_refs/evidence_statusを生成しない。顧客課題は未検証の仮説とする。'
+        '選択済みPUB IDはモデルによる仮説の根拠と誤認しない。source IDを捏造しない。'
         'required_attentionと診断HOLD、DEV識別力不足、通知統合未実施を次の検証計画に反映。'
         '次の検証を所有者・成功指標・出典IDつきのnext_experimentsへ記載。'
         '05承認、R1選択、09事業判断は変更禁止。Blind結果をDEV選択に逆流しない。'
@@ -271,7 +404,12 @@ async def generate(context: dict, assumptions: AdvisoryConstraints) -> dict:
     user=('保存済み評価の事実・注意事項・実際に存在する出典ID（ただし顧客妥当性は未証明）:\n'
           +json.dumps(context,ensure_ascii=False,sort_keys=True,default=str)[:13500]
           +'\n人間の入力条件（未検証）：\n'+json.dumps(assumptions.model_dump(),ensure_ascii=False,sort_keys=True))
-    result=await llm.query(AdvisoryDraft,system,user,model=llm.MODEL)
+    result=await llm.query(AdvisoryLLMDraft,system,user,model=llm.MODEL)
     value=result.model_dump()
-    validate_draft(value,context,assumptions)
+    value['customer_problem_hypotheses']=model_hypotheses_as_unverified(
+        value['customer_problem_hypotheses'])
+    # Preserve valid sections; only an invalid semantic section may be asked
+    # to regenerate, with a separate typed schema and no global proposal redo.
+    value, actions=await targeted_repair(value,context,assumptions,user)
+    value['_repair_actions']=actions  # stripped by the API before saving draft
     return value

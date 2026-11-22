@@ -1,24 +1,23 @@
 {
-  "source_package_version": "0.31.0",
-  "source_base": "0.30.0",
+  "source_package_version": "0.32.0",
+  "source_base": "0.31.0",
   "artifact_type": "complete source snapshot",
   "runtime_dependencies_not_bundled": true,
-  "verification": "SHA-256 over exact source bytes; SOURCE_MANIFEST.json excluded from its own hashes",
-  "python_regression_tests": "175 passed",
+  "verification": "SHA-256 of source files as shipped; SOURCE_MANIFEST.json excluded from self-hash",
+  "python_regression_tests": "179 passed",
   "frontend_tsx_syntax_parse": "PASSED_WITH_GLOBAL_TYPESCRIPT",
   "frontend_layout_ast_check": "PASSED_10_10R_PROPOSAL_FIRST_00_01_TO_09",
-  "frontend_full_vite_build": "NOT_EXECUTED_REACT_DEPENDENCIES_UNAVAILABLE",
+  "frontend_full_vite_build": "NOT_EXECUTED_DEPENDENCIES_UNAVAILABLE",
   "native_rust_build": "NOT_EXECUTED_IN_PACKAGING_ENVIRONMENT",
   "real_ollama_e2b": "NOT_EXECUTED_IN_PACKAGING_ENVIRONMENT",
   "proposal_model_test": "TEST_DOUBLE_ONLY; REAL_QWEN_OUTPUT_UNVERIFIED",
-  "real_v030_evidence_replay": "PASSED_REQUIREMENT_PUB_REFS_DIAG_HOLD_RETRY_AND_STALE",
+  "v031_real_evidence_replay": "PASS_WITH_MOCK_MODEL; ORIGINAL SOURCE_IDS_PUB001_PUB003_PUB004; COMPLETE",
+  "scope": "ONLY_PRIORITY_HIGH_ITEMS",
   "new_features": [
-    "canonical latest evaluation state SHA-256 and stale advisory protection",
-    "requirement-to-feature and real selected public evidence ID checking",
-    "three required Japanese alternatives with qualitative cost and risk comparisons",
-    "evaluation-driven next-experiment and PM review support",
-    "deterministic changes between proposal versions",
-    "preserved 10 -> 10R AI proposal -> detailed results -> 00 -> 01..09 layout"
+    "deterministic human-reviewed public source IDs separated from unverified model hypotheses",
+    "one-shot typed semantic repair of invalid sections only, fail-closed if still invalid",
+    "automatic advisory after COMPLETE only; explicit provisional_mode for PARTIAL; stale state on update",
+    "preserved 10 -> 10R advisory -> detailed analysis -> 00 -> 01..09 layout"
   ],
   "files": [
     {
@@ -33,8 +32,8 @@
     },
     {
       "path": "CHANGELOG.md",
-      "bytes": 25841,
-      "sha256": "04e6abaa39db1456a6b3f071a627bfba2329d62639363679d967ac809278f83b"
+      "bytes": 27278,
+      "sha256": "03c7fd1478ee27fe21a8c703d593a0b3bb66cc45c54918ad8e71535b7e8b4446"
     },
     {
       "path": "LICENSE",
@@ -43,8 +42,8 @@
     },
     {
       "path": "README.md",
-      "bytes": 39922,
-      "sha256": "dd8c582b5c7eecff554d3d344a73b43ea1c5be0342ba02ce413b27ecf212fb73"
+      "bytes": 41125,
+      "sha256": "beead67da511f215713a66ce6268f0d05575a055357338bb3972a50c814d337c"
     },
     {
       "path": "artifacts/.gitkeep",
@@ -63,8 +62,8 @@
     },
     {
       "path": "backend/app/advisory.py",
-      "bytes": 17882,
-      "sha256": "a798fa132f04b1012bed3e278447a9381cbf492a81cf06a788b5b8328122c50a"
+      "bytes": 25644,
+      "sha256": "916c9d30efec5dfca4ea23bfec7c7e791a39f87e71b17154724a7436a2fdd0e6"
     },
     {
       "path": "backend/app/artifact_readiness.py",
@@ -184,7 +183,7 @@
     {
       "path": "backend/app/export_bundle.py",
       "bytes": 11287,
-      "sha256": "2b88cb25a97c182b7c1bf844c03c8c232faaf2387749db00a16ae115f17939d9"
+      "sha256": "2ad37c5da0fe6741c4e83ac863366b31bedca15b65e8a19447731c6152524801"
     },
     {
       "path": "backend/app/feature_acceptance.py",
@@ -193,8 +192,8 @@
     },
     {
       "path": "backend/app/full_run.py",
-      "bytes": 89941,
-      "sha256": "949534815d30ae1c452d210b2af643b7516599ef4dbcea93a09e8033d90f4fa5"
+      "bytes": 91012,
+      "sha256": "d053c75abeaabeca0b2b08b694392007d4ba027fafea2a8dc0be63c5f42e7f6f"
     },
     {
       "path": "backend/app/grounded_contract.py",
@@ -209,7 +208,7 @@
     {
       "path": "backend/app/main.py",
       "bytes": 115130,
-      "sha256": "693d78023b10b25eb955ca63a4a788318a77b97723c2a02ee28ed60346c83a45"
+      "sha256": "c75cab2a3da6cfb51d2d0dafca55b076e4f0a241e37f97d2e37a68f12b12fcc1"
     },
     {
       "path": "backend/app/notification_demo.py",
@@ -438,13 +437,13 @@
     },
     {
       "path": "backend/tests/test_v027_feature_semantic_selection_dogwood.py",
-      "bytes": 10977,
-      "sha256": "a8e366ff222bfaa049cf3dc4318c5cfcddef022747166f705ad5beec1c994bc5"
+      "bytes": 10986,
+      "sha256": "7ab95ab3afec9f557e82bc865d218e0e333c03cccdb532c1aab44e8b160876e3"
     },
     {
       "path": "backend/tests/test_v028_robust_dev_diagnostic_snapshot.py",
-      "bytes": 9557,
-      "sha256": "891461a4d30c648f05491754e89bfc54e5e29bb3d690701a69fc126222547999"
+      "bytes": 9566,
+      "sha256": "8b415fa706f933b9e39cda0b081c90a4312912b7ff1187bd7ad823883522b13e"
     },
     {
       "path": "backend/tests/test_v029_lexicographic_review_targeted.py",
@@ -453,13 +452,18 @@
     },
     {
       "path": "backend/tests/test_v030_advisory_loop.py",
-      "bytes": 8433,
-      "sha256": "39d28c777491298924a7d28c72e056877c35e699a49e2fcc27cb6e0a068c997f"
+      "bytes": 8765,
+      "sha256": "7a5fde41450114af3e229cc4f0836538d3a88f9ed51bdfbed219f675df379cb6"
     },
     {
       "path": "backend/tests/test_v031_advisory_provenance_and_freshness.py",
       "bytes": 8642,
       "sha256": "a9168199be8ab158d9c94592e580a3e363927883342ef9ccd46ba25c7b9e6a3f"
+    },
+    {
+      "path": "backend/tests/test_v032_advisory_boundaries.py",
+      "bytes": 8020,
+      "sha256": "8554824fc3f6759f219858065c2d05040f2b0950c6e0883bbeed87ac2705e1af"
     },
     {
       "path": "backend/tests/test_vertical_v09.py",
@@ -612,6 +616,11 @@
       "sha256": "3454fc21f1a9fe4544c45caaeb7113d3569f89f40a0e0148bacf6fc0fc60c286"
     },
     {
+      "path": "docs/v032-priority-high-advisory-boundaries.md",
+      "bytes": 3140,
+      "sha256": "2db3afde0273811582b61d20620da8349b2dbd77a9a7dee9b44da8ee97d27ae3"
+    },
+    {
       "path": "docs/v08-claims-experiment-protocol.md",
       "bytes": 3593,
       "sha256": "99a9d6f4a087ce74a1e1138d9232330d948dbea31b557bf62451153322988492"
@@ -664,17 +673,17 @@
     {
       "path": "frontend/package.json",
       "bytes": 520,
-      "sha256": "dfb7a95fe785efb037d4841ae41d4a4e5e94f032fc528cdfca15400b32188aed"
+      "sha256": "9afa42a835c6a2dc6dfaf662fa34700edf33bf27663ad99ae0817cde43afd6d2"
     },
     {
       "path": "frontend/scripts/verify-layout.cjs",
-      "bytes": 3065,
-      "sha256": "7c66e934108bcd7b4a88071b4b9ce99ca1f6d3ef28b9a52e3748b50ef87b1e24"
+      "bytes": 3643,
+      "sha256": "9d5d1f097fdc61290fcfef27310a5b98731ed5308a9cc06ec87485878b6f9c25"
     },
     {
       "path": "frontend/src/App.tsx",
-      "bytes": 114287,
-      "sha256": "2284d681a6e8bd54ec8ec70c6223dd4291ea2512d32d780d8b0dd7e6276e363e"
+      "bytes": 116325,
+      "sha256": "515a46950ccf241bfc6896c3c47bef91a0a7a6ead884196bffa399a15d2adb44"
     },
     {
       "path": "frontend/src/main.tsx",
@@ -711,6 +720,5 @@
       "bytes": 242,
       "sha256": "9ca2a3fccf86f135721e06d15701697b79077e0ad8c7a007f47515c5b87aaa70"
     }
-  ],
-  "source_file_count": 138
+  ]
 }

@@ -1,0 +1,17 @@
+{
+  "classification": "requirement_mismatch",
+  "r0_implementation_assessment": "correct",
+  "business_requirement_assessment": "unverified",
+  "synthetic_requirement_fit": null,
+  "real_customer_validity": "unverified",
+  "scheduling_precedence": "none",
+  "supporting_evidence_ids": [],
+  "root_cause": "Contract prioritizes FIFO over deadline constraints",
+  "suggested_requirement_change": "REQ-QUEUE-001",
+  "business_tradeoffs": [],
+  "compliance_questions": [
+    "Does FIFO implementation violate SIM-SLA-001's deadline-first requirement?",
+    "Can arrival_order FIFO reduce deadline breaches without overtime?"
+  ],
+  "remaining_uncertainty": "business_objective_unquantified"
+}

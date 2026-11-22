@@ -1,0 +1,95 @@
+{
+  "version": "DOGWOOD-NEGATIVE-AUDIT-v0.27.0",
+  "workflow_id": "f492f6db-a2c9-409c-b14a-36bc6c775953",
+  "approval_id": "2ec66230-fdf0-4234-a2cd-15a0f4110707",
+  "status": "PASS_NATIVE_DENIAL_CASES",
+  "configured_mode": "enforce",
+  "native_checked": true,
+  "planned": 8,
+  "passed": 8,
+  "executed": 8,
+  "cases": [
+    {
+      "case": "UNAPPROVED",
+      "expected": "DENY",
+      "actual": "DENY",
+      "cli_exit_code": 0,
+      "schema_checked": true,
+      "stderr_excerpt": null,
+      "passed": true
+    },
+    {
+      "case": "MISMATCH_WORKFLOW",
+      "expected": "DENY",
+      "actual": "DENY",
+      "cli_exit_code": 0,
+      "schema_checked": true,
+      "stderr_excerpt": null,
+      "passed": true
+    },
+    {
+      "case": "MISMATCH_PROPOSAL",
+      "expected": "DENY",
+      "actual": "DENY",
+      "cli_exit_code": 0,
+      "schema_checked": true,
+      "stderr_excerpt": null,
+      "passed": true
+    },
+    {
+      "case": "MISMATCH_APPROVAL",
+      "expected": "DENY",
+      "actual": "DENY",
+      "cli_exit_code": 0,
+      "schema_checked": true,
+      "stderr_excerpt": null,
+      "passed": true
+    },
+    {
+      "case": "REVOKED",
+      "expected": "DENY",
+      "actual": "DENY",
+      "cli_exit_code": 0,
+      "schema_checked": true,
+      "stderr_excerpt": null,
+      "passed": true
+    },
+    {
+      "case": "VALID_APPROVAL_CONTROL",
+      "expected": "ALLOW",
+      "actual": "ALLOW",
+      "cli_exit_code": 0,
+      "schema_checked": true,
+      "stderr_excerpt": null,
+      "passed": true
+    },
+    {
+      "case": "EXPIRED_APPROVAL_PYTHON_GATE",
+      "expected": "DENY",
+      "actual": "DENY",
+      "passed": true,
+      "source": "app.dogwood_authorization.check (timestamp guard)"
+    },
+    {
+      "case": "TAMPERED_APPROVAL_SNAPSHOT",
+      "expected": "ERROR",
+      "actual": "ERROR",
+      "passed": true,
+      "source": "isolated SQLite journal + app.dogwood_authorization.check"
+    }
+  ],
+  "rust_build_test_log": {
+    "available": true,
+    "sha256": "6cc0adab573b292a789fd89aa6ba13636ad66cab2915ed63689e7588be1541be",
+    "passed_count": 3,
+    "native_cargo_tests_passed": true,
+    "excerpt": "\nrunning 3 tests\n...\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s\n\n"
+  },
+  "policy_sha256": "1c87fd7c7629c7c1933f6088d6ed768575a927b966a3345e9dd7da068d03ba98",
+  "schema_sha256": "fd203bf2bc9ca59132dbcd3c9aae2a448b854d70ffde81853858fb36fddc757a",
+  "source": "synthetic local runtime probes and image build cargo test output",
+  "production_authorization": false,
+  "authenticated_actor": false,
+  "no_fallback_on_denial": true,
+  "note": "Native replay probes do not verify the original human identity or a continuously running Dogwood store. Native unavailability cannot count as passing."
+}

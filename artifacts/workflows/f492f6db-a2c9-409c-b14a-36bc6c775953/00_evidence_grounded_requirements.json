@@ -1,0 +1,303 @@
+{
+  "dataset_id": "insurance_claims_uk",
+  "created_at": "2026-11-22T05:00:20+00:00",
+  "query": "insurance claim delays poor communication processing time",
+  "evidence": [
+    {
+      "evidence_id": "PUB-001",
+      "chunk_id": "insurance_claims_uk:fos_insurance_delays.html:820",
+      "source_file": "fos_insurance_delays.html",
+      "source_url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication",
+      "start_char": 820,
+      "end_char": 1240,
+      "chunk_end_char": 1770,
+      "quote": "d poor communication\n19 November 2026\nSend by email\nTweet about this\nShare on LinkedIn\nShare on Facebook\nA new thematic report from the Financial Ombudsman Service and Financial Conduct Authority, the first in a regular series, examines complaints in the insurance sector.\nConsumers’ biggest concerns are claim delays, poor communication, and customer service.\nFirms are reminded to improve timeliness, communication, an",
+      "reference_status": "EXTRACTED_HTML_TEXT",
+      "source_record_id": null,
+      "support_status": "NOT_SEMANTICALLY_VERIFIED",
+      "source_type": "REGULATORY_RESEARCH_AND_CASE_STUDIES",
+      "validity": "UNVERIFIED"
+    },
+    {
+      "evidence_id": "PUB-002",
+      "chunk_id": "insurance_claims_uk:fos_insurance_delays.html:0",
+      "source_file": "fos_insurance_delays.html",
+      "source_url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication",
+      "start_char": 0,
+      "end_char": 420,
+      "chunk_end_char": 950,
+      "quote": "Insurers urged to act on claim delays and poor communication – Financial Ombudsman service\nOur use of cookies\nRead more about how we use cookies on our\ncookies policy page\nPolicy version: 04\nWe use cookies to help us improve our website. This will set a cookie on your device to remember your preferences.\nManage cookie settings\nAccept all cookies\nSkip to content\nOur powers and how we resolve complaints\nHow we work wit",
+      "reference_status": "EXTRACTED_HTML_TEXT",
+      "source_record_id": null,
+      "support_status": "NOT_SEMANTICALLY_VERIFIED",
+      "source_type": "REGULATORY_RESEARCH_AND_CASE_STUDIES",
+      "validity": "UNVERIFIED"
+    },
+    {
+      "evidence_id": "PUB-003",
+      "chunk_id": "insurance_claims_uk:fos_insurance_delays.html:4100",
+      "source_file": "fos_insurance_delays.html",
+      "source_url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication",
+      "start_char": 4100,
+      "end_char": 4520,
+      "chunk_end_char": 5050,
+      "quote": "sing the redress system greater clarity and confidence.\nRachel Lam, Interim Ombudsman Managing Director at the Financial Ombudsman Service, said:\nWhen people make an insurance claim, they are often dealing with disruption and uncertainty. Avoidable delays can make a difficult situation harder, especially when customers are left chasing for answers.\nWhere complaints involve delays, communication or supporting customer",
+      "reference_status": "EXTRACTED_HTML_TEXT",
+      "source_record_id": null,
+      "support_status": "NOT_SEMANTICALLY_VERIFIED",
+      "source_type": "REGULATORY_RESEARCH_AND_CASE_STUDIES",
+      "validity": "UNVERIFIED"
+    },
+    {
+      "evidence_id": "PUB-004",
+      "chunk_id": "insurance_claims_uk:fos_insurance_delays.html:1640",
+      "source_file": "fos_insurance_delays.html",
+      "source_url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication",
+      "start_char": 1640,
+      "end_char": 2060,
+      "chunk_end_char": 2590,
+      "quote": "d the Financial Ombudsman between 1 April 2021 and 31 March 2026, out of around 214,800 insurance complaints overall. However, FCA data from its Financial Lives 2024 survey shows that most consumers are satisfied with their claims handling service.\nThe Financial Ombudsman and the FCA are calling on insurers to keep claims moving, give customers clear and timely updates, and take responsibility when problems arise wit",
+      "reference_status": "EXTRACTED_HTML_TEXT",
+      "source_record_id": null,
+      "support_status": "NOT_SEMANTICALLY_VERIFIED",
+      "source_type": "REGULATORY_RESEARCH_AND_CASE_STUDIES",
+      "validity": "UNVERIFIED"
+    },
+    {
+      "evidence_id": "PUB-005",
+      "chunk_id": "insurance_claims_uk:fca_claims_review.html:7380",
+      "source_file": "fca_claims_review.html",
+      "source_url": "https://www.fca.org.uk/publications/good-and-poor-practice/home-travel-claims-handling-arrangements",
+      "start_char": 7380,
+      "end_char": 7800,
+      "chunk_end_char": 8330,
+      "quote": "ht of cash settlements\nLack of control over outsourced arrangements\nSome insurers had limited control over their outsourced claims handling arrangements.\nWe saw this more frequently where firms operated as a UK branch of an overseas insurer or provided services into the UK from abroad. Where there is limited oversight, we have concerns about firms’ ability to ensure good consumer outcomes that are expected under the ",
+      "reference_status": "EXTRACTED_HTML_TEXT",
+      "source_record_id": null,
+      "support_status": "NOT_SEMANTICALLY_VERIFIED",
+      "source_type": "REGULATORY_RESEARCH_AND_CASE_STUDIES",
+      "validity": "UNVERIFIED"
+    },
+    {
+      "evidence_id": "PUB-006",
+      "chunk_id": "insurance_claims_uk:fos_insurance_delays.html:2460",
+      "source_file": "fos_insurance_delays.html",
+      "source_url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication",
+      "start_char": 2460,
+      "end_char": 2880,
+      "chunk_end_char": 3410,
+      "quote": "what is causing delays, who is responsible for the next step and when to expect an update.\nIdentify additional needs for vulnerable consumers early. Adapt communication and ensure urgent or sensitive cases are escalated promptly, including by third parties.\nRecurring problems included customers having to chase updates and being left unsure what would happen next. For those affected, a delayed claim can mean living wi",
+      "reference_status": "EXTRACTED_HTML_TEXT",
+      "source_record_id": null,
+      "support_status": "NOT_SEMANTICALLY_VERIFIED",
+      "source_type": "REGULATORY_RESEARCH_AND_CASE_STUDIES",
+      "validity": "UNVERIFIED"
+    }
+  ],
+  "requirement_candidates": [
+    {
+      "requirement_candidate_id": "RC-001",
+      "evidence_ids": [
+        "PUB-001"
+      ],
+      "observed_issue": "d poor communication\n19 November 2026\nSend by email\nTweet about this\nShare on LinkedIn\nShare on Facebook\nA new thematic report from the Financial Ombudsman Service and Financial Conduct Authority, the first in a regular series, examines complaints in the insurance sector.\nConsumers’ biggest concerns are claim delays, p",
+      "proposed_requirement": "REQUIRES_HUMAN_DERIVATION",
+      "business_kpi": "TO_BE_DEFINED_WITH_CUSTOMER",
+      "alternative_explanations": [
+        "Alternative causes not yet evaluated"
+      ],
+      "status": "REQUIRES_VALIDATION",
+      "reason": "Verbatim retrieval is evidence of a statement, not of an approved business requirement."
+    },
+    {
+      "requirement_candidate_id": "RC-002",
+      "evidence_ids": [
+        "PUB-002"
+      ],
+      "observed_issue": "Insurers urged to act on claim delays and poor communication – Financial Ombudsman service\nOur use of cookies\nRead more about how we use cookies on our\ncookies policy page\nPolicy version: 04\nWe use cookies to help us improve our website. This will set a cookie on your device to remember your preferences.\nManage cookie ",
+      "proposed_requirement": "REQUIRES_HUMAN_DERIVATION",
+      "business_kpi": "TO_BE_DEFINED_WITH_CUSTOMER",
+      "alternative_explanations": [
+        "Alternative causes not yet evaluated"
+      ],
+      "status": "REQUIRES_VALIDATION",
+      "reason": "Verbatim retrieval is evidence of a statement, not of an approved business requirement."
+    },
+    {
+      "requirement_candidate_id": "RC-003",
+      "evidence_ids": [
+        "PUB-003"
+      ],
+      "observed_issue": "sing the redress system greater clarity and confidence.\nRachel Lam, Interim Ombudsman Managing Director at the Financial Ombudsman Service, said:\nWhen people make an insurance claim, they are often dealing with disruption and uncertainty. Avoidable delays can make a difficult situation harder, especially when customers",
+      "proposed_requirement": "REQUIRES_HUMAN_DERIVATION",
+      "business_kpi": "TO_BE_DEFINED_WITH_CUSTOMER",
+      "alternative_explanations": [
+        "Alternative causes not yet evaluated"
+      ],
+      "status": "REQUIRES_VALIDATION",
+      "reason": "Verbatim retrieval is evidence of a statement, not of an approved business requirement."
+    },
+    {
+      "requirement_candidate_id": "RC-004",
+      "evidence_ids": [
+        "PUB-004"
+      ],
+      "observed_issue": "d the Financial Ombudsman between 1 April 2021 and 31 March 2026, out of around 214,800 insurance complaints overall. However, FCA data from its Financial Lives 2024 survey shows that most consumers are satisfied with their claims handling service.\nThe Financial Ombudsman and the FCA are calling on insurers to keep cla",
+      "proposed_requirement": "REQUIRES_HUMAN_DERIVATION",
+      "business_kpi": "TO_BE_DEFINED_WITH_CUSTOMER",
+      "alternative_explanations": [
+        "Alternative causes not yet evaluated"
+      ],
+      "status": "REQUIRES_VALIDATION",
+      "reason": "Verbatim retrieval is evidence of a statement, not of an approved business requirement."
+    },
+    {
+      "requirement_candidate_id": "RC-005",
+      "evidence_ids": [
+        "PUB-005"
+      ],
+      "observed_issue": "ht of cash settlements\nLack of control over outsourced arrangements\nSome insurers had limited control over their outsourced claims handling arrangements.\nWe saw this more frequently where firms operated as a UK branch of an overseas insurer or provided services into the UK from abroad. Where there is limited oversight,",
+      "proposed_requirement": "REQUIRES_HUMAN_DERIVATION",
+      "business_kpi": "TO_BE_DEFINED_WITH_CUSTOMER",
+      "alternative_explanations": [
+        "Alternative causes not yet evaluated"
+      ],
+      "status": "REQUIRES_VALIDATION",
+      "reason": "Verbatim retrieval is evidence of a statement, not of an approved business requirement."
+    },
+    {
+      "requirement_candidate_id": "RC-006",
+      "evidence_ids": [
+        "PUB-006"
+      ],
+      "observed_issue": "what is causing delays, who is responsible for the next step and when to expect an update.\nIdentify additional needs for vulnerable consumers early. Adapt communication and ensure urgent or sensitive cases are escalated promptly, including by third parties.\nRecurring problems included customers having to chase updates ",
+      "proposed_requirement": "REQUIRES_HUMAN_DERIVATION",
+      "business_kpi": "TO_BE_DEFINED_WITH_CUSTOMER",
+      "alternative_explanations": [
+        "Alternative causes not yet evaluated"
+      ],
+      "status": "REQUIRES_VALIDATION",
+      "reason": "Verbatim retrieval is evidence of a statement, not of an approved business requirement."
+    }
+  ],
+  "retrieval": {
+    "retrieval_method": "BM25 + character ngram fuzzy reranking with RRF; optional semantic embeddings not used",
+    "total_indexed": 77
+  },
+  "evaluation": {
+    "citation_pointer_accuracy": "PASS_LOCAL_POINTERS_ONLY",
+    "evidence_validity": "UNVERIFIED",
+    "semantic_entailment": "UNVERIFIED",
+    "requirements_correctness": "UNVERIFIED",
+    "customer_approval": "NOT_OBTAINED",
+    "contradiction_search": "NOT_PROVEN"
+  },
+  "safe_summary": "Public statements retrieved; human must derive, verify and approve any requirements. These are NOT customer requirements.",
+  "topic_alignment": {
+    "status": "TOPIC_MATCH_REVIEW_REQUIRED",
+    "target_domain": "insurance_claims",
+    "source_domain": "insurance_claims",
+    "topic_matching_evidence_ids": [
+      "PUB-001",
+      "PUB-002",
+      "PUB-003",
+      "PUB-004",
+      "PUB-005",
+      "PUB-006"
+    ],
+    "reason": "Topic match is lexical; it does not prove FIFO causation, customer approval, or requirements validity."
+  },
+  "alternative_cause_search": {
+    "query": "insurance claims delays communication documentation third party external assessors staffing",
+    "status": "POTENTIAL_ALTERNATIVES_ONLY_NOT_VALIDATED",
+    "items": [
+      {
+        "chunk_id": "insurance_claims_uk:fos_insurance_delays.html:2460",
+        "source_url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication",
+        "source_file": "fos_insurance_delays.html",
+        "quote": "what is causing delays, who is responsible for the next step and when to expect an update.\nIdentify additional needs for vulnerable consumers early. Adapt communication and ensure urgent or sensitive cases are escalated promptly, including by third parties.\nRecurring problems included customers having to chase updates and being left unsure what would happen ",
+        "start_char": 2460,
+        "end_char": 3410
+      },
+      {
+        "chunk_id": "insurance_claims_uk:fos_insurance_delays.html:1640",
+        "source_url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication",
+        "source_file": "fos_insurance_delays.html",
+        "quote": "d the Financial Ombudsman between 1 April 2021 and 31 March 2026, out of around 214,800 insurance complaints overall. However, FCA data from its Financial Lives 2024 survey shows that most consumers are satisfied with their claims handling service.\nThe Financial Ombudsman and the FCA are calling on insurers to keep claims moving, give customers clear and tim",
+        "start_char": 1640,
+        "end_char": 2590
+      },
+      {
+        "chunk_id": "insurance_claims_uk:fca_claims_review.html:45920",
+        "source_url": "https://www.fca.org.uk/publications/good-and-poor-practice/home-travel-claims-handling-arrangements",
+        "source_file": "fca_claims_review.html",
+        "quote": "f outsourcing to an external third party. We sometimes saw a lack of distinct insurer governance or oversight structures. This resulted in gaps in the insurer’s oversight of their claims handling arrangements.\nIt also resulted in the insurer appearing to abdicate accountability for the oversight and control of the firm’s claims function, including key claims",
+        "start_char": 45920,
+        "end_char": 46870
+      },
+      {
+        "chunk_id": "insurance_claims_uk:fos_insurance_delays.html:4100",
+        "source_url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication",
+        "source_file": "fos_insurance_delays.html",
+        "quote": "sing the redress system greater clarity and confidence.\nRachel Lam, Interim Ombudsman Managing Director at the Financial Ombudsman Service, said:\nWhen people make an insurance claim, they are often dealing with disruption and uncertainty. Avoidable delays can make a difficult situation harder, especially when customers are left chasing for answers.\nWhere com",
+        "start_char": 4100,
+        "end_char": 5050
+      }
+    ],
+    "limitations": "Not an exhaustive contradictory-evidence search; no causal claims inferred."
+  },
+  "rag_id": "afd3e1f5-6e11-4295-833d-25f1160de5d0",
+  "llm_suggestions": [
+    {
+      "problem_statement": "Insurance claim delays due to poor communication",
+      "requirement_hypothesis": "Insurers need to improve timeliness and communication in claims processing",
+      "supporting_evidence_ids": [
+        "PUB-001",
+        "PUB-003",
+        "PUB-004"
+      ],
+      "alternative_explanation": "The evidence indicates that consumers are dissatisfied with claim delays and poor communication, but does not establish whether these issues stem from internal processes, external dependencies, or systemic industry challenges. The requirement hypothesis assumes process improvement as a solution without confirming root causes.",
+      "suggested_kpi": "Percentage of claims resolved within agreed timeframes",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    },
+    {
+      "problem_statement": "Customers left chasing for answers due to unclear claim status updates",
+      "requirement_hypothesis": "Insurers must provide clear and timely updates on claim processing steps",
+      "supporting_evidence_ids": [
+        "PUB-003",
+        "PUB-006"
+      ],
+      "alternative_explanation": "The evidence points to customers being unsure about what happens next in claims processing, but does not specify whether this is due to lack of communication protocols, inadequate training, or insufficient systems. The requirement hypothesis presumes a need for better communication without identifying underlying causes.",
+      "suggested_kpi": "Customer satisfaction score on claim status clarity",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    },
+    {
+      "problem_statement": "Limited control over outsourced claims handling arrangements",
+      "requirement_hypothesis": "Insurers should maintain oversight of outsourced claims processing to ensure consumer outcomes",
+      "supporting_evidence_ids": [
+        "PUB-005"
+      ],
+      "alternative_explanation": "The evidence suggests concerns about oversight where insurers operate as UK branches of overseas companies, but does not confirm whether this is a systemic issue or specific to certain business models. The requirement hypothesis assumes that oversight is necessary without proving its direct impact on claim outcomes.",
+      "suggested_kpi": "Number of complaints related to outsourced claims handling",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    },
+    {
+      "problem_statement": "Recurring issues with vulnerable consumers not receiving timely support",
+      "requirement_hypothesis": "Insurers need to identify and escalate urgent or sensitive cases promptly, including through third parties",
+      "supporting_evidence_ids": [
+        "PUB-006"
+      ],
+      "alternative_explanation": "The evidence mentions the need for early identification of vulnerable consumers' needs but does not establish whether current systems are adequate or if additional resources are required. The requirement hypothesis assumes proactive escalation is needed without confirming its effectiveness.",
+      "suggested_kpi": "Response time for escalated cases involving vulnerable consumers",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    }
+  ]
+}

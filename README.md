@@ -40,9 +40,15 @@
 
 > **v0.10:** 要件診断の多軸独立採点・Qwen/ODAの合成ベンチマーク・過去ログ再採点を追加。詳細は `docs/v010-requirement-diagnostic-benchmark.md`。
 
-# Claims Operations Planner — AI Venture Feasibility Studio v0.31.0
+# Claims Operations Planner — AI Venture Feasibility Studio v0.32.0
 
 ドイツの保険業務SaaS企業（**架空**）の事業開発PoC。**Qwen3-Coder 30B** はサービス設計・Pythonコード生成、**OpenDataArena/ODA-Fin-RL-8B** は金融ドメイン要件診断を担当。E2Bは生成コードを隔離して実行し、独立した決定的評価器で審査割当・期限・資格・稼働上限を検証します。v0.8にあったMarkdown結果保存を維持し、生成コード・差分・各試行のE2B実行証跡・履歴取得を拡張しました。
+
+
+> **v0.32.0 — 10Pの責務境界とCOMPLETE同期（優先度「高」の3項目のみ）：**
+> ① 人間が選択した公開根拠のPUB ID・URL・原文位置は決定論的に記録し、モデル生成の顧客課題仮説（常に未検証）とは別欄で表示。公開出典が想定顧客の真因を証明するとは扱いません。
+> ② 型付きの初回提案が一部の**意味的契約**を満たさない場合、違反したトップレベルセクションのみ最大1回再生成し、変更しなかったセクションを維持。再検査で不合格なら `GENERATION_FAILED`（FAIL-CLOSED）。修復は自動承認を意味せず、RAWモデル出力の完全保存や一般的な構造エラー回復は今回の対象外です。
+> ③ 10P自動開始は最新 `COMPLETE` のみ。`PARTIAL` から生成する場合はUIの暫定モードを明示し、APIでも `provisional_mode=true` を必須とします。08再試行等で評価が変わると `STALE_ADVISORY` とし、人間レビューには再生成が必要。**00〜09・Dogwood・DEV/HOLDOUT・CI/CD連携は変更していません。** `docs/v032-priority-high-advisory-boundaries.md` 参照。
 
 > **v0.31.0 — 最新評価に整合した技術提案：** 10R冒頭のAIドラフトは、最新の08診断（再試行を含む）・09事業判断・公開根拠・通知要件の受入契約のSHA-256を参照します。評価が更新され旧提案と不一致なら`STALE_ADVISORY`を表示し、**PMレビューを拒否し、明示的な再生成のみ受け付けます**。旧版は監査履歴に保持します。`claim_progress_updates`と担当者割当は別機能として扱い、公開資料ID・要件IDと3つの技術案を照合します。各案の役割・相対工数・リスク・費用要因・トレードオフ、次の実験の担当・成功指標を日本語で生成し、前版との差分を表示します。予算等が未入力なら未確認扱いとし、特定の見積額や法的適合性を断定しません。**完全自動再実行やCI/CDは未実装**。独立評価・人間承認は不変。`docs/v031-advisory-source-alignment-and-review.md`を参照。
 

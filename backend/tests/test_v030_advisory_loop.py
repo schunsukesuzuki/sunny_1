@@ -77,7 +77,7 @@ def test_auto_proposal_version_review_and_zip(tmp_path,monkeypatch):
         for name in (f'workflows/{wid}/10p_advisory_v0001.json',f'workflows/{wid}/10p_advisory_v0002.json',
                      f'workflows/{wid}/10p_review_v0001.json'):
             assert name in z.namelist()
-        assert json.loads(z.read('manifest.json'))['producer_version']=='0.31.0'
+        assert json.loads(z.read('manifest.json'))['producer_version']=='0.32.0'
     assert client.get(f'/api/full-run/{wid}/report').json()['business_assessment'] is None
 
 
@@ -86,9 +86,11 @@ def test_proposal_failure_does_not_make_workflow_fail(tmp_path,monkeypatch):
     async def fails(_context,_constraints): raise ValueError('model offline')
     monkeypatch.setattr(advisory,'generate',fails)
     client=TestClient(main.app)
-    resp=client.post(f'/api/full-run/{wid}/advisory',json={'constraints':{}})
+    assert client.post(f'/api/full-run/{wid}/advisory',json={'constraints':{}}).status_code==409
+    resp=client.post(f'/api/full-run/{wid}/advisory',json={'constraints':{},'provisional_mode':True})
     assert resp.status_code==200
     current=client.get(f'/api/full-run/{wid}/advisory').json()
+    assert current['provisional_mode'] is True
     assert current['status']=='GENERATION_FAILED'
     assert 'model offline' in current['error']['message']
     assert client.get(f'/api/full-run/{wid}/report').json()['status']=='PARTIAL'
@@ -106,7 +108,7 @@ def test_only_terminal_and_no_silent_assumptions(tmp_path,monkeypatch):
     assert advisory.AdvisoryConstraints().model_dump()['budget_eur'] is None
 
 
-def test_llm_citations_unsupported_are_blocked(monkeypatch):
+def test_llm_citations_cannot_become_claim_provenance(monkeypatch):
     import app.llm as llm
     async def bad(_schema,_system,_user,**kwargs):
         data=fake_draft()
@@ -116,5 +118,7 @@ def test_llm_citations_unsupported_are_blocked(monkeypatch):
     ctx=advisory.compact_context({'workflow_id':uid(),'status':'COMPLETE','diagnostic':{},'business_assessment':None},
                                   {'evidence_mode':'synthetic','brief':'短い合成サンプル'})
     import asyncio,pytest
-    with pytest.raises(ValueError,match='unknown provenance'):
-        asyncio.run(advisory.generate(ctx,advisory.AdvisoryConstraints()))
+    result=asyncio.run(advisory.generate(ctx,advisory.AdvisoryConstraints()))
+    assert result['customer_problem_hypotheses'][0]['source_refs']==[]
+    assert result['customer_problem_hypotheses'][0]['evidence_status']=='hypothesis_unverified'
+    assert 'invented-site.com' not in str(result)

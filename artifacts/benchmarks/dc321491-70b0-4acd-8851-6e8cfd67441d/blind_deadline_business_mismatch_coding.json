@@ -1,0 +1,164 @@
+{
+  "case_id": "deadline_business_mismatch",
+  "model_role": "coding",
+  "model_id": "qwen3-coder:30b",
+  "input_sha256": "2c447431744b4bd153b4171f475eaf3309747530a4cdfbff2c6b6e22bad7acba",
+  "revision_allowed": false,
+  "status": "COMPLETED",
+  "observable_fact_sheet": {
+    "independent_test_reported_status": "PASS",
+    "independent_test_verbatim": "PASS: deterministic reviewer/day checks confirm the code conforms to every listed FIFO constraint.",
+    "original_contract": "R0: process intake cases by arrival_order, qualified earliest available reviewer.",
+    "business_goal_verbatim": "Improve deadline adherence at fixed planned reviewer-hours.",
+    "synthetic_comparison_verbatim": "FIFO missed 8 deadline targets; alternative due-date ordering missed 1 in matched synthetic data with equal hours.",
+    "available_evidence": [
+      {
+        "id": "SYN-BLIND-SLA-3594",
+        "provenance": "synthetic",
+        "observation": "A later-arriving urgent task is delayed behind an earlier, nonurgent task under the pinned FIFO rule."
+      }
+    ],
+    "customer_interview_count": 0,
+    "note": "These fields restate the public INPUT facts; infer diagnoses independently."
+  },
+  "diagnosis": {
+    "classification": "implementation_bug",
+    "implementation_assessment": "correct",
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_validity": "unverified",
+    "supporting_evidence_ids": [
+      "SYN-BLIND-SLA-3594"
+    ],
+    "root_cause": "The implementation correctly follows the FIFO constraint as defined in R0, but the business objective prioritizes deadline adherence over strict FIFO ordering, which is not reflected in the contract.",
+    "suggested_requirement_change": "Rewrite the requirement to prioritize deadline adherence while maintaining FIFO as a tie-breaker for tasks with identical deadlines.",
+    "scheduling_precedence": "deadline_first_fifo_tiebreak",
+    "change_required": true,
+    "remaining_uncertainty": "The synthetic comparison shows a clear performance difference, but no real customer validation exists to confirm the business priority."
+  },
+  "raw_consistency": {
+    "version": "DIAGNOSTIC-CROSS-FIELD-v0.26.0",
+    "status": "INCONSISTENT",
+    "passed": false,
+    "failure_codes": [
+      "BUG_REQUIRES_INCORRECT_IMPLEMENTATION",
+      "BUG_NOT_A_REQUIREMENT_REWRITE",
+      "BUG_SHOULD_NOT_CHANGE_PRECEDENCE"
+    ],
+    "source": "RAW_OUTPUT_AND_VISIBLE_INPUT_ONLY_NO_ORACLE",
+    "limitations": "Syntactic/field constraints and independent test statements; NOT formal semantic proof."
+  },
+  "raw_semantics": {
+    "version": "DIAGNOSTIC-SEMANTIC-BOUNDARY-v0.27.0",
+    "status": "HOLD_HUMAN_ADJUDICATION",
+    "passed": false,
+    "failure_codes": [
+      "BUG_REQUIRES_INCORRECT_IMPLEMENTATION",
+      "BUG_NOT_A_REQUIREMENT_REWRITE",
+      "BUG_SHOULD_NOT_CHANGE_PRECEDENCE",
+      "REVISION_CHANGES_REQUIREMENTS_WITHOUT_BASIS",
+      "BUG_REMEDY_REWRITES_BUSINESS_REQUIREMENT"
+    ],
+    "axes": {
+      "classification": "implementation_bug",
+      "implementation": "correct",
+      "evidence_ids": [
+        "SYN-BLIND-SLA-3594"
+      ],
+      "revision_policy": "deadline_first_fifo_tiebreak",
+      "revision_change_required": true
+    },
+    "oracle_access": false,
+    "auto_rewrite": false,
+    "synthetic_semantic_truth_proven": false,
+    "limits": "Conservative lexical and typed cross-field checks only. May miss nuanced contradictions or flag ambiguous wording; human review required for adjudication."
+  },
+  "rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": false,
+      "implementation_correctness": true,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": true
+    },
+    "passed": false,
+    "score": 0.875,
+    "failure_codes": [
+      "CAUSE_CLASSIFICATION"
+    ],
+    "expected_classification": "requirement_mismatch",
+    "real_customer_business_validity": "UNVERIFIED"
+  },
+  "grounding": {
+    "version": "EVIDENCE-BINDER-v0.21.2",
+    "applied": false,
+    "reason": "MODEL_ALREADY_CITED",
+    "added_evidence_ids": [],
+    "raw_answer": {
+      "classification": "implementation_bug",
+      "implementation_assessment": "correct",
+      "synthetic_requirement_fit": "mismatch",
+      "real_customer_validity": "unverified",
+      "supporting_evidence_ids": [
+        "SYN-BLIND-SLA-3594"
+      ],
+      "root_cause": "The implementation correctly follows the FIFO constraint as defined in R0, but the business objective prioritizes deadline adherence over strict FIFO ordering, which is not reflected in the contract.",
+      "suggested_requirement_change": "Rewrite the requirement to prioritize deadline adherence while maintaining FIFO as a tie-breaker for tasks with identical deadlines.",
+      "scheduling_precedence": "deadline_first_fifo_tiebreak",
+      "change_required": true,
+      "remaining_uncertainty": "The synthetic comparison shows a clear performance difference, but no real customer validation exists to confirm the business priority."
+    },
+    "assisted_answer": {
+      "classification": "implementation_bug",
+      "implementation_assessment": "correct",
+      "synthetic_requirement_fit": "mismatch",
+      "real_customer_validity": "unverified",
+      "supporting_evidence_ids": [
+        "SYN-BLIND-SLA-3594"
+      ],
+      "root_cause": "The implementation correctly follows the FIFO constraint as defined in R0, but the business objective prioritizes deadline adherence over strict FIFO ordering, which is not reflected in the contract.",
+      "suggested_requirement_change": "Rewrite the requirement to prioritize deadline adherence while maintaining FIFO as a tie-breaker for tasks with identical deadlines.",
+      "scheduling_precedence": "deadline_first_fifo_tiebreak",
+      "change_required": true,
+      "remaining_uncertainty": "The synthetic comparison shows a clear performance difference, but no real customer validation exists to confirm the business priority."
+    },
+    "attribution": "HARNESS_POSTPROCESSING_NOT_MODEL_INFERENCE"
+  },
+  "assisted_diagnosis": {
+    "classification": "implementation_bug",
+    "implementation_assessment": "correct",
+    "synthetic_requirement_fit": "mismatch",
+    "real_customer_validity": "unverified",
+    "supporting_evidence_ids": [
+      "SYN-BLIND-SLA-3594"
+    ],
+    "root_cause": "The implementation correctly follows the FIFO constraint as defined in R0, but the business objective prioritizes deadline adherence over strict FIFO ordering, which is not reflected in the contract.",
+    "suggested_requirement_change": "Rewrite the requirement to prioritize deadline adherence while maintaining FIFO as a tie-breaker for tasks with identical deadlines.",
+    "scheduling_precedence": "deadline_first_fifo_tiebreak",
+    "change_required": true,
+    "remaining_uncertainty": "The synthetic comparison shows a clear performance difference, but no real customer validation exists to confirm the business priority."
+  },
+  "assisted_rubric": {
+    "rubric_version": "DIAG-RUBRIC-v0.10.1",
+    "checks": {
+      "cause_classification": false,
+      "implementation_correctness": true,
+      "synthetic_business_fit": true,
+      "real_world_humility": true,
+      "evidence_traceability": true,
+      "no_implementation_contradiction": true,
+      "no_conflicting_revision_policy": true,
+      "revision_targets_requirement": true
+    },
+    "passed": false,
+    "score": 0.875,
+    "failure_codes": [
+      "CAUSE_CLASSIFICATION"
+    ],
+    "expected_classification": "requirement_mismatch",
+    "real_customer_business_validity": "UNVERIFIED"
+  }
+}

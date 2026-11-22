@@ -42,4 +42,10 @@ const ten=rendered[indices['10']].item;
 assert.ok(!nodeText(ten).includes('<WorkflowReportPanel'), 'report must not be nested inside 10');
 for (const label of ['full-run-evidence-dataset','full-run-evidence-query','full-run-brief'])
   assert.ok(nodeText(ten).includes(label), `step 10 input ${label} missing`);
+
+// v0.32: automatic proposals require COMPLETE; PARTIAL needs an explicit
+// provisional toggle, and public citation IDs are rendered outside LLM claims.
+assert.ok(source.includes("data.status==='NOT_STARTED' && fullRun.status==='COMPLETE'"), 'auto proposal must wait for COMPLETE');
+assert.ok(source.includes("provisional_mode:fullRun.status==='PARTIAL'&&advisoryProvisionalMode"), 'PARTIAL generation must be explicitly requested');
+assert.ok(source.includes('advisory.deterministic_public_context.map'), 'selected public context must render independently from hypotheses');
 console.log('PASS: top-level UI order = 10 -> 10R report -> 00 -> 01..09, terminal/read-only safeguards preserved');

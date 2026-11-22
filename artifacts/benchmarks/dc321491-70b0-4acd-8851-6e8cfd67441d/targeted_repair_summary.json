@@ -1,0 +1,42 @@
+{
+  "version": "INPUT_ONLY_TARGETED_REPAIR-v0.29.0",
+  "repair_opt_in": true,
+  "fixed_trials": 4,
+  "fixed_trials_with_observable_inconsistency": 2,
+  "fixed_repair_model_calls": 2,
+  "fixed_adopted_repairs": 2,
+  "repair_model_errors": 0,
+  "changed_fields_per_trial": [
+    {
+      "case_id": "fifo_sla_conflict",
+      "model_role": "coding",
+      "target_fields": [
+        "change_required",
+        "classification",
+        "implementation_assessment",
+        "root_cause",
+        "scheduling_precedence",
+        "suggested_requirement_change",
+        "synthetic_requirement_fit"
+      ],
+      "discarded_non_target_edits": [
+        "supporting_evidence_ids"
+      ]
+    },
+    {
+      "case_id": "fifo_sla_conflict",
+      "model_role": "finance",
+      "target_fields": [
+        "implementation_assessment",
+        "synthetic_requirement_fit"
+      ],
+      "discarded_non_target_edits": []
+    }
+  ],
+  "blind_trials": 4,
+  "blind_repair_model_calls": 0,
+  "oracle_used_for_repair_decision": false,
+  "raw_first_pass_preserved": true,
+  "human_adjudication_still_required_for_holds": true,
+  "note": "Only input-observable contradictions trigger opt-in repair; repair is not proof of correct interpretation. Blind never receives feedback."
+}

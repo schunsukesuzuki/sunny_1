@@ -190,7 +190,7 @@ def test_fullrun_bundle_contains_v027_dogwood_and_blind_gap(client,monkeypatch):
         assert any(x.endswith('08f_selection_gap_analysis.json') for x in names)
         assert any(x.endswith('08g_dogwood_negative_audit.json') for x in names)
         m=json.loads(z.read('manifest.json'))
-        assert m['producer_version'] in ('0.28.0','0.29.0','0.30.0','0.31.0')  # v0.27 export schema preserved; producer upgraded
+        assert m['producer_version'] in ('0.28.0','0.29.0','0.30.0','0.31.0','0.32.0')  # v0.27 export schema preserved; producer upgraded
         assert m['format_version']=='AUDIT-EXPORT-v0.25.0'
         for item in m['files']:
             assert hashlib.sha256(z.read(item['path'])).hexdigest()==item['sha256_raw_bytes']

@@ -56,11 +56,13 @@ function Group({ no, title, desc, children }: { no: number; title: string; desc:
 }
 
 function AdvisoryPanel({advisory, constraints, onConstraintsChange, onGenerate, onReview, actor, setActor,
-  reviewReason, setReviewReason, nextBrief, setNextBrief, onApplyBrief, busy, error}:
+  reviewReason, setReviewReason, nextBrief, setNextBrief, onApplyBrief, busy, error,
+  workflowStatus, provisionalMode, onProvisionalModeChange}:
   {advisory:Dict|null;constraints:AdvisoryConstraints;onConstraintsChange:(v:AdvisoryConstraints)=>void;
    onGenerate:()=>void;onReview:()=>void;actor:string;setActor:(v:string)=>void;
    reviewReason:string;setReviewReason:(v:string)=>void;nextBrief:string;setNextBrief:(v:string)=>void;
-   onApplyBrief:()=>void;busy:boolean;error:string}) {
+   onApplyBrief:()=>void;busy:boolean;error:string;
+   workflowStatus:string;provisionalMode:boolean;onProvisionalModeChange:(v:boolean)=>void}) {
   const draft:Dict|null=advisory?.draft || null;
   const numberField=(key:'budget_eur'|'team_size'|'delivery_weeks',value:string)=>{
     onConstraintsChange({...constraints,[key]:value===''?null:Number(value)});
@@ -85,17 +87,32 @@ function AdvisoryPanel({advisory, constraints, onConstraintsChange, onGenerate, 
     <textarea id="advisory-operational" rows={2} maxLength={1200} value={constraints.operational_constraints} onChange={e=>onConstraintsChange({...constraints,operational_constraints:e.target.value})}/>
     <label htmlFor="advisory-notes">PM／技術者による修正前提・顧客ヒアリングメモ</label>
     <textarea id="advisory-notes" rows={2} maxLength={1200} value={constraints.stakeholder_notes} onChange={e=>onConstraintsChange({...constraints,stakeholder_notes:e.target.value})}/>
-    <div className="button-row"><button type="button" onClick={onGenerate} disabled={busy||advisory?.status==='RUNNING'}>
+    {workflowStatus==='PARTIAL' && <div className="notice" role="status">
+      <strong>検証工程はPARTIALです。</strong> 提案は原則COMPLETE後に生成します。
+      <label><input type="checkbox" checked={provisionalMode} onChange={e=>onProvisionalModeChange(e.target.checked)}/>
+        未完了の評価を前提とする暫定提案を明示的に生成する（顧客向け最終案ではありません）</label>
+    </div>}
+    <div className="button-row"><button type="button" onClick={onGenerate}
+      disabled={busy||advisory?.status==='RUNNING'||(workflowStatus==='PARTIAL'&&!provisionalMode)}>
       {advisory?.status==='RUNNING'?'提案を生成中…': draft?'修正した前提で提案を再生成':'技術提案を生成'}</button></div>
     {advisory?.status==='RUNNING' && <p role="status" className="notice">基盤モデルが提案を生成しています。10Rの下の評価結果は閲覧できます。Macの性能によって時間がかかります。</p>}
     {(advisory?.status==='STALE_ADVISORY'||advisory?.freshness_status==='STALE_SOURCE') && <div className="notice" role="alert"><strong>STALE_ADVISORY：提案の根拠が古くなっています。</strong> {advisory?.freshness_warning || '保存された評価結果が更新されました。'} 最新の08診断・09事業評価から「提案を再生成」してください。下の評価レポートは最新の保存済み成果物です。旧提案は監査履歴として保持され、レビューは受け付けません。</div>}
     {advisory?.status==='GENERATION_FAILED' && <div className="notice" role="alert"><strong>提案生成に失敗：</strong>{advisory?.error?.message || '詳細不明'}。評価レポートは影響を受けません。必要なら再生成してください。</div>}
     {advisory?.primary_requirement && <p className="muted"><strong>主たる要件:</strong> {advisory.primary_requirement.requirement_id} ／{advisory.primary_requirement.type} ／{advisory.primary_requirement.feature_id}（顧客未承認）</p>}
+    {advisory?.provisional_mode && <div className="notice" role="alert"><strong>暫定ドラフト：</strong>PARTIALの評価を参照しています。COMPLETE後に再生成・再レビューしてください。</div>}
+    {advisory?.deterministic_public_context?.length>0 && <div className="assessment-item">
+      <h4>選定済み公開根拠（モデル生成ではない）</h4>
+      <p className="muted">引用ID・URLは人間が選定した元データから固定して表示します。顧客固有の課題を裏付けるものではありません。</p>
+      <ul>{advisory.deterministic_public_context.map((item:Dict,i:number)=><li key={i}>
+        <strong>{item.evidence_id}</strong>：{item.source_file||item.source_url||'出典未記入'}
+        <p className="muted">{item.quote_context_untrusted||'原文抜粋なし'}</p>
+      </li>)}</ul></div>}
+    {advisory?.repair_actions?.length>0 && <Disclosure title="不整合セクションのみを再生成した記録" data={advisory.repair_actions}/>}
     {advisory?.required_attention?.length>0 && <div className="notice"><strong>検証結果に基づく必須の確認事項（LLM生成ではない）</strong><ul>{advisory.required_attention.map((a:Dict,i:number)=><li key={i}>{a.finding}：{a.suggested_test}（{a.source_ref}）</li>)}</ul></div>}
     {error && <div className="error" role="alert">{error}</div>}
     {draft && <div className="advisory-draft">
       <h4>{draft.title}</h4><p>{draft.executive_direction}</p>
-      <h4>顧客課題の仮説（根拠と未確認事項を分離）</h4>
+      <h4>顧客課題の仮説（すべて未検証・公開資料は別欄で管理）</h4>
       {(draft.customer_problem_hypotheses||[]).map((h:Dict,i:number)=><article className="assessment-item" key={i}>
         <p>{h.statement}</p><p className="muted">区分：{h.evidence_status} · 根拠ファイル：{h.source_refs?.join(' / ')||'なし'}</p>
         <p><strong>未確認:</strong> {h.unknowns}</p></article>)}
@@ -281,6 +298,7 @@ export default function App() {
   const [fullRunReportError, setFullRunReportError] = useState('');
   const [advisory, setAdvisory] = useState<Dict | null>(null);
   const [advisoryError, setAdvisoryError] = useState('');
+  const [advisoryProvisionalMode, setAdvisoryProvisionalMode] = useState(false);
   const [advisoryConstraints, setAdvisoryConstraints] = useState<AdvisoryConstraints>(DEFAULT_ADVISORY_CONSTRAINTS);
   const [advisoryActor, setAdvisoryActor] = useState('PM / Technical Reviewer (demo)');
   const [advisoryReviewReason, setAdvisoryReviewReason] = useState('検証結果と技術提案を確認。顧客の実データ・予算・体制・運用要件は未確認のため次回ヒアリングで確認する。');
@@ -362,8 +380,8 @@ export default function App() {
     (async()=>{
       try {
         let data=await call<Dict>(`/full-run/${wid}/advisory`);
-        if (data.status==='NOT_STARTED') {
-          data=await call<Dict>(`/full-run/${wid}/advisory`,{constraints:DEFAULT_ADVISORY_CONSTRAINTS,regenerate:false});
+        if (data.status==='NOT_STARTED' && fullRun.status==='COMPLETE') {
+          data=await call<Dict>(`/full-run/${wid}/advisory`,{constraints:DEFAULT_ADVISORY_CONSTRAINTS,regenerate:false,provisional_mode:false});
         }
         if (live) {
           setAdvisory(data);
@@ -445,7 +463,7 @@ export default function App() {
 
   return <div className="app-shell">
     <header className="masthead">
-      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.31.0</div>
+      <div className="eyebrow">AI VENTURE FEASIBILITY STUDIO · V0.32.0</div>
       <h1>Claims Operations <span>Planner</span></h1>
       <p className="lead">German InsurTech事業開発：審査人員を増やさず、保険金請求の期限超過を減らせるか。</p>
       <div className="tags"><span>架空顧客 / 合成請求データ</span><span>Qwen3-Coder + ODA-Fin-RL-8B · Ollama / Metal</span><span>E2B isolated execution</span><span>R0 → R1 requirement refinement</span></div>
@@ -568,7 +586,7 @@ export default function App() {
         },!fullRunId.trim(),'secondary')}
       </div>
       {fullRun && <section className="assessment-report" aria-label="00〜09 一括実行状況">
-        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.31.0</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
+        <div className="assessment-report-head"><div><span className="intro-kicker">FULL WORKFLOW / v0.32.0</span><h3>00–09 Pipeline</h3><p className="muted">Workflow ID: {fullRun.workflow_id}</p></div>
           <Status good={fullRun.status==='COMPLETE'}>{fullRun.status}</Status></div>
         {fullRun.topic_alignment && <div className="notice"><strong>公開資料と保険請求課題の対応:</strong> {fullRun.topic_alignment.status} — {fullRun.topic_alignment.reason}。一致は原文の意味的支持・因果の証明ではありません。</div>}
         {fullRun.grounded_contract_status && <p className="muted">担当者割当KPIの検証: {fullRun.grounded_contract_status}（該当要件のみ）</p>}
@@ -752,12 +770,13 @@ export default function App() {
       </div></header>
       <div className="full-run-inline-report">
         <AdvisoryPanel advisory={advisory} constraints={advisoryConstraints} onConstraintsChange={setAdvisoryConstraints}
+          workflowStatus={fullRun.status} provisionalMode={advisoryProvisionalMode} onProvisionalModeChange={setAdvisoryProvisionalMode}
           actor={advisoryActor} setActor={setAdvisoryActor} reviewReason={advisoryReviewReason}
           setReviewReason={setAdvisoryReviewReason} nextBrief={advisoryNextBrief} setNextBrief={setAdvisoryNextBrief}
           busy={Boolean(busy)} error={advisoryError}
           onGenerate={()=>{void action('advisory-generate',async()=>{
             if(!fullRun?.workflow_id) return;
-            const x=await call<Dict>(`/full-run/${fullRun.workflow_id}/advisory`,{constraints:advisoryConstraints,regenerate:true});
+            const x=await call<Dict>(`/full-run/${fullRun.workflow_id}/advisory`,{constraints:advisoryConstraints,regenerate:true,provisional_mode:fullRun.status==='PARTIAL'&&advisoryProvisionalMode});
             setAdvisory(x);setAdvisoryError('');
           });}}
           onReview={()=>{void action('advisory-review',async()=>{

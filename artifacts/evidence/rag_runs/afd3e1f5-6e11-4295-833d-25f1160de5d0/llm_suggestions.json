@@ -1,0 +1,57 @@
+{
+  "suggestions": [
+    {
+      "problem_statement": "Insurance claim delays due to poor communication",
+      "requirement_hypothesis": "Insurers need to improve timeliness and communication in claims processing",
+      "supporting_evidence_ids": [
+        "PUB-001",
+        "PUB-003",
+        "PUB-004"
+      ],
+      "alternative_explanation": "The evidence indicates that consumers are dissatisfied with claim delays and poor communication, but does not establish whether these issues stem from internal processes, external dependencies, or systemic industry challenges. The requirement hypothesis assumes process improvement as a solution without confirming root causes.",
+      "suggested_kpi": "Percentage of claims resolved within agreed timeframes",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    },
+    {
+      "problem_statement": "Customers left chasing for answers due to unclear claim status updates",
+      "requirement_hypothesis": "Insurers must provide clear and timely updates on claim processing steps",
+      "supporting_evidence_ids": [
+        "PUB-003",
+        "PUB-006"
+      ],
+      "alternative_explanation": "The evidence points to customers being unsure about what happens next in claims processing, but does not specify whether this is due to lack of communication protocols, inadequate training, or insufficient systems. The requirement hypothesis presumes a need for better communication without identifying underlying causes.",
+      "suggested_kpi": "Customer satisfaction score on claim status clarity",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    },
+    {
+      "problem_statement": "Limited control over outsourced claims handling arrangements",
+      "requirement_hypothesis": "Insurers should maintain oversight of outsourced claims processing to ensure consumer outcomes",
+      "supporting_evidence_ids": [
+        "PUB-005"
+      ],
+      "alternative_explanation": "The evidence suggests concerns about oversight where insurers operate as UK branches of overseas companies, but does not confirm whether this is a systemic issue or specific to certain business models. The requirement hypothesis assumes that oversight is necessary without proving its direct impact on claim outcomes.",
+      "suggested_kpi": "Number of complaints related to outsourced claims handling",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    },
+    {
+      "problem_statement": "Recurring issues with vulnerable consumers not receiving timely support",
+      "requirement_hypothesis": "Insurers need to identify and escalate urgent or sensitive cases promptly, including through third parties",
+      "supporting_evidence_ids": [
+        "PUB-006"
+      ],
+      "alternative_explanation": "The evidence mentions the need for early identification of vulnerable consumers' needs but does not establish whether current systems are adequate or if additional resources are required. The requirement hypothesis assumes proactive escalation is needed without confirming its effectiveness.",
+      "suggested_kpi": "Response time for escalated cases involving vulnerable consumers",
+      "approval_status": "REQUIRES_HUMAN_REVIEW",
+      "evidence_support": "SEMANTIC_SUPPORT_NOT_VERIFIED",
+      "model_role": "DRAFT_ONLY"
+    }
+  ],
+  "model": "Qwen configured Ollama model",
+  "status": "DRAFT_UNVERIFIED"
+}

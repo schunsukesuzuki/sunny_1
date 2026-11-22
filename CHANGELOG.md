@@ -1,3 +1,12 @@
+# Change log
+
+## v0.32.0 — Priority-high-only advisory safeguards (2026-11-22)
+
+- **Deterministic citations / LLM hypotheses separated:** `PUB-*` IDs, source URL and excerpts come only from the human-selected evidence register, saved in `deterministic_public_context`. Model-generated customer problems always remain `hypothesis_unverified` with no source references. No independent semantic support for a specific customer is claimed.
+- **Section-local semantic repair:** On a well-formed initial advisory whose semantic contract fails, regenerate only failed top-level sections via field-specific typed schemas, once per section. Keep other fields unchanged. Revalidate and fail closed if any error remains; successful repairs are recorded as `repair_actions` apart from the proposal. Structural parsing errors remain failures; full autoretry is not introduced.
+- **COMPLETE synchronization:** Auto-start only after COMPLETE. PARTIAL is explicit opt-in `provisional_mode=true` with a visible provisional label; old PARTIAL proposals become stale on completion, cannot be reviewed until regenerated. Existing canonical-source SHA-256 invalidation and safe review remain.
+- Existing 10 → 10R (proposal then audit) → 00 → 01..09 layout, Dogwood, CP-SAT, diagnostic quality gates, audit export format `AUDIT-EXPORT-v0.25.0`, manual approval and full-run behavior preserved. No CI/CD automation or unrelated medium-priority improvements added.
+
 ## v0.31.0 — Source-Locked Advisory / Evidence-Coupled Technical Options (2026-11-22)
 
 - 10R's AI proposal now fingerprints the canonical workflow, latest benchmark and 09 assessment, feature acceptance/requirement trace, selected evidence and 08f, then stores `source_snapshot` and `source_hash` per version. Export ZIP repacks no longer change workflow `updated_at`. Old proposals from PARTIAL or before diagnostic retry are `STALE_ADVISORY` and cannot receive new reviews until explicitly regenerated from current data.
@@ -155,7 +164,6 @@ See `docs/v027-feature-contract-diagnostic-selection-dogwood.md`.
 - Reduce unnecessary Ollama revision calls when the *only* failure is a safely bindable evidence reference. Errors in classification still require a model revision and can remain HOLD.
 - 7 new tests for independent auditing, unknown/ambiguous evidence, LLM failures, raw-vs-assisted PASS, and Fresh Blind separation. Existing functionality retained.
 
-# Change log
 
 ## v0.21.1 — 00b feature selection / validation guidance (2026-11-21)
 

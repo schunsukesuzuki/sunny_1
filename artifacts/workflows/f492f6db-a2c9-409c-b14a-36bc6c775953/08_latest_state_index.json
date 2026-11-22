@@ -1,0 +1,10 @@
+{
+  "version": "DIAGNOSTIC-CURRENT-SNAPSHOT-v0.29.0",
+  "benchmark_id": "dc321491-70b0-4acd-8851-6e8cfd67441d",
+  "latest_source": "benchmarks/dc321491-70b0-4acd-8851-6e8cfd67441d/benchmark.json",
+  "current_execution_status": "COMPLETE",
+  "current_quality_status": "HOLD_HUMAN_ADJUDICATION",
+  "retry_count": 0,
+  "prior_snapshots_are_history": true,
+  "last_update_utc": "2026-11-22T05:08:22+00:00"
+}

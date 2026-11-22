@@ -87,6 +87,8 @@ class FullRunReview(BaseModel):
 class AdvisoryStart(BaseModel):
     constraints: adv.AdvisoryConstraints = Field(default_factory=adv.AdvisoryConstraints)
     regenerate: bool = False
+    # Explicit and visibly provisional. The normal path waits for COMPLETE.
+    provisional_mode: bool = False
 
 
 class AdvisoryReview(BaseModel):
@@ -1054,7 +1056,7 @@ def register(app, m) -> None:
                                state.get('diagnostic_execution_status')==gate.get('execution_status'))
         return {
             'report_version': '0.27.0', # backward-compatible view contract
-            'producer_version': '0.31.0',
+            'producer_version': '0.32.0',
             'workflow_id': state['workflow_id'],
             'updated_at': state.get('updated_at'),
             'status': state['status'],
@@ -1140,7 +1142,7 @@ def register(app, m) -> None:
         # the advisory. Semantic state and the benchmark bytes still do.
         semantic_workflow={k:v for k,v in state.items() if k not in ('bundle_ready','bundle_status')}
         hashes['workflow.json']=adv.digest(semantic_workflow)
-        snapshot={'schema':'ADVISORY-SOURCE-v0.31.0','workflow_id':state['workflow_id'],
+        snapshot={'schema':'ADVISORY-SOURCE-v0.32.0','workflow_id':state['workflow_id'],
             'workflow_status':state['status'],'workflow_updated_at':state.get('updated_at'),
             'linked_ids':ident,'canonical_file_sha256':hashes,
             'read_only_report_sha256':adv.digest(report),
@@ -1176,7 +1178,11 @@ def register(app, m) -> None:
         lock=folder(wid)/'10p_generation.lock'
         final=dict(record)
         try:
-            final['draft']=await adv.generate(context,adv.AdvisoryConstraints(**record['constraints']))
+            draft=await adv.generate(context,adv.AdvisoryConstraints(**record['constraints']))
+            # The generator may return a machine-scoped section repair trace;
+            # keep it separate from the model's business proposal fields.
+            final['repair_actions']=draft.pop('_repair_actions',[]) if isinstance(draft,dict) else []
+            final['draft']=draft
             final['status']='DRAFT_UNAPPROVED'
             # A bounded deterministic diff of past and new drafts. Model never
             # judges whether a changed solution is a business improvement.
@@ -1214,11 +1220,17 @@ def register(app, m) -> None:
         if state.get('status') not in ('COMPLETE','PARTIAL'):
             raise HTTPException(409,'Advisory draft requires a terminal workflow')
         _,_,fingerprint=current_advisory_source(state)
-        return proposal_response(workflow_id,fingerprint)
+        result=proposal_response(workflow_id,fingerprint)
+        result['generation_requires_explicit_provisional_mode']=state['status']=='PARTIAL'
+        return result
 
     @app.post('/api/full-run/{workflow_id}/advisory')
     def start_advisory(workflow_id:str, body:AdvisoryStart, tasks:BackgroundTasks):
         state=read(workflow_id)
+        if state.get('status')=='PARTIAL' and not body.provisional_mode:
+            raise HTTPException(409,'10Pは最新COMPLETE後の生成が原則です。PARTIALからはprovisional_mode=trueを明示してください。')
+        if state.get('status') not in ('COMPLETE','PARTIAL'):
+            raise HTTPException(409,'10P requires a terminal workflow (COMPLETE or explicit provisional PARTIAL)')
         context,snapshot,fingerprint=current_advisory_source(state)
         current=proposal_response(workflow_id,fingerprint)
         requested=body.constraints.model_dump()
@@ -1239,6 +1251,8 @@ def register(app, m) -> None:
                     'source_workflow_status':state['status'],'constraints':requested,
                     'model':m.llm.MODEL,'approval_status':'NOT_APPROVED',
                     'primary_requirement':context['primary_requirement'],
+                    'provisional_mode':bool(body.provisional_mode),
+                    'deterministic_public_context':adv.deterministic_public_context(context),
                     'source_refs':context['allowed_source_refs'],
                     'required_attention':context['required_attention'],
                     'notice':'AI proposal draft, not a validated customer need, deployment authorization or proof of ROI'}

@@ -1,0 +1,117 @@
+{
+  "workflow_id": "f492f6db-a2c9-409c-b14a-36bc6c775953",
+  "version": 1,
+  "status": "GENERATION_FAILED",
+  "created_at": "2026-11-22T05:08:47+00:00",
+  "source_hash": "29454d1c5a874c9300d7b9825cc169963c4e332e1eb1366d0809140e57bed7c6",
+  "source_snapshot": {
+    "schema": "ADVISORY-SOURCE-v0.32.0",
+    "workflow_id": "f492f6db-a2c9-409c-b14a-36bc6c775953",
+    "workflow_status": "COMPLETE",
+    "workflow_updated_at": "2026-11-22T05:08:46+00:00",
+    "linked_ids": {
+      "runs": "18f330a8-e5b4-422e-8062-d24739114a33",
+      "proposals": "3ef6c19b-a9e2-41e1-b9b5-b1e754ceb04d",
+      "approvals": "2ec66230-fdf0-4234-a2cd-15a0f4110707",
+      "experiments": "dd15dc62-d50f-4c87-a2e2-c243938329d8",
+      "policy_validations": "d32f1f93-6662-41d1-9668-235045a6643b",
+      "benchmarks": "dc321491-70b0-4acd-8851-6e8cfd67441d",
+      "assessments": "791f1b32-780e-4d49-bc84-1429d4b36d79",
+      "workflows": "f492f6db-a2c9-409c-b14a-36bc6c775953"
+    },
+    "canonical_file_sha256": {
+      "00b_human_evidence_review.json": "e0aac2cec02ff297ca7d0de944809e5857588fc9c5f050eb0c5d33130193fc9f",
+      "00c_grounded_test_contract.json": "d4b47bf8f1003da0b35453333ce3e1c43a74919100b45fdbe1014849a8464c35",
+      "08e_requirement_trace.json": "6161d5c2a749af3c28f376d8ae968cb39566d7a11a7934fbc51d8254159b4805",
+      "08e_feature_acceptance.json": "1fcb5bc747c29a2d6e35080e7ddc430773784f6b3319cb5b69e68644e973e6ef",
+      "08f_selection_gap_analysis.json": "057ee4e358c3bfa8ef33fbc9d7827164c87ab82307fb619c62bf5b7871788fa0",
+      "08_latest_state_index.json": "e7e2e7b6657a40c8f33752ce566c1774216dbf6e0f156369e4a8b0a01ea2d00d",
+      "benchmark.json": "0978213b318b3e3d446b6bfe52f39ac063bb75382f81c27c42ade074c38f9184",
+      "assessment.json": "403e0b927130f715199b6d2b868d75e083793c1cafe4c6ea595e332c58b06444",
+      "workflow.json": "cb67f123e752dad7e040eca69bac0813fd3da3fc6d322a634f43f4b752c10c18"
+    },
+    "read_only_report_sha256": "31caa04edd02cb2cc1f675d0fa35182d89ae6055fa8d83a204714a8bcba06464",
+    "model_context_sha256": "bc787d3c6e858691108b1a11c1c5c521615949313dc425158c0aca58ea5e3758"
+  },
+  "source_workflow_status": "COMPLETE",
+  "constraints": {
+    "budget_eur": null,
+    "team_size": null,
+    "delivery_weeks": null,
+    "engineering_scope": "",
+    "operational_constraints": "",
+    "stakeholder_notes": ""
+  },
+  "model": "qwen3-coder:30b",
+  "approval_status": "NOT_APPROVED",
+  "primary_requirement": {
+    "requirement_id": "REQ-PUBLIC-001",
+    "type": "claim_progress_updates",
+    "feature_id": "FEATURE-CLAIM-PROGRESS-NOTIFICATION",
+    "reviewed_hypothesis": "Insurers must provide clear and timely updates on claim processing steps",
+    "approved_by_customer": false,
+    "required_acceptance_tests": [
+      "NOTIFY-ON-STATUS-CHANGE",
+      "NOTIFY-WITHIN-THRESHOLD",
+      "NOTIFY-CORRECT-RECIPIENT",
+      "NEGATIVE-CONTROL-NO-UPDATE"
+    ]
+  },
+  "provisional_mode": false,
+  "deterministic_public_context": [
+    {
+      "evidence_id": "PUB-003",
+      "source_url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication",
+      "source_file": "fos_insurance_delays.html",
+      "quote_context_untrusted": "sing the redress system greater clarity and confidence.\nRachel Lam, Interim Ombudsman Managing Director at the Financial Ombudsman Service, said:\nWhen people make an insurance claim, they are often dealing with disruption and uncertainty. Avoidable delays can make a difficult situation harder, especially when customers are left chasing for answers.\nWhere complaints involve delays, communication or supporting customer",
+      "support_scope": "PUBLIC_CONTEXT_ONLY_NOT_CUSTOMER_PROOF",
+      "binding": "DETERMINISTIC_FROM_HUMAN_SELECTED_EVIDENCE"
+    },
+    {
+      "evidence_id": "PUB-006",
+      "source_url": "https://www.financial-ombudsman.org.uk/who-we-are/data-insight/news/insurers-urged-act-claim-delays-poor-communication",
+      "source_file": "fos_insurance_delays.html",
+      "quote_context_untrusted": "what is causing delays, who is responsible for the next step and when to expect an update.\nIdentify additional needs for vulnerable consumers early. Adapt communication and ensure urgent or sensitive cases are escalated promptly, including by third parties.\nRecurring problems included customers having to chase updates and being left unsure what would happen next. For those affected, a delayed claim can mean living wi",
+      "support_scope": "PUBLIC_CONTEXT_ONLY_NOT_CUSTOMER_PROOF",
+      "binding": "DETERMINISTIC_FROM_HUMAN_SELECTED_EVIDENCE"
+    }
+  ],
+  "source_refs": [
+    "workflow.json",
+    "assessment.json",
+    "benchmark.json",
+    "08e_feature_acceptance.json",
+    "08f_selection_gap_analysis.json",
+    "08e_requirement_trace.json",
+    "00b_human_evidence_review.json",
+    "00c_grounded_test_contract.json",
+    "PUB-003",
+    "PUB-006"
+  ],
+  "required_attention": [
+    {
+      "code": "NOTIFICATION_NOT_INTEGRATED",
+      "finding": "通知専用合成試験とR1担当者割当は別機能。統合受入は未検証。",
+      "suggested_test": "通知トリガー・宛先・遅延・障害復旧を結合したE2E試験",
+      "source_ref": "08e_feature_acceptance.json"
+    },
+    {
+      "code": "DIAGNOSTIC_HOLD",
+      "finding": "診断品質HOLDは自律的要件変更の承認ではない。",
+      "suggested_test": "原因分類・根拠・改訂行動を独立にレビュー",
+      "source_ref": "benchmark.json"
+    },
+    {
+      "code": "DEV_NON_DISCRIMINATIVE",
+      "finding": "DEV候補を識別できたケースが0件。",
+      "suggested_test": "候補の行動が分岐する資格・容量・期限競合のDEV条件を事前設計",
+      "source_ref": "workflow.json"
+    }
+  ],
+  "notice": "AI proposal draft, not a validated customer need, deployment authorization or proof of ROI",
+  "error": {
+    "type": "ValueError",
+    "message": "Targeted advisory repair still violates contracts: {'technical_options': ['Low/balanced plans must directly address the requested feature', 'No numerical project cost without a known budget']}"
+  },
+  "finished_at": "2026-11-22T05:09:43+00:00"
+}
