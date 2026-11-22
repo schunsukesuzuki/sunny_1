@@ -1,150 +1,232 @@
-> **v0.26 — Diagnostic execution + quality split:** ODAのタイムアウトとRAW診断不合格を別々に報告し、未完了の試行だけを同一モデル・同一入力で最大2回再実行できます。再実行したBlindケースは新規の独立評価と見なしません。08の回復後には必要な09の決定的評価だけを復旧します。元の06/Dogwood評価はそのまま。詳細: `docs/v026-diagnostic-execution-and-replay.md`。
-
-> **v0.25 — persistent local authorization journal + revocation + diagnostic reliability gate:** Local SQLite now records APPROVED/REVOKED events, with chain verification before every R1 authorization. Dogwood still performs its real Rust temporal decision using *per-invocation replay*; this is **not** a continuously running Dogwood store or verified human identity. Optional shared reviewer-token and HMAC key support local integrity, not production authorization. Diagnostics now surface `HOLD_HUMAN_ADJUDICATION` when fixed/raw or fresh-blind cases fail, without misrepresenting a Domain Skill win as LLM autonomy. See `docs/v025-durable-journal-and-diagnostic-gates.md`.
-
-> **v0.24.1 build hotfix**: Rust API compile errors (`E0308`, `E0277`) were patched in `backend/dogwood_gate/src/main.rs`; authorization/audit contracts remain v0.24.0. Native Rust compilation still requires a Docker build on your machine. See `CHANGELOG.md`.
-
-> **v0.24 — Dogwood Temporal Approval Gate（小規模PoC）**：AWSが公開する実物のRust製`dogwood-local-engine`（v1.1）を用い、05の承認が06のR1生成・評価より先に成立したことをDogwoodの`permit`/`forbid`で検査します。Pythonの境界・証拠・業務KPI検査は残します。**標準DockerビルドはRustソースをコンパイルし、Rustのポリシー反例テストを実行**します。判定不能・DENY・タイムアウト時はR1を遮断し、PARTIAL監査ZIPに判定とポリシーSHA256を残します。`DOGWOOD_MODE=off`は既存Python単体テスト専用で、**認可は実行されません**。この実装は保存済み承認を毎回一時ストアへ再生する方式であり、長期間継続する監査イベントストリーム・認証済み本人確認・本番の認可サービスではありません。詳細：`docs/v024-dogwood-approval-gate.md`。
-
-> **v0.23 — EAIR-inspired Boundary Assurance（限定的な社会実装向け）**：00b→01では公開根拠・承認仮説・機能タイプの整合、05→06では明示的人間承認の保存とproposal ID、06→08b/08f/09では実験のWorkflow/Approval/R0/Proposal IDとコードのSHA256を検査。異常な引継ぎを次工程へ進めず、**Boundary Certificate（最初に検出した境界・証拠・遮断・修復案）**を監査ZIPに保存します。新しい08gは5件の**合成**境界反例と最小限の出所DAGを出力し、失敗検出と業務KPIを分けます。EAIRのマルチエージェント環境・GraphRAG・形式証明を導入したものではありません。詳細：`docs/v023-boundary-assurance-eair.md`。
-
-> **v0.22 — 08b Artifact not found修正**：06のR1評価が途中失敗し、`evaluation_started.json`にIDだけ残って`experiment.json`が存在しない場合、08b・08f・09は二次的な404を起こさず **SKIPPED** にします。原発エラーを`06_r1_failure.json`に保存し、PARTIAL ZIPに原因・未実施工程・欠落成果物を保持します。08cの担当者割当契約も未完成のR1をPASS扱いしません。詳細：`docs/v022-resilient-artifact-lineage.md`。**この修正は06自体のE2B/LLM失敗を自動修復するものではありません。**
-
-> **v0.21.2 — LLM要件診断の二層評価（v0.21系改訂）**：Qwen/ODAに元入力だけから作ったFact Sheetを与え、独立実装テストと合成KPIを順に判断させます。証拠IDを落とした場合は、**単一の原文根拠が診断と整合するときだけ**決定的なID補助を行います。**生回答のPASS率と補助込みのPASS率は厳密に分離**し、事業評価の自動診断PASSには生回答の成績だけを使用します。04の既存診断・一括実行・Domain Skillと08f厳密比較は維持しています。モデル実機でのPASS率は未検証です。`docs/v0212-diagnostic-two-layer.md` を参照。
-
-> **v0.21.1 — 00b review UX fix:** 00bの対象機能を未選択から開始し、手入力要件と選択機能の不一致・混在・担当者割当の期限文脈不足を送信前に表示します。Qwenの候補を選んだ場合は文章から機能を提案し、判断不能なら未選択とします。APIの422にも日本語の修正案を追加。**証拠・要件の品質ゲートは緩めていません。** `docs/v0211-evidence-review-ui.md`を参照。
-
-> **v0.21 — 診断精度と厳密最適化比較:** 04のQwen/ODA診断と08の診断ベンチマークに、入力事実のみを使う一度限りの再診断を追加しました。**初回PASS・修復後PASS・新規ケース初回PASSを分けて保存**し、固定の8項目ルーブリックは変更しません。08fではDEV候補選択後にランダム化した小規模案件を生成し、独立E2BでLLM/Skill/固定参照を比較します。小規模全探索、またはオプションのOR-Tools CP-SATが `OPTIMAL` を返したときだけ最適性ギャップを確定します。**LLMが必ずPASSする保証はありません**。詳細: `docs/v021-diagnostic-calibration-and-exact.md`。
-
-> **v0.20 — Claims Allocation Domain Skill:** Step 06 / Step 10 now support `llm_only` / `skill_only` / `compare` (default). `skill_only` uses reviewed, pinned scheduling code and **does not ask Qwen to generate R1 source**. Skill priority, qualification/capacity feasibility, scarce specialist protection and bounded beam heuristic are separate components under `backend/skills/claims_allocation/`. E2B runs self-contained scripts, the independent evaluator remains outside the Skill, and the DEV-only gate chooses eligible candidates before HOLDOUT. Source/provenance, Skill manifest + raw execution evidence, LLM attempts, and the post-selection comparison are saved in one audit ZIP. **Skill success is not LLM repair success, and bounded beam is not an exact solver.** Full design: `docs/v020-domain-skill-and-comparison.md`.
-
-> **v0.19.1 hotfix:** 00b根拠レビューでHTTP 422が出る場合、承認ボタン近くに詳細を表示します。
-> v0.19では「公開された保険請求遅延の報告」を通知要件と誤判定するバグがありました。
-> 本版は修正済みですが、真の要件と選択機能が食い違う場合は従来どおり422で停止します。
-
-> **v0.19 — 要件トレースとR1 DEVゲート:** 00bの人間レビューで機能を明示選択します。**進捗通知**には独立した合成通知プロトタイプ＋受入テスト、**担当者割当**にはE2Bで実行するR1期限・資格・容量テストを使用し、両者を混同しません。01〜09の既存の保険案件割当実験は維持しますが、通知要件の証明には使いません。R1はDEVで行動プローブ・ストレスも通過した候補だけを新規HOLDOUTへ送ります。結果レポートでは「比較未実施」と「比較不合格」を分離します。公開資料は顧客承認の代替になりません。詳細 `docs/v019-requirement-to-tests-and-r1-gates.md`。
-
-> **v0.18 — Evidence / Domain / KPI contract alignment:** 00で保険請求遅延に関するFCA・Financial Ombudsman Serviceの公表資料を取得できます。公開金融利用者インタビューや銀行苦情を保険のR0/R1へ流用することは禁止。00の出典照合に加え**課題領域スクリーニング → 人間による支持範囲の確認 → 人間設定KPI閾値の検証契約 → 固定合成HOLDOUTによる独立検証**を実装しました。RAG検索した公開根拠の原本を一括ZIPへ収録し、Business Assessmentでは「公開された問題の背景」と「実顧客の要件/原因/ROI」を区別します。**任意の自然言語仕様や評価器を自動生成する機能ではありません**。詳細は `docs/v018-evidence-to-contract.md`。
-
-> **v0.17 — Step 10 actually runs Evidence RAG:** 公開データモードでは、ボタンから **00の取得（未取得時）・SHA256照合・索引化・検索・要件候補作成**を起動。**00bでは根拠IDと要件仮説を人間が選択・承認するまで停止**し、その後01〜04、05で再度人間承認、06〜09を実行し、実験・根拠・承認記録を一つのZIPに保存します。取得失敗時は `FAILED`/`PARTIAL` で停止し、**synthetic-demoへの自動フォールバックはしません**。合成モードは明示的に選択した場合だけ動きます。`docs/v017-full-evidence-pipeline.md` を参照。
-
-> **v0.16 — Evidence-grounded Requirements RAG（旧バージョンの説明）:** 00画面でCommunity Credit匿名化インタビューとCFPB公開苦情（件数制限付き）を配布元から個別取得し、データセットを**別ZIPで保存**できます。元資料の出所・SHA256・文字位置に紐づけた検索、根拠付き要求仮説（Qwenによる抽出は任意）、未検証項目の表示、RAG証跡のZIP保存を追加。10の一括実行ZIPにも00の結果を任意で添付します。**引用の正確さは顧客要求の妥当性の証明ではありません。** `docs/v016-evidence-grounded-requirements.md` を参照。
-
-> **v0.16 — 00 RAG + 01〜09 Full Workflow:** 画面10から、任意の00 RAG証跡を添付し、顧客入力 → Qwen設計 → R0 E2B → Qwen/ODA独立診断 → **人間承認待ち** → R1生成/評価 → 履歴インデックス → 診断ベンチマーク＋R1仕様/ストレス → 二軸事業評価をまとめて実行し、失敗も含めて1つのZIPへ保存します。承認/却下は必ず人間が明示します。詳細は `docs/v015-full-workflow.md`。
-
-> **v0.14（旧方式の説明） — R1 Policy / Stress Validation + One-Click Audit Export:** 既存R1の候補コードを再実行し、期限優先・希少資格を巡る行動プローブ、合成ストレス4シナリオ、Qwen/ODAの固定診断ベンチマーク、二軸事業評価を一度に実行し、完全な証跡を単一ZIPへ保存します。旧API `/api/pipeline/run-and-save` で利用できます。v0.16の画面10は新しい01〜09一括方式に置き換わっています。**元のR0/R1実験・人間承認は改変せず、取得失敗時はPARTIAL ZIPと欠落理由を保存します。** 仕様：`docs/v014-complete-audit-pipeline.md`。
-
-> **v0.13 — Business & Delivery Assessment:** 新しい手順09で、保存したR1実験を「Business Value & Feasibility」と「AI Delivery & Operational Readiness」の2軸で根拠付き評価。Markdown/証跡ZIPを出力できます。**合成の技術PASSは実顧客・本番のGOではありません。** 評価にはLLMを使わず、特定個人の氏名・所属は評価基準やレポートに含めません。仕様：`docs/v013-business-assessment.md`。
-
-> **v0.12 UI refresh:** 画面冒頭に「このアプリの目的・8ステップの機能案内」と「証拠IDの正確性 ≠ 証拠の妥当性 ≠ 診断の正しさ」の説明を追加。低コントラストのダークUIを落ち着いたライト配色に変更しました。v0.10のバックエンドAPI・検証ロジック・監査保存を維持しています。詳細は `docs/v012-ui-guide.md`。
-
-> **v0.10:** 要件診断の多軸独立採点・Qwen/ODAの合成ベンチマーク・過去ログ再採点を追加。詳細は `docs/v010-requirement-diagnostic-benchmark.md`。
-
 # Claims Operations Planner — AI Venture Feasibility Studio v0.33.0
 
-ドイツの保険業務SaaS企業（**架空**）の事業開発PoC。**Qwen3-Coder 30B** はサービス設計・Pythonコード生成、**OpenDataArena/ODA-Fin-RL-8B** は金融ドメイン要件診断を担当。E2Bは生成コードを隔離して実行し、独立した決定的評価器で審査割当・期限・資格・稼働上限を検証します。v0.8にあったMarkdown結果保存を維持し、生成コード・差分・各試行のE2B実行証跡・履歴取得を拡張しました。
+**A human-in-the-loop proof of concept for evaluating technical feasibility, connecting customer-problem hypotheses to generative-AI prototypes, independent evaluation, and technical proposals.**
 
+The application uses a **fictional German insurance-software SaaS company** as its prospective customer, with claims-status notifications and claims-handler assignment as example problems. Public documents establish background context; they do not establish the fictional customer's approved requirements, the causes of its delays, or its return on investment. The goal is **not to deploy LLM outputs directly to production**, but to **separate successful execution, requirements compliance, independent quality evaluation, and business adoption decisions, so that humans can choose the next validation step**.
 
-> **v0.33.0 — デモ前提付き暫定提案／警告付き表示：** 10Rの予算€30,000、開発2名、PM 0.2 FTE、期間8週間、既存システム優先・専任運用担当なしは**架空の未確認条件**として初期表示され、APIにも適用されます。入力・更新・空欄化が可能です。顧客の予算とLLMによる費用概算は別に扱い、数値を含むだけでは提案を破棄しません。LLMの出力が構造的に有効なら、不整合が残っても`DRAFT_WITH_WARNINGS`として案ごとの問題点を表示・保存し、PMがレビュー・再生成できます。Dogwood認可と本番採用のFail-Closedは維持します。構造化応答自体を取得できない場合も、デモ前提と00〜09の評価レポートは表示します。詳細は `docs/v033-demo-assumptions-and-reviewable-drafts.md`。
+## 1. Architecture and Design Principles (v0.33)
 
-> **v0.32.0 — 10Pの責務境界とCOMPLETE同期（優先度「高」の3項目のみ）：**
-> ① 人間が選択した公開根拠のPUB ID・URL・原文位置は決定論的に記録し、モデル生成の顧客課題仮説（常に未検証）とは別欄で表示。公開出典が想定顧客の真因を証明するとは扱いません。
-> ② 型付きの初回提案が一部の**意味的契約**を満たさない場合、違反したトップレベルセクションのみ最大1回再生成し、変更しなかったセクションを維持。再検査で不合格なら `GENERATION_FAILED`（FAIL-CLOSED）。修復は自動承認を意味せず、RAWモデル出力の完全保存や一般的な構造エラー回復は今回の対象外です。
-> ③ 10P自動開始は最新 `COMPLETE` のみ。`PARTIAL` から生成する場合はUIの暫定モードを明示し、APIでも `provisional_mode=true` を必須とします。08再試行等で評価が変わると `STALE_ADVISORY` とし、人間レビューには再生成が必要。**00〜09・Dogwood・DEV/HOLDOUT・CI/CD連携は変更していません。** `docs/v032-priority-high-advisory-boundaries.md` 参照。
+```mermaid
+flowchart TD
+    A[00 Retrieve and search public evidence<br/>FCA / FOS, evidence IDs, SHA-256] --> B[00b / 00c Requirement hypotheses and human review<br/>Feature selection, evaluation contracts, KPIs]
+    B --> C[01–04 Qwen / ODA<br/>Design, R0 execution, requirements diagnosis]
+    C --> D[05 Explicit human approval<br/>SQLite journal, Dogwood authorization]
+    D --> E[06–08 Generated code / Domain Skill<br/>E2B sandbox, DEV / HOLDOUT, CP-SAT]
+    E --> F[09 Two-axis business and delivery assessment<br/>GO / HOLD / NO-GO]
+    F --> G[10R first: Unapproved Qwen technical proposal<br/>Three options, assumptions, warnings, review]
+    G --> H[10R next: Analysis of each stage's results<br/>Evaluation quality, evidence, audit trail]
+    H --> I[PM / engineer updates assumptions<br/>Explicit proposal regeneration; rerun only necessary tests]
+    I -. Next iteration by human decision .-> B
+```
 
-> **v0.31.0 — 最新評価に整合した技術提案：** 10R冒頭のAIドラフトは、最新の08診断（再試行を含む）・09事業判断・公開根拠・通知要件の受入契約のSHA-256を参照します。評価が更新され旧提案と不一致なら`STALE_ADVISORY`を表示し、**PMレビューを拒否し、明示的な再生成のみ受け付けます**。旧版は監査履歴に保持します。`claim_progress_updates`と担当者割当は別機能として扱い、公開資料ID・要件IDと3つの技術案を照合します。各案の役割・相対工数・リスク・費用要因・トレードオフ、次の実験の担当・成功指標を日本語で生成し、前版との差分を表示します。予算等が未入力なら未確認扱いとし、特定の見積額や法的適合性を断定しません。**完全自動再実行やCI/CDは未実装**。独立評価・人間承認は不変。`docs/v031-advisory-source-alignment-and-review.md`を参照。
+The screen order is **10 (full workflow) → 10R (AI proposal → individual stage evaluations) → 00 → 01–09**. Steps 00–09 in the diagram are shown in their logical execution order. The public-evidence review at 00b and R1 approval at 05 require explicit human actions. A workflow may have the execution status `COMPLETE` while its quality assessment remains `HOLD` and its production decision remains `NO_GO`.
 
-> **v0.30.0 — Human-in-the-loop技術提案：** 10のCOMPLETE/PARTIAL後、10Rの**冒頭**でQwen/Ollamaが顧客課題仮説と予算・人員・納期制約に応じた技術提案を作成し、その**下に既存00〜09の実行結果・独立評価を表示**します。10Rは「提案→各出力結果の分析」の順で、00より前に位置します。提案はローカルの既存レポートからallowlistした評価要約だけを読み、顧客固有の費用・ROI・真因を勝手に確定しません。PM・技術者は前提を編集して提案だけ再生成し、版数・修正理由・次回ブリーフを履歴に残せます。自動化するのは提案ドラフト生成までで、顧客要件の承認・次のパイプライン開始・CI/CDは**自動化しません**。Qwen失敗時も既存レポートと監査結果は維持します。`docs/v030-ai-advisory-human-loop.md`参照。
+### 1.1 Implemented Technologies and Responsibilities
 
-> **v0.29.0 — 08f辞書式最適性・DEV識別力・暫定選択レビュー・診断部分修復:** 08fの評価で期限超過件数だけでなく**同点時の未割当件数**も比較し、CP-SATの事前定義目的関数とギャップ判定を整合。DEV同点時の固定順選択は研究用の暫定候補として継続できますが、人間レビュー未実施／本番選択不承認を明示します。各DEVケースが候補を識別したかを記録し、識別不能を「頑健」と扱いません。08診断の任意修復は**入力から見える矛盾**に限定し、モデルの修正案は指定フィールドだけを採用、独立Blindへフィードバックしません。画面順序 **10 → 10R → 00 → 01〜09** は維持。`docs/v029-lexicographic-gap-selection-review-and-targeted-repair.md`を参照。
+| Layer | Implemented technologies | Responsibility and scope of assurance |
+| --- | --- | --- |
+| Web / API | React 19, TypeScript, Vite 7 / FastAPI, Uvicorn | Full workflow execution, human-in-the-loop review, report display, workflow orchestration |
+| Local inference | Ollama, Qwen3-Coder 30B, ODA-Fin-RL-8B | Qwen: design, Python code, technical proposals. ODA: diagnosis of financial-domain requirements. **Neither is an independent ground-truth oracle.** |
+| Evidence-grounded RAG | Python, HTTPX, BM25-like scores, character trigrams, RRF | Tracks source documents, source-text locations, `PUB-*` IDs, and SHA-256 hashes for FCA/FOS and other material. Search ranking does not prove causality or requirements. |
+| Output contracts | Pydantic v2, JSON Schema | Checks structure, cross-field consistency, and requirements traceability. Schema compliance does not guarantee semantic correctness. |
+| Candidate algorithms | Qwen-generated code, fixed Domain Skills, Deadline / Scarcity, Bounded Beam | Claims-handler assignment under deadlines, qualifications, and daily capacity. Beam search is not an exact optimizer. |
+| Isolated execution | E2B Sandbox | Isolates generated code and Skills; preserves execution IDs, results, and hashes. Business correctness is evaluated separately. |
+| Temporal authorization | Rust Dogwood Local Engine, SQLite approval/revocation journal, hash chain | Checks approval precedence, validity periods, ID consistency, and revocation. Denies requests when authorization cannot be determined. Real-world user identity verification is separate. |
+| Independent evaluation | Fixed rubrics, behavioral probes, synthetic DEV / HOLDOUT, six diagnostic dimensions | Distinguishes code execution, requirement alignment, raw diagnostic performance, and results on previously unseen synthetic cases. |
+| Optimality comparison | Optional OR-Tools CP-SAT / small-instance exhaustive search | Compares candidate solutions under the lexicographic objective of missed deadlines followed by unassigned cases. Claims optimality only when `OPTIMAL` is confirmed. |
+| Audit and decisions | JSON / Markdown / ZIP, SHA-256, Business & Delivery Assessment | Traces sources, approvals, models, executions, selections, and evaluations; records reasons for `HOLD` and `NO_GO`. |
+| Advisory improvement loop | 10R Advisory, Qwen, editable assumptions, snapshot matching | Produces three unapproved options: low-complexity, balanced, and R&D. Drafts with warnings can be reviewed but never become execution permissions. |
 
-> **v0.28.0 — DEV頑健性選択・診断6軸・最新レポート状態:** v0.27.1の画面順序 **10 → 10R → 00 → 01〜09** を維持。DEVで候補が同点の場合、既存の4ストレス条件に加え、選択前に固定した4件の合成DEV分布変化（資格希少性・容量・締切・到着順）でも比較します。DEVの遅延・未割当、追加DEVの最大/合計遅延と未割当、既存ストレスの同指標を順に使用し、各ケースを除外した際の選択感度を記録します。追加分のE2B実行コストが発生します。**08f/CP-SAT/06 HOLDOUTは選択へ流用しません**。RAW診断を原因分類・実装・根拠・改訂行動・要件適合・構造的整合性の6軸に分離して表示します。診断のタイムアウト再試行後は現在の`benchmark.json`を正とし、旧PARTIAL記録を履歴として残します。**合成テストの感度評価は統計的汎化保証ではありません。** 変更点と監査項目は `docs/v028-dev-robustness-diagnostic-axes-latest-report.md` を参照。
+### 1.2 Do Not Conflate Functional Requirements with Technical Experiments
 
-> **v0.27.1 — 画面の順序とレポート配置のみ変更:** 画面10（00〜09一括実行）を画面00より前に置き、完了時のレポートを画面10の外へ独立したセクションとして移しました。表示順は **10 → 10R 実行結果レポート（COMPLETE/PARTIAL時のみ） → 00 → 01〜09** です。画面10から公開資料の選択・検索クエリ・要求仮説抽出を直接設定でき、画面00の個別操作を先に行う必要はありません。既存のDogwood認可、R0/R1、08診断、受入契約、09事業評価、ZIP、レポートAPIは変更していません。詳細は `docs/v0271-step10-report-before-step00.md`。
+- **Claims-status notifications (`claim_progress_updates`)**: Synthetic acceptance tests check notification timing, recipients, omissions, and failure behavior. Improvements in assignment algorithms cannot substitute for acceptance of the notification feature.
+- **Claims-handler assignment (R0 / R1)**: Starting from FIFO, the application compares Skills and LLM-generated code that account for deadlines, scarce qualifications, and capacity constraints. The **causal relationship remains unverified** between improved assignment and reduced notification delays.
+- **Evaluation and authorization are different contracts**: Dogwood permission does not establish model quality. A CP-SAT optimum for a synthetic assignment problem does not establish actual customer requirements or production suitability.
 
-> **v0.27.0 — 型付き機能受入・診断の意味整合・DEV選択監査・Dogwood拒否証跡:** 人間が選択した `claim_progress_updates` は通知機能固有の4受入テストに束縛し、担当者割当のKPIでは代替できません（`08e_feature_acceptance.json`）。RAW診断の分類・根拠・改訂対象・行動の矛盾を検査します（真の意味的正しさの証明ではありません）。候補選択はDEVの期限超過数→未割当数に固定し、08fの選択後独立比較ではR1を再選択しません（`08f_selection_gap_analysis.json`）。Dogwoodの未承認・ID不一致・取消のネイティブ否定ケースと、期限切れ・SQLite証跡不一致を別途監査します（`08g_dogwood_negative_audit.json`）。Dockerビルド時にRustテストログを保存します。v0.27.0当時の画面順序は00→10→01で、レポートは10の内部でした。v0.27.1で10→レポート→00→01へ変更しています。詳細は `docs/v027-feature-contract-diagnostic-selection-dogwood.md`。
+## 2. Technical Proposals and Iterative Improvement in 10R (Core v0.33 Feature)
 
-> **v0.26.1 — 画面10を00の直後・01の前に移動**：00で公開データの設定を行った後、そのまま10の一括実行を操作できます。10の中で顧客ブリーフ・DEV seed・04の模擬条件・R1比較方式を編集できます（個別画面と同一state）。00bと05の人間承認は引き続き必須です。工程がCOMPLETEまたはPARTIALで終了すると、**同じ画面10内に実行レポートを自動表示**します（Dogwood判定・診断実行とRAW品質・09意思決定・合成HOLDOUT指標・未検証事項）。以前のWorkflow IDを読み込んだ場合も表示可能です。レポートは保存済みファイルから読み取るだけで、LLM・E2Bの再実行や自動承認は行いません。API: `GET /api/full-run/{workflow_id}/report`。Markdownと証跡ZIPの既存ダウンロード機能も維持しています。
+At the **top** of 10R, Qwen generates an **unapproved technical proposal** using saved evaluations from steps 00–09. Results from each stage appear below it. The proposal does not autonomously rerun LLM evaluation or grant permissions; it provides material for PMs and engineers to consider.
 
-> **技術デモです**：架空の商談と合成案件が中心です。00画面では別途、公開された第三者の金融サービス利用者発言・苦情を検索できますが、想定顧客の実際の要求を裏付けるものではなく、EU法令検索も行いません。ODA-Fin-RL-8Bは金融推論モデルであり、EU保険規制への専門適合が実証されたモデルではありません。請求の支払可否・不正判定や法的判断は自動化しません。モデルの評価は合成データと模擬顧客証拠に限定されます。
+| Sample input | Demo default | Interpretation |
+| --- | ---: | --- |
+| Budget | €30,000 | `DEMO_PLACEHOLDER_UNVERIFIED` (not a customer-approved budget) |
+| Developers | 2 people | Unverified assumption; editable or clearable |
+| PM allocation | 0.2 FTE | Unverified assumption |
+| Development period | 8 weeks | Unverified assumption |
+| Implementation/operations priorities | Prefer existing APIs; no dedicated operations staff | Unverified assumption |
 
-## 新規事業仮説
+The proposal contains **A: low-complexity option / B: balanced PoC / C: R&D option**. Approximate cost estimates may be presented as uncertain hypotheses and are distinguished from the customer's budget. Public-evidence IDs and source locations are retrieved deterministically from persisted records. The LLM may freely propose causal hypotheses about customer problems, but these are explicitly marked **unverified**.
 
-想定顧客：ドイツ国内の保険業務SaaSベンダー（架空）。欧州複数国展開は事業仮説。Claims Operations Plannerを追加し、固定審査人員・総審査時間のもとで期限超過件数を減らす。
+- **Expose semantic inconsistencies**: If the structured output is valid, a disagreement between a proposal's text and its self-reported requirement coverage does not cause the draft to be discarded. Instead, it is stored and displayed as `DRAFT_WITH_WARNINGS`. Targeted repair of problematic technical options is attempted, but an unsuccessful repair does not erase the entire proposal.
+- **Fail-closed execution authorization**: The ability to read an unapproved draft does not imply Dogwood execution permission or a production GO decision at step 09. If the structured response cannot be obtained at all, the UI indicates that no proposal was retrieved and keeps the existing evaluation report visible.
+- **Track evaluation state**: The hash of the evaluation snapshot used to generate the proposal is stored. Older proposals whose underlying evaluation changes after a retry are identified as `STALE_ADVISORY`. Generation from the latest `COMPLETE` status is the normal path; `PARTIAL` requires an explicitly selected provisional mode.
+- **Human improvement loop**: A person edits the assumptions, concerns, and next-run brief → regenerates only the proposal → examines differences and version history → explicitly reruns only the necessary evaluations. **Autonomous CI/CD, production deployment, and unattended approval are not implemented.**
 
-- **R0**：到着順FIFOで担当者を割り当てる。独立評価器で「R0の仕様を正確に実装した」と確認。
-- **模擬反証** `SIM-SLA-001`：正しく動くFIFOでも後着の短納期案件を遅延させ得る。
-- **診断比較**：Qwen-CoderとODA-Fin-RL-8Bが、同じ**DEV結果と模擬証拠**を独立に診断。R0実装の正しさと事業要件の妥当性を明示的に区別。
-- **独立ゲート**：ODAが「実装バグではない」と理解できたかをルールで確認。理由と分類に矛盾があればHOLD。利用不可ならエラーとして保存し、Qwenへ黙って代替しない。
-- **人間の承認**：R1はアプリ側で定義した実験用契約。ODAの提案そのものを自動承認・評価基準へ採用しない。承認前にコード生成へ進まない。
-- **R1生成**：承認後、ODAの構造化診断を**参考情報としてQwenのプロンプトへ追加**し、固定R1契約に基づいてコードを生成。
-- **R1評価**：E2BでDEV修正最大2回。DEV KPI・行動反例・ストレス全てに通過した場合のみHOLDOUTを一度実行。FIFO/固定期限優先/生成コードを同じ合成データで比較。
-- **事業妥当性**：**UNVERIFIED**。合成KPIは顧客価値や規制適合の証拠になりません。
+## 3. Example Run Results (Synthetic v0.33 Run on 2026-11-22)
 
-## Mac Studioでの実行環境
+| Evaluation target | Observed result | Interpretation |
+| --- | --- | --- |
+| Workflow | 18 / 18 steps `COMPLETE` | Execution completed; neither quality nor commercial suitability was approved |
+| Dogwood negative paths | 8 / 8 PASS | The limited authorization counterexamples passed in this run |
+| Synthetic notification acceptance | 4 / 4 PASS | Real-customer integration and end-to-end integration with assignment remain untested |
+| Discriminating DEV cases | 0 / 11 | Preselection data failed to distinguish the candidates |
+| 08f: selected R1 / Bounded Beam | Agreement with CP-SAT optimum: 1 / 4 versus 4 / 4 | Difference observed on **four separate, post-selection synthetic cases**; not a generalization guarantee |
+| Qwen / ODA diagnostic Fresh Blind RAW | Both 0 / 2 | Do not confuse repair or partial improvements with success on independent blind cases |
+| 10R technical proposal | `DRAFT_WITH_WARNINGS` | Three options were generated, but contradictions remained between proposal text and self-assessed requirement coverage |
+| Diagnostic / business decision | `HOLD` / `NO_GO` | Production adoption remains unapproved due to quality issues and incomplete notification integration, among other concerns |
 
-- macOSでネイティブのOllamaを実行（利用可能ならMetal加速）。Dockerコンテナから `host.docker.internal:11434` に接続。
-- Docker Compose：FastAPI + React/Vite。**v0.26.1も追加のRustビルドを必要としますが、Dogwoodの常駐サーバは追加しません**。E2B Python SDKには `E2B_API_KEY` 必須。
-- **2モデルが必要**。ODAだけの評価に置換してQwenの生成処理を削除したものではありません。
+Evidence bundle: `claims_full_run_v033_f69162f1-1507-48fc-9514-e39f56716656.zip`. These values are observations from this specific synthetic run; they do not establish universal model rankings, customer ROI, TCO savings, or regulatory compliance.
 
-### 1. Ollamaにモデルを準備
+## 4. Implementation Scope and Explicit Limitations
+
+**Implemented:** Lexical-retrieval RAG, structured LLM output, E2B isolated execution, local Dogwood temporal authorization, Domain Skills and beam search, independent DEV/HOLDOUT evaluation, optional CP-SAT, diagnostic benchmarks, two-axis business assessment, and unapproved proposals, reviews, and version management in 10R.
+
+**Not implemented:** GraphRAG / GNN-RAG, formal proofs with Lean 4 / SMT, Neural Operators, World Models / JEPA, VLA / Flow Matching, autonomous CI/CD or production deployment, or automatic guarantees concerning actual customer SLAs, contracts, and regulatory compliance.
+
+This PoC is a single-user local demo. Authentication, rate limiting, production-grade secret management, verified identity, and customer-specific regulatory review would have to be implemented separately. See the detailed sections below for runtime setup, operations, APIs, and audit artifacts.
+
+## 5. Change Log (v0.33.0 → v0.10, Newest First)
+
+> **v0.33.0 — Demo assumptions, provisional proposals, and drafts with warnings:** The initial 10R values—€30,000 budget, two developers, 0.2 PM FTE, eight weeks, preference for existing systems, and no dedicated operations staff—are **fictional, unverified assumptions**, prefilled in the UI and applied by the API. They can be entered, updated, or cleared. Customer budgets are distinct from LLM-generated cost estimates; numerical estimates alone do not invalidate a proposal. If an LLM response is structurally valid, remaining inconsistencies are displayed and saved per option under `DRAFT_WITH_WARNINGS`, and a PM can review and regenerate the draft. Dogwood authorization and production adoption remain fail-closed. Even when no structured response is obtained, the demo assumptions and the existing 00–09 evaluation report remain visible. See `docs/v033-demo-assumptions-and-reviewable-drafts.md`.
+
+> **v0.32.0 — 10P responsibility boundaries and COMPLETE synchronization (only the three high-priority items):**
+> 1. PUB IDs, URLs, and source locations from public evidence selected by a human are recorded deterministically and displayed separately from model-generated customer-problem hypotheses, which always remain unverified. Public sources do not prove the fictional customer's root cause.
+> 2. When an initially typed proposal fails certain **semantic contracts**, only the violating top-level sections are regenerated, at most once, while unchanged sections are preserved. A failed revalidation results in `GENERATION_FAILED` (FAIL-CLOSED). Repair does not imply automatic approval, and complete preservation of raw model responses or generic recovery from structural errors is outside the scope of this version.
+> 3. Automatic 10P generation starts only from the latest `COMPLETE` state. Generation from `PARTIAL` requires an explicit provisional mode in the UI and `provisional_mode=true` in the API. If a retry at step 08 changes the evaluation, the proposal becomes `STALE_ADVISORY` and must be regenerated before human review. **Steps 00–09, Dogwood, DEV/HOLDOUT, and CI/CD integration were unchanged.** See `docs/v032-priority-high-advisory-boundaries.md`.
+
+> **v0.31.0 — Technical proposals aligned with the latest evaluation:** The AI draft at the beginning of 10R references SHA-256 hashes of the latest step 08 diagnostics (including retries), step 09 business decision, public evidence, and acceptance contracts for the notification requirement. If a subsequent evaluation update no longer matches the draft, 10R displays `STALE_ADVISORY`, **rejects PM review, and accepts only explicit regeneration**. Earlier versions remain in the audit history. `claim_progress_updates` and claims-handler assignment are treated as distinct features; evidence IDs, requirement IDs, and three technical options are checked for consistency. In Japanese, each option describes necessary roles, relative effort, risks, cost drivers, and trade-offs, and the next experiment specifies an owner and success metrics. Changes from the previous version are displayed. Missing budget or staffing values are labeled unconfirmed; specific prices and legal compliance are not asserted as facts. **Fully autonomous reruns and CI/CD are not implemented.** Independent evaluation and human approval remain unchanged. See `docs/v031-advisory-source-alignment-and-review.md`.
+
+> **v0.30.0 — Human-in-the-loop technical proposals:** After step 10 reaches COMPLETE/PARTIAL, Qwen/Ollama creates an advisory draft **at the top** of 10R, proposing customer-problem hypotheses and technical approaches subject to budget, staffing, and deadline constraints. The existing 00–09 execution results and independent evaluations appear **below** the draft. Thus 10R is ordered “proposal → analysis of each stage's results” and is displayed before screen 00. The draft reads only an allowlisted evaluation summary from saved local reports; it does not assume actual customer costs, ROI, or root causes. PMs and engineers can edit assumptions and regenerate just the proposal, retaining versions, reasons for edits, and a brief for the next iteration. Automation stops at drafting: **customer-requirement approval, the next pipeline run, and CI/CD are not automated**. A failed Qwen call leaves the existing report and audit results intact. See `docs/v030-ai-advisory-human-loop.md`.
+
+> **v0.29.0 — Lexicographic optimality at 08f, DEV discriminating power, provisional-selection review, and targeted diagnostic repair:** The 08f evaluation compares **unassigned cases as a secondary objective after missed deadlines**, aligning gap measurements with the predefined CP-SAT objective. A fixed-order tie break on DEV can still select a provisional research candidate, but the lack of human review and production-selection approval is explicitly recorded. Each DEV case records whether it distinguishes the candidates; non-discriminating cases are not characterized as robust. Optional repair of step 08 diagnostics is restricted to **contradictions observable from the input**; only requested fields from proposed corrections are adopted, and the independent blind set is not leaked into feedback. Screen order **10 → 10R → 00 → 01–09** is preserved. See `docs/v029-lexicographic-gap-selection-review-and-targeted-repair.md`.
+
+> **v0.28.0 — Robust DEV selection, six diagnostic dimensions, and latest report state:** Preserves the v0.27.1 screen order **10 → 10R → 00 → 01–09**. When DEV candidates tie, comparison extends beyond the existing four stress conditions to four synthetic DEV distribution shifts fixed before selection: qualification scarcity, capacity, deadlines, and arrival order. Selection successively considers DEV misses/unassigned counts, maximum and total misses/unassigned in the additional DEV shifts, and corresponding metrics for existing stress tests. Selection sensitivity is recorded by leaving out each case in turn. Additional E2B executions incur extra cost. **08f/CP-SAT/06 HOLDOUT are not used for selection.** Raw diagnostics are displayed on six separate dimensions: cause classification, implementation understanding, evidence, revision action, requirement alignment, and structural consistency. After diagnostic timeout retries, the current `benchmark.json` is authoritative; older PARTIAL records remain in history. **Sensitivity on synthetic cases is not a statistical generalization guarantee.** See `docs/v028-dev-robustness-diagnostic-axes-latest-report.md` for changes and audit fields.
+
+> **v0.27.1 — Screen order and report placement only:** Moves screen 10 (the full 00–09 run) before screen 00 and puts its results report in a separate section outside screen 10. The display order becomes **10 → 10R execution report (only for COMPLETE/PARTIAL) → 00 → 01–09**. Public-source selection, search queries, and requirement-hypothesis extraction can be configured directly in screen 10, without using the individual screen 00 first. Existing Dogwood authorization, R0/R1, step 08 diagnostics, acceptance contracts, step 09 assessment, ZIP export, and report API were unchanged. See `docs/v0271-step10-report-before-step00.md`.
+
+> **v0.27.0 — Typed feature acceptance, diagnostic semantic consistency, DEV-selection auditing, and Dogwood denial evidence:** A human-selected `claim_progress_updates` requirement is bound to four notification-specific acceptance tests, and claims-assignment KPIs cannot substitute for them (`08e_feature_acceptance.json`). Checks flag contradictions between raw diagnostic classifications, evidence, proposed revision targets, and actions (not a proof of semantic correctness). Candidate selection uses DEV missed deadlines followed by unassigned cases; post-selection comparison at 08f does not reselect R1 (`08f_selection_gap_analysis.json`). Native negative Dogwood tests cover missing approvals, ID mismatches, and revocations, while expired approvals and SQLite evidence mismatches are audited separately (`08g_dogwood_negative_audit.json`). Rust test logs are saved during Docker builds. At v0.27.0, screens were ordered 00 → 10 → 01 and the report appeared inside 10; v0.27.1 changed this to 10 → report → 00 → 01. See `docs/v027-feature-contract-diagnostic-selection-dogwood.md`.
+
+> **v0.26.1 — Move screen 10 immediately after 00 and before 01:** After configuring public data on 00, users can directly start the full run on 10. Screen 10 provides editable customer briefs, DEV seeds, step 04 simulation conditions, and R1 comparison mode, sharing state with individual screens. Human approvals at 00b and 05 remain mandatory. When a run ends as COMPLETE or PARTIAL, an **execution report automatically appears within screen 10**, including Dogwood decisions, diagnostic execution and raw quality, step 09 decisions, synthetic HOLDOUT metrics, and unverified items. Previous Workflow IDs can also be loaded. The report only reads saved files; it never reruns LLM/E2B or grants approval. API: `GET /api/full-run/{workflow_id}/report`. Existing Markdown and evidence ZIP downloads are preserved.
+
+> **v0.26 — Diagnostic execution and quality split:** ODA timeouts and failed raw diagnostic grading are reported separately. Only incomplete trials can be retried, using the same model and inputs, at most twice. Retried blind cases are not treated as fresh independent evaluations. After step 08 recovers, only the necessary deterministic evaluations at 09 are resumed; the original 06/Dogwood evaluations remain unchanged. See `docs/v026-diagnostic-execution-and-replay.md`.
+
+> **v0.25 — Persistent local authorization journal, revocation, and diagnostic reliability gate:** Local SQLite now records APPROVED/REVOKED events, with chain verification before every R1 authorization. Dogwood still performs its real Rust temporal decision using *per-invocation replay*; this is **not** a continuously running Dogwood store or verified human identity. Optional shared reviewer-token and HMAC key support local integrity, not production authorization. Diagnostics now surface `HOLD_HUMAN_ADJUDICATION` when fixed/raw or fresh-blind cases fail, without misrepresenting a Domain Skill win as LLM autonomy. See `docs/v025-durable-journal-and-diagnostic-gates.md`.
+
+> **v0.24.1 — Build hotfix:** Rust API compile errors (`E0308`, `E0277`) were patched in `backend/dogwood_gate/src/main.rs`; authorization/audit contracts remain v0.24.0. Native Rust compilation still requires a Docker build on your machine. See `CHANGELOG.md`.
+
+> **v0.24 — Dogwood Temporal Approval Gate (small PoC):** Uses the actual Rust `dogwood-local-engine` (v1.1) published by AWS to check, via Dogwood `permit`/`forbid`, that approval at 05 preceded R1 code generation/evaluation at 06. Python-based boundary, evidence, and business-KPI checks remain. **The standard Docker build compiles the Rust sources and executes negative policy tests.** An indeterminate decision, DENY, or timeout blocks R1, with the decision and policy SHA-256 written to a PARTIAL audit ZIP. `DOGWOOD_MODE=off` exists only for legacy Python unit tests; **no authorization is performed in that mode**. Saved approvals are replayed into a temporary store on each invocation; this is not a persistent audit-event stream, authenticated identity service, or production authorization service. See `docs/v024-dogwood-approval-gate.md`.
+
+> **v0.23 — EAIR-inspired Boundary Assurance (limited real-world-oriented PoC):** At 00b → 01 the system checks consistency between public evidence, approved hypotheses, and feature type; at 05 → 06 it checks stored explicit human approval and proposal IDs; and at 06 → 08b/08f/09 it checks Workflow/Approval/R0/Proposal IDs and code SHA-256. Invalid handoffs are blocked. A **Boundary Certificate** records the first detected boundary failure, supporting evidence, blocking action, and suggested repair in the audit ZIP. The new 08g reports five **synthetic** boundary counterexamples and a minimal provenance DAG, separating failure detection from business KPIs. This does not implement the EAIR multi-agent environment, GraphRAG, or formal proofs. See `docs/v023-boundary-assurance-eair.md`.
+
+> **v0.22 — Fix for “Artifact not found” at 08b:** If the R1 evaluation at 06 fails mid-run and leaves only an ID in `evaluation_started.json` without an `experiment.json`, stages 08b, 08f, and 09 are **SKIPPED** instead of producing secondary 404 errors. The originating error is saved to `06_r1_failure.json`; the PARTIAL ZIP retains the cause, skipped steps, and missing artifacts. The 08c assignment contract does not count an incomplete R1 as PASS. See `docs/v022-resilient-artifact-lineage.md`. **This does not automatically repair an E2B/LLM failure at 06 itself.**
+
+> **v0.21.2 — Two-layer evaluation of LLM requirements diagnosis (v0.21-series revision):** Both Qwen and ODA receive a Fact Sheet derived only from the original input and are asked to evaluate independent implementation tests and synthetic KPIs in sequence. If an evidence ID is missing, deterministic ID assistance is allowed **only when exactly one original source supports the diagnosis**. **Pass rates for raw responses and assisted responses are strictly separated**, and automated diagnostic PASS in the business assessment uses raw-response scores only. Existing step 04 diagnosis, full workflows, Domain Skills, and 08f exact comparisons remain. Real-model PASS rates had not been verified at this version. See `docs/v0212-diagnostic-two-layer.md`.
+
+> **v0.21.1 — 00b review UX fix:** The feature selection at 00b initially has no selection. Before submission, the UI warns about mismatches between manually entered requirements and selected features, mixed features, or an assignment requirement with insufficient deadline context. When users choose a Qwen candidate, the app suggests the feature type from its text; if it cannot determine one, it leaves the selection empty. The API's 422 response includes Japanese correction suggestions in this historical version. **Evidence and requirement quality gates were not relaxed.** See `docs/v0211-evidence-review-ui.md`.
+
+> **v0.21 — Diagnostic calibration and comparison with exact optimization:** A one-time rediagnosis based only on input facts was added to Qwen/ODA diagnosis at 04 and the diagnostic benchmark at 08. **First-attempt PASS, post-repair PASS, and first-attempt PASS on fresh cases are stored separately**, without changing the fixed eight-item rubric. At 08f, small randomized cases are generated after DEV candidate selection; LLM, Skill, and fixed reference are compared in independent E2B runs. Optimality gaps are established only when small-instance exhaustive search or optional OR-Tools CP-SAT returns `OPTIMAL`. **LLM success is not guaranteed.** See `docs/v021-diagnostic-calibration-and-exact.md`.
+
+> **v0.20 — Claims Allocation Domain Skill:** Step 06 / Step 10 support `llm_only`, `skill_only`, and `compare` (default). `skill_only` uses reviewed, pinned scheduling code and **does not ask Qwen to generate R1 source**. Skill priority, qualification/capacity feasibility, scarce-specialist protection, and bounded-beam heuristics are separate components under `backend/skills/claims_allocation/`. E2B runs self-contained scripts, the independent evaluator remains outside the Skill, and the DEV-only gate selects eligible candidates before HOLDOUT. Code provenance, the Skill manifest and raw execution evidence, LLM attempts, and post-selection comparison are stored together in one audit ZIP. **Skill success does not mean LLM repair success; bounded beam is not an exact solver.** Full design: `docs/v020-domain-skill-and-comparison.md`.
+
+> **v0.19.1 — Hotfix:** When the 00b evidence review receives HTTP 422, details are shown near the approval button.
+> A bug in v0.19 misclassified a public report about claims-handling delays as a notification requirement.
+> This version fixes the bug, but a mismatch between the actual requirement and selected feature continues to produce HTTP 422.
+
+> **v0.19 — Requirements traceability and the R1 DEV gate:** Humans explicitly choose a feature during the 00b review. **Claims-status notifications** use a separate synthetic notification prototype and acceptance tests; **claims-handler assignment** uses R1 deadline, qualification, and capacity tests run through E2B. The two features are not conflated. Existing 01–09 assignment experiments remain, but do not count as proof that the notification requirement is met. Only R1 candidates passing DEV behavioral probes and stress tests advance to a fresh HOLDOUT. Reports distinguish “comparison not performed” from “comparison failed.” Public documents do not replace customer approval. See `docs/v019-requirement-to-tests-and-r1-gates.md`.
+
+> **v0.18 — Evidence / Domain / KPI contract alignment:** Step 00 can retrieve FCA and Financial Ombudsman Service publications about claims delays. It prohibits using public consumer-finance interviews or banking complaints as evidence for insurance R0/R1 experiments. Beyond checking sources at 00, the system implements **domain screening → human review of the scope of evidentiary support → evaluation contracts with human-defined KPI thresholds → independent validation on fixed synthetic HOLDOUT cases**. Original public sources retrieved for RAG are included in the all-in-one ZIP. The Business Assessment distinguishes “publicly documented problem context” from “actual customer requirements, causes, and ROI.” **It does not generate arbitrary natural-language specifications or evaluation oracles automatically.** See `docs/v018-evidence-to-contract.md`.
+
+> **v0.17 — Step 10 actually runs Evidence RAG:** In public-data mode, the button triggers **step 00 retrieval (if needed), SHA-256 checking, indexing, search, and requirement-hypothesis creation**. At **00b the workflow pauses until a human selects and approves evidence IDs and the requirement hypothesis**, then performs 01–04, obtains separate human approval at 05, and runs 06–09. Experiments, evidence, and approval records are bundled into one ZIP. A retrieval failure causes `FAILED`/`PARTIAL`; **there is no automatic fallback to a synthetic demo**. Synthetic mode runs only when explicitly chosen. See `docs/v017-full-evidence-pipeline.md`.
+
+> **v0.16 — Evidence-grounded Requirements RAG (historical version):** Screen 00 could individually retrieve anonymized Community Credit interviews and a limited number of public CFPB complaints from their distributors and save these datasets in **separate ZIP files**. It introduced retrieval tied to provenance, SHA-256, and character offsets; evidence-linked requirement hypotheses (with optional Qwen extraction); an explicit display of unverified items; and exported RAG evidence ZIPs. Results from 00 could optionally be included in the full-run ZIP from 10. **Accurate citations do not prove that a customer requirement is valid.** See `docs/v016-evidence-grounded-requirements.md`.
+
+> **v0.16 — 00 RAG + 01–09 Full Workflow:** From screen 10, users could attach optional step 00 RAG evidence and run customer input → Qwen design → R0 in E2B → independent Qwen/ODA diagnosis → **wait for human approval** → R1 generation/evaluation → history indexing → diagnostic benchmark and R1 policy/stress evaluation → two-axis business assessment, saving failures and successes in one ZIP. Approval or rejection always required an explicit human action. See `docs/v015-full-workflow.md`.
+
+> **v0.14 (historical approach) — R1 Policy / Stress Validation + One-Click Audit Export:** Reruns saved R1 candidate code, independently checks deadline prioritization and scarce-specialist behavior, tests four synthetic stress scenarios, executes a fixed Qwen/ODA diagnostic benchmark, and produces a two-axis business assessment with full evidence in one ZIP. Available through legacy API `/api/pipeline/run-and-save`. The newer 01–09 full workflow on screen 10 superseded this in v0.16. **Original R0/R1 experiments and human approvals are left unchanged; retrieval failures generate a PARTIAL ZIP with reasons for missing artifacts.** See `docs/v014-complete-audit-pipeline.md`.
+
+> **v0.13 — Business & Delivery Assessment:** Step 09 introduced evidence-based evaluation of saved R1 experiments across “Business Value & Feasibility” and “AI Delivery & Operational Readiness.” Reports are exported as Markdown and evidence ZIP files. **A technical PASS on synthetic data does not imply GO for an actual customer or production.** The assessment does not invoke an LLM, and individual names or affiliations are not used as evaluation criteria or included in reports. See `docs/v013-business-assessment.md`.
+
+> **v0.12 — UI refresh:** Added an introduction explaining the app's purpose and eight steps, plus the distinction “accuracy of evidence IDs ≠ validity of evidence ≠ correctness of diagnosis.” The low-contrast dark UI was replaced with a calmer light theme. Backend APIs, validation logic, and audit storage from v0.10 were maintained. See `docs/v012-ui-guide.md`.
+
+> **v0.10:** Added multi-dimensional independent grading of requirements diagnosis, synthetic Qwen/ODA benchmarks, and rescoring of saved historical logs. See `docs/v010-requirement-diagnostic-benchmark.md`.
+
+> **This is a technical demo:** It mainly uses a fictional business opportunity and synthetic claims cases. Screen 00 also supports searching publicly available comments and complaints from third-party financial-service users; those sources do not validate the fictional customer's actual requirements, and the app does not search EU law. ODA-Fin-RL-8B is a financial-reasoning model, but has not demonstrated specialist compliance with EU insurance regulation. The system does not automate claim-payment decisions, fraud determinations, or legal judgments. Model evaluations are limited to synthetic data and simulated customer evidence.
+
+## 6. New Business Hypothesis (Background and Experimental Design)
+
+Prospective customer: a **fictional** insurance-operations SaaS vendor based in Germany. Expansion to multiple European countries is a business hypothesis. The proposed Claims Operations Planner would seek to reduce missed deadlines under fixed claims-handler staffing and total assessment hours.
+
+- **R0:** Assign claims to handlers in FIFO arrival order. An independent evaluator verifies that R0 correctly implements its stated specification.
+- **Synthetic counterexample `SIM-SLA-001`:** Even a correctly implemented FIFO policy can delay later-arriving claims with shorter deadlines.
+- **Diagnostic comparison:** Qwen-Coder and ODA-Fin-RL-8B independently diagnose the same **DEV results and synthetic evidence**, explicitly distinguishing R0 implementation correctness from suitability of the business requirement.
+- **Independent gate:** A rule-based check asks whether ODA recognized that the problem was *not* an implementation bug. Contradictory explanations and classifications result in HOLD. Unavailability is recorded as an error; the app does not silently substitute Qwen for ODA.
+- **Human approval:** R1 is an experimental contract predefined by the application. ODA's proposal is not automatically approved or turned into evaluation criteria. No code generation begins before human approval.
+- **R1 generation:** After approval, ODA's structured diagnosis is **included as reference information in Qwen's prompt**; Qwen generates code against the fixed R1 contract.
+- **R1 evaluation:** At most two DEV repair attempts are made in E2B. HOLDOUT is run once only when DEV KPIs, behavioral counterexamples, and stress tests all pass. FIFO, fixed deadline-first, and generated code are compared on the same synthetic inputs.
+- **Business validity:** **UNVERIFIED**. Synthetic KPIs are not evidence of real customer value or regulatory compliance.
+
+> **The following sections retain operating instructions and specifications from earlier versions.** Version-specific descriptions refer to the implementation at the time. For the current 10R workflow, screen order, and v0.33 results, see Sections 1–4 above.
+
+## Running on a Mac Studio
+
+- Run Ollama natively on macOS, with Metal acceleration where available. Docker containers connect to it at `host.docker.internal:11434`.
+- Docker Compose runs FastAPI and React/Vite. **v0.33 still requires a Rust build, but does not introduce a persistent Dogwood server.** The E2B Python SDK requires `E2B_API_KEY`.
+- **Both models are required.** The app has not been simplified to ODA-only evaluation by removing Qwen-based generation.
+
+### 1. Prepare Models in Ollama
 
 ```bash
-# 既存コード生成モデル
+# Existing code-generation model
 ollama pull qwen3-coder:30b
 
-# ODA-Fin-RL-8Bのコミュニティ製Q4_K_M GGUF（Mac Studio向け簡便な経路）
+# Community-produced Q4_K_M GGUF for ODA-Fin-RL-8B (convenient Mac Studio option)
 ollama pull hf.co/alexsabaka/ODA-Fin-RL-8B-GGUF:Q4_K_M
 
-# 両モデルを確認
+# Check both models
 ollama list
 ```
 
-ODAの**オリジナル**の公開元：<https://huggingface.co/OpenDataArena/ODA-Fin-RL-8B>（Qwen3-8B系、Apache-2.0、BF16）。上記のGGUFは**第三者の量子化版**です：<https://huggingface.co/alexsabaka/ODA-Fin-RL-8B-GGUF>。同じ重み・推論精度を保証しません。原版の忠実性を比較したい場合は公式Safetensorsを別途取得し、Ollama公式Import手順に従って読み込んで `ODA_FIN_MODEL` を変更してください。モデル自体の重みはZIPに含めません。
+The **original** ODA model is published at <https://huggingface.co/OpenDataArena/ODA-Fin-RL-8B> (Qwen3-8B family, Apache-2.0, BF16). The GGUF above is a **third-party quantized build**: <https://huggingface.co/alexsabaka/ODA-Fin-RL-8B-GGUF>. It does not guarantee identical weights or inference accuracy. To compare against the original release, obtain the official Safetensors files separately, import them following Ollama's official procedure, and change `ODA_FIN_MODEL`. Model weights are not bundled in this ZIP.
 
-モデルIDがアプリに反映される設定は `.env.example` の `ODA_FIN_MODEL` です。量子化版が動作しない場合は利用環境・Ollamaバージョンの互換性を確認してください。
+The model ID used by the application is configured through `ODA_FIN_MODEL` in `.env.example`. If the quantized model cannot run, check the local environment and Ollama version compatibility.
 
 ### 2. Docker Compose
 
 ```bash
 bash scripts/setup-env.sh
-# .env に E2B_API_KEY=... を設定。鍵をGitへコミットしない。
+# Set E2B_API_KEY=... in .env. Never commit secrets to Git.
 docker compose up --build
 # http://localhost:5173
 ```
 
-既にOllamaアプリが常駐している場合、別途 `ollama serve` は不要です。`bash scripts/preflight-mac.sh` で接続とモデル有無を確認できます。
+If the Ollama application is already running, you do not need to start another `ollama serve` process. Use `bash scripts/preflight-mac.sh` to check connectivity and the presence of both models.
 
-### 3. UI操作（v0.26.1）
+### 3. Using the UI (Core Workflow, Continued from Earlier Versions)
 
-0. **Evidence-grounded Requirements RAG**：保険請求の合成実験に接続する場合は `insurance_claims_uk`（FCA/FOS）を選択します。`community_credit`と`cfpb_sample`は個人向け金融業務の資料であり、保険請求案件の証拠として承認できません。手動取得・別ZIPダウンロード・索引化・検索も可能ですが、**10の公開データモードでは事前操作不要**です。
-1. **顧客課題とR0サービス設計**：架空ブリーフ・seedを選択。
-2. **R0をE2B実行**：FIFO実装の仕様適合とDEV指標を確認。
-3. **Qwen × ODAで独立診断**：`SIM-SLA-001` を与え、両モデルの分類・理由・改訂提案を比較。証拠なしの対照条件も試せます。
-4. **人間がR1を承認**：ODAが品質ゲートPASSなら通常承認。HOLDでも、模擬反証と独立R0 PASSを人間が確認し、HOLDを残して明示的な理由を記録すれば、技術デモのみ継続できます。
-5. **R1実装方式を選択しE2B検証**： `llm_only` / `skill_only` / `compare` を選択。Skill専用ではR1コード生成を行わず、いずれもDEV選別→HOLDOUTで評価。従来のLLM経路ではODAの診断を参考情報としてQwenへ渡し、独立評価器で資格・日別容量・期限超過・同一審査時間を評価。
-6. **レポートと全証跡ZIP**：成功・失敗の記録をMac側 `./artifacts/` へ保存。「保存した実験と監査証跡」から過去の結果を読み直せます。
-7. **08診断品質ベンチマーク**：QwenとODAへ同じ合成ケース・同じschemaを与えて独立採点。過去のproposal IDを再採点可能（非破壊）。
-8. **09 Business & Delivery Assessment**：R1実験IDを入力（06から自動入力、または07の履歴から選択）、二軸評価を生成。**v0.14の新しい仕様・ストレス・ベンチマークをまだ紐づけていない場合、HOLD_POLICY**となります。
-9. **10 一括実行＋保存（00より前に配置）**：公開データモードでは **00データ取得/索引化/関連性検査 → 00bで出典/問題背景の支持範囲を人間確認 → 00cで合成実験に適用するKPI閾値を設定 → 01〜04 → 05で独立した人間承認 → 06〜08b → 08cで人間設定KPIを独立判定 → 09の事業評価**。銀行資料との領域不一致、関連する問題の出典不足、却下の場合は01へ進みません。公開資料の原本も単一ZIPに含めます。実顧客の要件・原因の正しさは未検証。合成モードは明示選択した場合のみ。
+0. **Evidence-grounded Requirements RAG:** For the synthetic insurance-claims experiment, choose `insurance_claims_uk` (FCA/FOS). `community_credit` and `cfpb_sample` contain consumer-finance materials and cannot be approved as evidence for insurance-claims cases. Manual retrieval, separate ZIP download, indexing, and search are supported, but **no prior use of screen 00 is required for screen 10 in public-data mode**.
+1. **Customer problem and R0 service design:** Choose a fictional brief and a random seed.
+2. **Execute R0 in E2B:** Check FIFO implementation conformance and DEV metrics.
+3. **Independent diagnosis with Qwen × ODA:** Provide `SIM-SLA-001` and compare both models' classifications, reasoning, and revision proposals. A control condition without evidence is also available.
+4. **Human R1 approval:** Normal approval is possible when ODA passes the quality gate. Even if the diagnosis is HOLD, a human may continue **only with the technical demo** after examining the synthetic counterexample and independent R0 PASS, retaining HOLD and recording an explicit reason.
+5. **Choose R1 implementation mode and evaluate in E2B:** Choose `llm_only`, `skill_only`, or `compare`. Skill-only mode skips R1 code generation; all modes use DEV selection followed by HOLDOUT. On the legacy LLM path, ODA's diagnosis is supplied to Qwen as reference information. The independent evaluator checks qualifications, daily capacity, missed deadlines, and equal total assignment hours.
+6. **Reports and complete evidence ZIP:** Successful and failed attempts are saved under `./artifacts/` on the Mac. Previous records can be reopened through the saved experiments and audit evidence screen.
+7. **Step 08 diagnostic quality benchmark:** Qwen and ODA receive the same synthetic cases and schema and are scored independently. Previous proposal IDs can be rescored without altering stored records.
+8. **Step 09 Business & Delivery Assessment:** Enter an R1 experiment ID (filled automatically from 06 or selected from the 07 history) to create a two-axis evaluation. **If the additional policy, stress, and benchmark results introduced in v0.14 have not yet been attached, the assessment returns `HOLD_POLICY`.**
+9. **Step 10 full workflow + save (positioned before screen 00):** In public-data mode, the sequence is **00 data retrieval/indexing/relevance checks → 00b human review of sources and the supported scope of problem context → 00c human-defined KPI thresholds for the synthetic experiment → 01–04 → 05 separate human approval → 06–08b → 08c independent check of human-defined KPIs → 09 business assessment**. The workflow does not continue to 01 after cross-domain mismatches with banking sources, inadequate problem-context evidence, or rejection. The original public documents are included in a single ZIP. Actual customer requirements and root causes remain unverified. Synthetic mode must be selected explicitly.
 
-### 10の実行後に表示されるレポート
+### Report Displayed After Step 10
 
-10の一括実行が `COMPLETE` または `PARTIAL` になったとき、画面10の直後・00の手前に独立した「一括実行レポート」が表示されます。`RUNNING` と人間承認待ち（`AWAITING_EVIDENCE_REVIEW`, `AWAITING_APPROVAL`）では最終レポートは出しません。PARTIALの場合は未実行工程が残ると明示し、未完了の09事業判断を勝手に作りません。
+When a full run reaches `COMPLETE` or `PARTIAL`, a separate full-run report appears immediately after screen 10 and before 00. No final report is displayed for `RUNNING` or for pending human reviews (`AWAITING_EVIDENCE_REVIEW`, `AWAITING_APPROVAL`). In PARTIAL state, unexecuted stages are clearly identified; the app does not fabricate an unfinished step 09 business decision.
 
-レポートは認可のALLOW/DENY、診断の実行状態と品質状態、要求機能とのトレース、R1合成HOLDOUT、09の二軸判断（根拠・次アクション付き）を独立して表示します。元のZIPや09 Markdownも取得できます。以前のワークフローは画面10のWorkflow ID入力から読み込めます。新API `GET /api/full-run/{workflow_id}/report` は保存済み成果物の**read-only**合成ビューであり、実験・承認・監査履歴は変更しません。
+The report separately displays authorization ALLOW/DENY, diagnostic execution and quality states, requirement-to-feature traceability, synthetic R1 HOLDOUT, and the step 09 two-axis decision with supporting evidence and next actions. The original ZIP and step 09 Markdown can also be downloaded. Prior workflows can be opened by entering a Workflow ID on screen 10. The API `GET /api/full-run/{workflow_id}/report` is a **read-only** composite view of persisted artifacts; it does not modify experiments, approvals, or audit history.
 
-### v0.20のSkill専用実行
+### Skill-only Execution Introduced in v0.20
 
-一括実行のStep 10でR1方式に**Domain Skillのみ**を選ぶと、
-00b（公開根拠レビュー）、05（R1承認）の人間承認を維持したまま、R1の
-Qwenコード生成を省略し、固定Skill 2方式を独立E2Bで評価します。
-比較モードではLLMにもコード生成を行わせますが、Skillのテスト結果を
-LLMの修復プロンプトに渡しません。実顧客要件は承認済みになりません。
+If **Domain Skill only** is selected for R1 in step 10, the system skips Qwen's R1 code-generation call and independently evaluates two fixed Skills in E2B, while preserving the human approvals at 00b (public evidence) and 05 (R1). In comparison mode, the LLM also generates code, but Skill test results are not passed into the LLM's repair prompt. Actual customer requirements do not thereby become approved.
 
-## 保存・監査
+## Storage and Auditing
 
-Mac側のDocker bind mount `./artifacts:/app/artifacts` を使用。主な保存構成：
+Uses the Docker bind mount `./artifacts:/app/artifacts` on the Mac. Main directory layout:
 
 ```text
 artifacts/
@@ -152,16 +234,16 @@ artifacts/
     run.json, report.md, fifo.py, deadline_reference.py, dataset_hashes.json
     e2b_{fifo,deadline}_seed_*.json       # sandbox ID / stdout / stderr / output / hashes
   proposals/<uuid>/
-    request.json, proposal.json           # QwenとODAの構造化診断・ルーブリック
-    diagnostic_error.json                 # モデル接続・応答失敗時のみ
+    request.json, proposal.json           # Structured Qwen/ODA diagnoses and rubric
+    diagnostic_error.json                 # Only on model-connection/response failure
     decision.json
   approvals/<uuid>/
     approval.json, evaluation_started.json
     generated_<uuid>.py, generated_<uuid>.json
   benchmarks/<uuid>/
-    started.json, trial_*.json, benchmark.json, report.md  # v0.10新規
+    started.json, trial_*.json, benchmark.json, report.md  # Added in v0.10
   assessments/<uuid>/
-    assessment.json, report.md              # v0.13新規・入力4文書のハッシュを記録
+    assessment.json, report.md            # Added in v0.13; hashes of four input documents
   policy_validations/<uuid>/
     started.json, validation.json, report.md
     behavior_input_*.json, behavior_generated_seed_*.json
@@ -175,58 +257,58 @@ artifacts/
     01_input.json, 02_service_design.json, 07_history_snapshot.json
     03_r0_started.json, 04_proposal_started.json, 08_benchmark_started.json, 08b_policy_started.json
   exports/<uuid>/
-    manifest.json, complete_audit_package.zip  # 00〜09（公開モード）または01〜09（合成モード）
-    started.json, summary.md                   # 旧v0.14 APIの場合
+    manifest.json, complete_audit_package.zip  # 00–09 public mode or 01–09 synthetic mode
+    started.json, summary.md             # Legacy v0.14 API only
   experiments/<uuid>/
     started.json, experiment.json, report.md, input_candidate.py, selected_r1.py
     attempt_00.py, attempt_00.json, attempt_00.diff, ...
     dev_reference_*_seed_*.json, dev_attempt_*_seed_*.json, holdout_*_seed_*.json
-    error.json                             # 実行初期化失敗時
+    error.json                            # On execution initialization failure
 ```
 
-E2B stdout/stderrはSDK側で**末尾3000文字に制限して保存**します。プロンプト文全文・モデル内部の非公開推論過程は保存しませんが、モデルID、構造化診断、改訂根拠、コードハッシュ、評価結果、実行証跡を保存します。APIキーは出力物に書きません。実験コードを直接変更する場合は機密情報を含めないでください。
+E2B stdout/stderr are saved with an SDK-side truncation to the **last 3,000 characters**. The app does not retain complete prompts or private model reasoning traces, but does retain model IDs, structured diagnoses, revision rationales, code hashes, evaluations, and execution evidence. API keys are not written into exported artifacts. Do not include confidential information if editing experiment code directly.
 
-### v0.10：モデル診断の独立評価
+### v0.10: Independent Model Diagnosis Evaluation
 
-- Qwen・ODAの両方について**原因分類の正しさと説明の整合性を別々に採点**します。品質PASSとHOLDはR1の技術的KPIとは独立です。
-- 合成反例での「要件・事業目的不一致」と、実顧客の要件妥当性（常に`UNVERIFIED`）を分離します。
-- モデルの改訂案が「厳密FIFOを維持しながら期限を第一優先」とする矛盾や、根拠IDの欠落を検出します（ヒューリスティックであり形式検証ではありません）。
-- ODAの回答を利用して生成コードを改善したかという**因果効果**は現時点では証明していません。R1契約は依然として事前定義です。
-- 過去v0.9.1の`artifacts/`を新フォルダへコピーすれば旧proposal IDを再採点できます。旧ログを上書きしません。
+- For both Qwen and ODA, **correctness of cause classification and consistency of explanations are scored separately**. Diagnostic PASS/HOLD is independent of the technical R1 KPIs.
+- A mismatch between requirements and business goals in a synthetic counterexample is distinct from the validity of actual customer requirements (always `UNVERIFIED`).
+- The validator flags contradictions such as proposing “prioritize deadlines while strictly preserving FIFO” or omitting evidence IDs (a heuristic check, **not formal verification**).
+- The **causal benefit** of using ODA responses to improve generated code has not been established. The R1 contract remains predefined.
+- To rescore older proposal IDs, copy `artifacts/` from v0.9.1 into a new folder. Historical logs are not overwritten.
 
-詳細な試験シナリオ・実行方法・評価限界：`docs/v010-requirement-diagnostic-benchmark.md`
+Test cases, execution details, and evaluation limitations: `docs/v010-requirement-diagnostic-benchmark.md`.
 
-### API（主要）
+### Main API Endpoints
 
-- `GET /api/sample`、`GET /api/health`、`POST /api/design`
-- `POST /api/run-r0`：R0参照実装をE2Bで評価
-- `POST /api/propose`：Qwen / ODAの**独立**要件診断
-- `POST /api/approve`：承認・却下（ODA HOLD時は承認拒否）
-- `POST /api/generate-r1`：ODA診断を参考情報として渡しQwenで生成、生成コード保存
-- `POST /api/evaluate-r1`：DEV修正→単回HOLDOUT、全試行保存
-- `POST /api/policy-validation/run`：保存済みR1選択コードをE2Bで追加検証（非破壊）
-- `POST /api/full-run/start`：明示的な `evidence_mode` を必須指定。`public` なら00取得・索引化・RAG検索（非同期）→00bで人間レビュー待ち。`synthetic` なら00をSKIPPEDして01〜04へ
-- `POST /api/full-run/review-evidence`：公開データで人間が根拠IDと仮説を選択・承認／却下。承認時のみ01ブリーフへ「未検証仮説」を追加して01〜04へ
-- `POST /api/full-run/approve-and-continue`：05の別個の人間承認/却下。承認なら06〜09＋検証を非同期実行
-- `GET /api/full-run/{uuid}` / `GET /api/full-run/{uuid}/bundle`：進捗・状態と完全/部分ZIPの取得
-- `GET /api/history/workflows`：00〜09の一括実行履歴
-- `POST /api/pipeline/run-and-save`：旧v0.14互換。承認済みR1から追加検証してZIP化（新UIでは未使用）
-- `GET /api/exports/{uuid}/bundle`：完成/一部失敗を記録した全証跡 ZIP（manifest.json / SHA256付き）
-- `GET /api/history/{runs|proposals|approvals|experiments|benchmarks|assessments|policy_validations|exports|workflows}`：履歴一覧
-- `GET /api/artifacts/{kind}/{uuid}`：保存JSON再取得
-- `GET /api/artifacts/{kind}/{uuid}/bundle`：関連親実験含む証跡ZIP
-- `GET /api/runs/{uuid}/report`、`GET /api/experiments/{uuid}/report`
-- `POST /api/business-assessment/run`、`GET /api/business-assessment/{uuid}/report`、`GET /api/history/assessments`
+- `GET /api/sample`, `GET /api/health`, `POST /api/design`
+- `POST /api/run-r0`: Evaluate the R0 reference implementation in E2B.
+- `POST /api/propose`: Independent Qwen / ODA requirements diagnoses.
+- `POST /api/approve`: Approve/reject (approval rejected when ODA is HOLD, under the applicable legacy flow).
+- `POST /api/generate-r1`: Provide ODA diagnosis as reference input to Qwen, generate and save code.
+- `POST /api/evaluate-r1`: DEV repairs followed by a single HOLDOUT; save all attempts.
+- `POST /api/policy-validation/run`: Additional non-destructive E2B evaluation of saved selected R1 code.
+- `POST /api/full-run/start`: Requires explicit `evidence_mode`. `public` starts asynchronous retrieval, indexing, and RAG search at 00, then pauses for human review at 00b. `synthetic` skips 00 and proceeds to 01–04.
+- `POST /api/full-run/review-evidence`: Human selection and approval/rejection of evidence IDs and hypotheses in public-data mode. Only approval appends an “unverified hypothesis” to the step 01 brief and proceeds to 01–04.
+- `POST /api/full-run/approve-and-continue`: Separate human approval/rejection at 05. Approval asynchronously runs 06–09 and associated validations.
+- `GET /api/full-run/{uuid}` / `GET /api/full-run/{uuid}/bundle`: Retrieve progress/status and complete/partial ZIP.
+- `GET /api/history/workflows`: Full-workflow history for 00–09.
+- `POST /api/pipeline/run-and-save`: Legacy v0.14-compatible additional validation and ZIP export from approved R1 (unused in the current UI).
+- `GET /api/exports/{uuid}/bundle`: Full evidence ZIP containing complete/partially failed results, `manifest.json`, and SHA-256 hashes.
+- `GET /api/history/{runs|proposals|approvals|experiments|benchmarks|assessments|policy_validations|exports|workflows}`: History list.
+- `GET /api/artifacts/{kind}/{uuid}`: Retrieve saved JSON.
+- `GET /api/artifacts/{kind}/{uuid}/bundle`: Download evidence ZIP including the related parent experiment.
+- `GET /api/runs/{uuid}/report`, `GET /api/experiments/{uuid}/report`
+- `POST /api/business-assessment/run`, `GET /api/business-assessment/{uuid}/report`, `GET /api/history/assessments`
 
-## 独立の検証規則
+## Independent Validation Rules
 
-- R0契約：FIFO参照割当への完全一致。R1の旧評価：資格、日別稼働上限、重複・欠損・過剰勤務なし。期限超過、**割当予定時間**、期限内率を別々に集計。
-- **v0.14追加：R1の期限優先・希少資格の行動プローブを固定合成反例で独立検査。** KPIのPASSは契約振る舞いのPASSを意味しません。さらに容量圧迫・技能ボトルネック・期限短縮・到着順変化を試験し、未割当も期限超過に含めます。これは形式証明ではありません。
-- ODA要件診断の固定ルーブリック：分類が `requirement_mismatch`、R0実装が `correct`、ビジネス要件が `mismatch`、証拠IDが `SIM-SLA-001`、改訂提案に期限が反映され、根本原因を誤って「software bug」と呼ばないこと。**単純な独立ルールであり、推論の意味的正しさを保証するものではありません。**
-- HOLDOUTは生成・選定後に1回だけ使用し、両モデルへプロンプトとして渡さない。
-- 技術PASSはあくまで合成データについて。R1契約は実験用の固定ルールであって、ODAの自由生成要件が直接テストされたわけではありません。
+- R0 contract: Exact match with the FIFO reference assignment. Legacy R1 checks: required qualifications, daily capacity limits, no duplicates, missing assignments, or excess work. Missed deadlines, **scheduled assignment hours**, and on-time completion rate are recorded separately.
+- **Added in v0.14: Independent behavioral probes for R1 deadline prioritization and scarce qualifications, using fixed synthetic counterexamples.** Passing a KPI does not imply passing the behavioral contract. Additional scenarios cover capacity pressure, skill bottlenecks, shortened deadlines, and changed arrival order; unassigned cases count as missed deadlines. This is not formal verification.
+- Fixed ODA diagnosis rubric: classification must be `requirement_mismatch`, R0 implementation `correct`, business requirement `mismatch`, evidence ID `SIM-SLA-001`, and the proposed revision must address deadlines without wrongly identifying the root cause as a “software bug.” **These are simple independent rules, not a guarantee of semantically correct reasoning.**
+- HOLDOUT is used only once after generation and selection and is not sent to either model as prompt material.
+- Technical PASS applies only to synthetic data. The R1 contract consists of fixed experimental rules; ODA's freely generated requirements have not thereby been tested directly.
 
-## テスト
+## Tests
 
 ```bash
 cd backend
@@ -234,27 +316,27 @@ python -m pip install -r requirements-dev.txt
 PYTHONPATH=. pytest -q
 ```
 
-E2BとOllamaをモックしたバックエンドテストのみをローカルで実施しました。v0.14の二軸評価自体はモデル推論を呼びませんが、手順10の一括実行ではE2BとOllamaを実際に呼び出します。v0.17では自動00の取得失敗・キャッシュ改変・2つの人間レビューポイント・完全/部分ZIP・SHA256までモックで検証しました。実Mac Studio上のQwen/ODA推論、E2Bクラウド、フロントエンドの本番ビルドはこの環境では未検証です。
+Only backend tests with mocked E2B and Ollama calls were run locally in the original distribution environment. The two-axis assessment introduced in v0.14 does not itself call an LLM, but the full workflow at step 10 invokes real E2B and Ollama services when run normally. In v0.17, mocked tests covered automatic step 00 retrieval failure, cache tampering, both human-review checkpoints, complete/partial ZIPs, and SHA-256 verification. Real Qwen/ODA inference on a Mac Studio, E2B cloud execution, and the production frontend build were not verified in that distribution environment.
 
-## 対照条件と限界
+## Control Conditions and Limitations
 
-- 同じ条件でQwenのみとODA併用の違いを比較可能ですが、今回のPoCは**複数seed・複数独立ドメイン事例にわたるモデル優位性の証明ではありません**。
-- 顧客のSLA、BaFin/EIOPA等の規制資料、GDPR、データ委託の根拠はモデルに与えていません。法令準拠の判定をしてはいけません。
-- 欧州複数市場への横展開、商品化・価格受容、ドイツ居住体制も未検証の事業仮説です。
-- APIは**単一ユーザーのローカルデモ**用で認証・レート制限がありません。外部に公開しないでください。
-- 参照「期限優先」アルゴリズムはヒューリスティックで、数学的な大域最適性は主張しません。
+- The same conditions can be used to compare Qwen-only and Qwen+ODA configurations, but this PoC **does not prove one model's superiority across multiple seeds and independent domains**.
+- No customer-specific SLAs, BaFin/EIOPA regulatory materials, GDPR requirements, or data-processing contracts were provided to the models. The app must not be used to determine legal compliance.
+- Expansion to multiple European markets, commercialization and willingness to pay, and operational arrangements for working from Germany are unverified business hypotheses.
+- The API is intended for a **single-user local demo** and provides no authentication or rate limiting. Do not expose it publicly.
+- The deadline-first reference algorithm is heuristic and carries no claim of global mathematical optimality.
 
-詳細：`docs/v09-vertical-fm-experiment.md`、`docs/v08-claims-experiment-protocol.md`、`docs/io-contract.md`。
+For details, see `docs/v09-vertical-fm-experiment.md`, `docs/v08-claims-experiment-protocol.md`, and `docs/io-contract.md`.
 
-### v0.10 API additions
+### v0.10 API Additions
 
 - `GET /api/diagnostic-benchmark/fixtures` — Synthetic public inputs without oracles.
-- `POST /api/diagnostic-benchmark/run` — body `{"case_ids":["fifo_sla_conflict","actual_fifo_implementation_bug"],"repetitions":1}`. Runs both Ollama models sequentially.
+- `POST /api/diagnostic-benchmark/run` — Body: `{"case_ids":["fifo_sla_conflict","actual_fifo_implementation_bug"],"repetitions":1}`. Runs both Ollama models sequentially.
 - `GET /api/diagnostic-benchmark/{benchmark_id}/report` — Markdown.
-- `GET /api/diagnostic-benchmark/rescore/{proposal_id}` — non-mutating regrade of stored v0.9.1 outputs.
-- `GET /api/history/benchmarks`, `GET /api/artifacts/benchmarks/{uuid}/bundle` — audit history and evidence ZIP.
+- `GET /api/diagnostic-benchmark/rescore/{proposal_id}` — Non-mutating regrade of stored v0.9.1 outputs.
+- `GET /api/history/benchmarks`, `GET /api/artifacts/benchmarks/{uuid}/bundle` — Audit history and evidence ZIP.
 
-### v0.14 legacy additional export example (not used by step 10)
+### v0.14 Legacy Additional Export Example (Not Used by Step 10)
 
 ```bash
 curl -X POST http://localhost:18000/api/pipeline/run-and-save \
@@ -263,32 +345,32 @@ curl -X POST http://localhost:18000/api/pipeline/run-and-save \
 # Returns {export_id, bundle_url, manifest, assessment, status}; use frontend 10 for automatic ZIP download.
 ```
 
-**人間の改訂承認を省略する自動実行ではありません。** 手順01–06を先に実施してください。ZIP内の`00_START_HERE.md`が読み順、`manifest.json`が収録一覧と生バイトSHA256・欠落/失敗の完全な一覧です。承認者名はレポート・AI採点プロンプトには入りませんが、根拠となる `approval.json` に入力した承認者名が保持されます。外部共有前に確認してください。
+**This is not an automated execution path that bypasses human revision approval.** Complete steps 01–06 first. Inside the ZIP, `00_START_HERE.md` explains the reading order, while `manifest.json` lists files, raw-byte SHA-256 hashes, missing artifacts, and failures. Reviewer names do not appear in reports or AI grading prompts, but the source `approval.json` preserves the name entered by the reviewer. Check before sharing externally.
 
-### Local tests
+### Local Tests
 
 ```bash
 cd backend
 PYTHONPATH=. pytest -q tests
 ```
 
-The tests use mocked E2B/LLM calls and separately check the deterministic scenario grader. They do not prove real Mac Ollama/GGUF inference, production claims processes, EU compliance, or frontend dependency installation.
+Tests use mocked E2B/LLM calls and separately check the deterministic scenario grader. They do not establish that real Mac Ollama/GGUF inference, production claims workflows, EU regulatory compliance, or frontend dependency installation work correctly.
 
-## v0.18の重要な区別
+## Important Distinctions Introduced in v0.18
 
-- `insurance_claims_uk`は英国の監督当局・オンブズマンによる公表資料です。**ドイツの顧客企業の実運用記録ではありません**。
-- 公開資料による遅延問題の存在（problem context）と、FIFO/希少資格による原因（causality）を混同しません。
-- インタビューやRAG要件候補は正式顧客要件ではありません。承認時の担当者は**デモ実験の仮説とKPI閾値**を定義するだけです。
-- 要件評価器は**固定合成Claimsデータの既存独立評価ロジック**に対して閾値（最大期限超過件数、FIFO比削減率、行動プローブ）を設定する仕組みです。任意の顧客資料からアルゴリズムやOracleを自動構築していません。
-- 一括ZIPの `COMPLETE` は収録工程の完了であり、要件の意味的正しさを証明しません。技術判定と実顧客の事業採算性は別です。
-- 実公開データのダウンロード、Mac StudioでのOllama・E2B実行、Reactの完全ビルドはこの配布環境では検証していません。
+- `insurance_claims_uk` consists of publications from UK regulators and the Financial Ombudsman Service. **These are not operational records from the fictional German customer.**
+- The existence of documented claims delays (problem context) is not proof that FIFO or scarce qualifications caused them (causality).
+- Interviews and RAG-generated requirement hypotheses are not formal customer requirements. Human reviewers define only **hypotheses and KPI thresholds for the demo experiment**.
+- The requirements evaluator configures thresholds—maximum missed deadlines, reduction relative to FIFO, and behavioral probes—against **pre-existing independent evaluation logic for fixed synthetic claims data**. It does not automatically construct algorithms or oracles from arbitrary customer documents.
+- `COMPLETE` in the full-run ZIP indicates that the recorded steps finished, not that requirements are semantically correct. Technical evaluation and actual customer profitability are separate decisions.
+- Downloading real public data, running Ollama/E2B on a Mac Studio, and building React completely were not verified in the original distribution environment.
 
-## v0.21 の新しい操作
+## New Operations Introduced in v0.21
 
-- **04 単独の要件診断**: 「ルーブリックHOLDなら一度再診断」を選ぶと、元の診断JSONと最終診断JSONを分けて保存します。
-- **08 診断ベンチマーク**: 初回・修復後・未使用ケース初回のPASS件数をそれぞれ確認してください。オプションの追加モデル呼び出しが発生します。
-- **10 一括実行**: v0.21のチェックボックス（診断修復・別ケース診断）と、08fのケース数を指定します。00bと05の人間承認は従来どおりです。
-- **CP-SAT利用**: `.env` に `INSTALL_SOLVER=1` を追加し、`docker compose build --no-cache api` でAPIを再ビルド。追加依存が不要なら既定の小規模全探索を使用します。
-- **ZIP確認**: `08f_blind_optimality.json` と `08f_exact_*.json` を確認し、ソルバーの `OPTIMAL` と手法間の差を区別してください。
+- **04 standalone requirements diagnosis:** Selecting “rediagnose once if rubric is HOLD” stores the original and final diagnostic JSON separately.
+- **08 diagnostic benchmark:** Examine PASS counts separately for initial responses, repaired responses, and initial responses on unused cases. Optional additional model calls incur extra cost.
+- **10 full workflow:** Configure the v0.21 checkboxes for diagnostic repair and fresh-case diagnosis, as well as the number of 08f cases. Human approvals at 00b and 05 are still required.
+- **CP-SAT option:** Set `INSTALL_SOLVER=1` in `.env` and rebuild the API with `docker compose build --no-cache api`. Without the optional dependency, the built-in small-instance exhaustive search is used.
+- **Inspect the ZIP:** Check `08f_blind_optimality.json` and `08f_exact_*.json` to distinguish solver `OPTIMAL` status from performance differences between candidate methods.
 
-**注意**: ここでの「診断PASS」は合成例と独立ルーブリックに限定されます。実顧客における要件妥当性、業務効果、法律適合を保証しません。OR-Toolsはこの生成環境ではインストールできなかったため、CP-SATはコード・依存設定・モック外のAPI構築までを準備した段階であり、実CP-SAT実行は未検証です。
+**Caution:** Here, diagnostic PASS applies only to synthetic examples and the independent rubric. It does not guarantee valid real-world customer requirements, business outcomes, or legal compliance. OR-Tools was not installable in the original code-generation environment, so the CP-SAT code and dependency configuration were prepared, but live CP-SAT execution was not verified there.
